@@ -1,16 +1,16 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-04
+**Last Updated**: 2025-11-05
 
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 0 Complete - Ready for Phase 1** - Next.js 16 project successfully initialized with all dependencies and tooling. Now ready to begin Phase 1 (Core Infrastructure) - database schema definition, utility functions, and authentication setup.
+**Phase 1 In Progress** - Database schema definition. Sessions and tutor_scores tables complete (Tasks 1.3-1.4). Next: flags and interventions tables (Tasks 1.5-1.6).
 
 ### Current Phase
-**Phase 0 of 9: Project Setup** - ✅ COMPLETE
+**Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
 
-**Next Phase: Phase 1 - Core Infrastructure** (Estimated: 3-4 days)
+**Current Phase: Phase 1 - Core Infrastructure** (Estimated: 3-4 days) - IN PROGRESS
 
 Next phases:
 - Phase 1: Core Infrastructure (Database + utilities)
@@ -36,9 +36,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Drizzle schema for sessions table created** - Created src/lib/db/schema.ts with sessions table definition matching architecture.md - 2025-11-05
-2. **Supabase account and project created** - Supabase project initialized, connection strings configured in .env.local - 2025-11-05
-3. **Dependency compatibility verified** - Checked Next.js 16 compatibility with tech stack, installed missing @supabase/ssr package - 2025-11-04
+1. **Drizzle schema for tutor_scores table created** - Created tutor_scores table definition in src/lib/db/schema.ts with all fields, constraints, and indexes matching architecture.md - 2025-11-05
+2. **Drizzle schema for sessions table created** - Created src/lib/db/schema.ts with sessions table definition matching architecture.md - 2025-11-05
+3. **Supabase account and project created** - Supabase project initialized, connection strings configured in .env.local - 2025-11-05
 
 ---
 
@@ -48,8 +48,8 @@ Next phases:
 - [x] Create Supabase account and project (Task 1.1) ✅
 - [x] Configure Supabase connection in .env.local (Task 1.2) ✅
 - [x] Define database schema (sessions table) (Task 1.3) ✅
-- [ ] Define database schema (tutor_scores table) (Task 1.4)
-- [ ] Define database schema (flags table) (Task 1.5)
+- [x] Define database schema (tutor_scores table) (Task 1.4) ✅
+- [ ] Define database schema (flags table) (Task 1.5) - NEXT
 - [ ] Define database schema (interventions table) (Task 1.6)
 - [ ] Generate and run initial migrations (Task 1.8)
 - [ ] Create database indexes (Task 1.9)
@@ -89,7 +89,7 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Currently Modified
 
-- `src/lib/db/schema.ts` - Database schema definition (sessions table created)
+- `src/lib/db/schema.ts` - Database schema definition (sessions and tutor_scores tables created)
 
 ---
 
@@ -110,16 +110,20 @@ None - Project is greenfield, no blockers.
 - [x] Supabase account created
 - [x] Supabase project created
 - [x] Database connection strings configured in .env.local
+- [x] Git repository initialized
+- [x] Directory structure created (all folders exist)
+- [x] .env.example created
+- [x] Drizzle ORM installed and configured
+- [x] Sessions table schema created
+- [x] Tutor_scores table schema created
 
 ### In Progress
-- [ ] pnpm installed (prerequisite)
-- [ ] Upstash account created (prerequisite)
+- [ ] Remaining database schema tables (flags, interventions)
 
 ### Pending
-- [ ] Database schema created
+- [ ] Husky + lint-staged setup (P1 optional, can defer)
 - [ ] Database migrations run
-- [ ] Development server running
-- [ ] Environment variables verified
+- [ ] Upstash account created (prerequisite for Phase 5)
 
 ---
 
@@ -161,8 +165,8 @@ None - Project is greenfield, no blockers.
 
 ## Notes
 
-**Project Status**: Pre-development phase. Architecture fully designed, ready to begin implementation.
+**Project Status**: Phase 1 in progress. Phase 0 complete (except optional Husky setup). Database schema partially implemented (sessions table done).
 
-**Next Major Milestone**: Complete Phase 0 (Project Setup) by end of day. This unblocks Phase 1 (Core Infrastructure) tomorrow.
+**Next Major Milestone**: Complete remaining database schema tables (tutor_scores, flags, interventions) and run initial migrations. This unblocks utility functions and auth setup.
 
 **Risk Level**: LOW - Well-planned project with clear requirements, proven tech stack, and comprehensive documentation. Main risks are timeline management and maintaining code quality at pace.
