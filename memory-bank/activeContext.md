@@ -57,9 +57,8 @@ Next phases:
 - [x] Create database client setup (Task 1.11) ✅
 - [x] Create TypeScript interfaces (SessionData, Tutor, Flag) (Tasks 1.12-1.14) ✅
 - [x] Create utility functions (time, stats, validation) (Tasks 1.15-1.17) ✅
-- [ ] Write unit tests for utilities (Tasks 1.18-1.19) - NEXT
-- [ ] Write unit tests for utilities (Tasks 1.18-1.19)
-- [ ] Set up Supabase Auth (Tasks 1.20-1.23)
+- [x] Write unit tests for utilities (Tasks 1.18-1.19) ✅
+- [ ] Set up Supabase Auth (Tasks 1.20-1.23) - NEXT (P1 optional)
 
 ### Near-Term (Week 2)
 - [ ] Generate realistic mock data (Phase 2)

@@ -40,10 +40,10 @@
 **Core Utilities** (Tasks 1.11-1.19):
 - [x] Database client setup (Task 1.11)
 - [x] Type definitions (SessionData, Tutor, Flag interfaces) (Tasks 1.12-1.14)
-- [ ] Time utilities (differenceInMinutes, etc.)
-- [ ] Statistical helpers (averages, percentiles, trends)
-- [ ] Zod validation schemas
-- [ ] Unit tests for utilities
+- [x] Time utilities (differenceInMinutes, etc.) (Task 1.15)
+- [x] Statistical helpers (averages, percentiles, trends) (Task 1.16)
+- [x] Zod validation schemas (Task 1.17)
+- [x] Unit tests for utilities (Tasks 1.18-1.19)
 
 **Authentication** (Tasks 1.20-1.23):
 - [ ] Supabase Auth setup
