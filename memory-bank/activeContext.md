@@ -36,9 +36,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Drizzle schema for interventions table created** - Created interventions table definition in src/lib/db/schema.ts with foreign key reference to flags table - 2025-11-05
-2. **Drizzle schema for flags table created** - Created flags table definition in src/lib/db/schema.ts with all fields, JSONB supporting_data, and indexes matching architecture.md - 2025-11-05
-3. **Drizzle schema for tutor_scores table created** - Created tutor_scores table definition in src/lib/db/schema.ts with all fields, constraints, and indexes matching architecture.md - 2025-11-05
+1. **Database migrations generated** - Generated initial migration file with all 4 tables, constraints, foreign keys, and indexes - 2025-11-05
+2. **Drizzle schema for interventions table created** - Created interventions table definition in src/lib/db/schema.ts with foreign key reference to flags table - 2025-11-05
+3. **Drizzle schema for flags table created** - Created flags table definition in src/lib/db/schema.ts with all fields, JSONB supporting_data, and indexes matching architecture.md - 2025-11-05
 
 ---
 
@@ -51,9 +51,9 @@ Next phases:
 - [x] Define database schema (tutor_scores table) (Task 1.4) ✅
 - [x] Define database schema (flags table) (Task 1.5) ✅
 - [x] Define database schema (interventions table) (Task 1.6) ✅
-- [ ] Generate and run initial migrations (Task 1.8) - NEXT
-- [ ] Generate and run initial migrations (Task 1.8)
-- [ ] Create database indexes (Task 1.9)
+- [x] Generate and run initial migrations (Task 1.8) ✅
+- [x] Create database indexes (Task 1.9) ✅ - Indexes included in migration
+- [ ] Test database connection (Task 1.10) - NEXT
 
 ### Near-Term (This Week - Phase 1)
 - [ ] Create database client setup (Task 1.11)
