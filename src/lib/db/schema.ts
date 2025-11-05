@@ -328,3 +328,68 @@ export const flags = pgTable(
   })
 );
 
+/**
+ * INTERVENTIONS TABLE
+ * Track coaching actions taken
+ *
+ * This table stores coaching interventions made by coaches
+ * in response to flags generated for tutors.
+ * Used for:
+ * - Tracking what actions coaches took
+ * - Outcome tracking and follow-up scheduling
+ * - Intervention history for tutors
+ * - Measuring intervention effectiveness
+ *
+ * Interventions are linked to flags but can also be created
+ * independently if a coach takes action outside the flag system.
+ */
+export const interventions = pgTable(
+  "interventions",
+  {
+    // Primary key
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Reference to flag (nullable - can be independent action)
+    flagId: uuid("flag_id").references(() => flags.id),
+
+    // Identity
+    tutorId: varchar("tutor_id", { length: 255 }).notNull(),
+
+    // What was done
+    interventionType: varchar("intervention_type", { length: 50 }).notNull(), // 'coaching_session' | 'warning' | 'training' | etc.
+    description: text("description").notNull(),
+
+    // Who did it
+    coachId: varchar("coach_id", { length: 255 }).notNull(),
+
+    // When
+    interventionDate: timestamp("intervention_date", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+
+    // Outcome tracking
+    followUpDate: timestamp("follow_up_date", {
+      withTimezone: true,
+    }),
+    outcome: varchar("outcome", { length: 20 }), // 'improved' | 'no_change' | 'worsened' | 'pending'
+    outcomeNotes: text("outcome_notes"),
+
+    // Metadata
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    // Indexes for common queries
+    tutorIdIdx: index("idx_interventions_tutor").on(table.tutorId),
+    flagIdIdx: index("idx_interventions_flag").on(table.flagId),
+    interventionDateIdx: index("idx_interventions_date").on(
+      table.interventionDate
+    ),
+  })
+);
+
