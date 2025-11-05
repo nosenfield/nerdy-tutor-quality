@@ -80,9 +80,9 @@ This task list breaks down the complete implementation into manageable tasks wit
 
 | ID | Task | Priority | Est. | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 1.1 | Create Supabase account and project | 🔴 P0 | 🕐 | ⬜ | Free tier is sufficient for dev |
-| 1.2 | Configure Supabase connection in `.env.local` | 🔴 P0 | 🕐 | ⬜ | Get connection strings |
-| 1.3 | Create Drizzle schema for `sessions` table | 🔴 P0 | 🕑 | ⬜ | Use SessionData interface |
+| 1.1 | Create Supabase account and project | 🔴 P0 | 🕐 | ✅ | Free tier is sufficient for dev |
+| 1.2 | Configure Supabase connection in `.env.local` | 🔴 P0 | 🕐 | ✅ | Get connection strings |
+| 1.3 | Create Drizzle schema for `sessions` table | 🔴 P0 | 🕑 | ✅ | Use SessionData interface |
 | 1.4 | Create Drizzle schema for `tutor_scores` table | 🔴 P0 | 🕑 | ⬜ | Aggregated metrics |
 | 1.5 | Create Drizzle schema for `flags` table | 🔴 P0 | 🕑 | ⬜ | Coaching alerts |
 | 1.6 | Create Drizzle schema for `interventions` table | 🔴 P0 | 🕐 | ⬜ | Track coaching actions |

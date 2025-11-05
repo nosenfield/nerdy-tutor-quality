@@ -24,11 +24,15 @@
 
 ---
 
-### Phase 1: Core Infrastructure - NOT STARTED
+### Phase 1: Core Infrastructure - IN PROGRESS
 **Database Setup** (Tasks 1.1-1.10):
-- [ ] Create Supabase account
-- [ ] Configure database connection
-- [ ] Create all table schemas (sessions, tutor_scores, flags, interventions, tutor_analytics)
+- [x] Create Supabase account
+- [x] Configure database connection
+- [x] Create sessions table schema (Task 1.3)
+- [ ] Create tutor_scores table schema (Task 1.4)
+- [ ] Create flags table schema (Task 1.5)
+- [ ] Create interventions table schema (Task 1.6)
+- [ ] Create tutor_analytics table schema (Task 1.7 - optional)
 - [ ] Generate and run migrations
 - [ ] Create database indexes
 - [ ] Test database connection

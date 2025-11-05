@@ -36,16 +36,18 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Phase 0 Complete** - Next.js 16 project initialized with TypeScript, React 19, Tailwind v4, Headless UI, all dependencies installed, directory structure created - 2025-11-04
-2. **Dependency compatibility verified** - Checked Next.js 16 compatibility with tech stack, installed missing @supabase/ssr package - 2025-11-04
-3. **Architectural decision: Headless UI** - Chose Headless UI over shadcn/ui for better Tailwind v4 compatibility and stability - 2025-11-04
+1. **Drizzle schema for sessions table created** - Created src/lib/db/schema.ts with sessions table definition matching architecture.md - 2025-11-05
+2. **Supabase account and project created** - Supabase project initialized, connection strings configured in .env.local - 2025-11-05
+3. **Dependency compatibility verified** - Checked Next.js 16 compatibility with tech stack, installed missing @supabase/ssr package - 2025-11-04
 
 ---
 
 ## Next Steps
 
 ### Immediate (Next Session - Phase 1)
-- [ ] Define database schema (sessions table) (Task 1.3)
+- [x] Create Supabase account and project (Task 1.1) ✅
+- [x] Configure Supabase connection in .env.local (Task 1.2) ✅
+- [x] Define database schema (sessions table) (Task 1.3) ✅
 - [ ] Define database schema (tutor_scores table) (Task 1.4)
 - [ ] Define database schema (flags table) (Task 1.5)
 - [ ] Define database schema (interventions table) (Task 1.6)
@@ -87,14 +89,7 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Currently Modified
 
-None yet - project not initialized. After Phase 0, expect:
-- `src/app/layout.tsx` - Root layout
-- `src/app/page.tsx` - Landing page
-- `src/lib/db/schema.ts` - Database schema
-- `drizzle.config.ts` - Drizzle configuration
-- `tailwind.config.ts` - Tailwind configuration
-- `.env.local` - Environment variables
-- `package.json` - Dependencies
+- `src/lib/db/schema.ts` - Database schema definition (sessions table created)
 
 ---
 
@@ -112,17 +107,19 @@ None yet - project not initialized. After Phase 0, expect:
 - [x] Tailwind CSS v4 configured
 - [x] Headless UI installed
 - [x] @supabase/ssr installed (required for Next.js 16)
+- [x] Supabase account created
+- [x] Supabase project created
+- [x] Database connection strings configured in .env.local
 
 ### In Progress
-- [ ] Node.js 20 installed (prerequisite)
 - [ ] pnpm installed (prerequisite)
-- [ ] Supabase account created (prerequisite)
 - [ ] Upstash account created (prerequisite)
 
 ### Pending
-- [ ] Database configured
+- [ ] Database schema created
+- [ ] Database migrations run
 - [ ] Development server running
-- [ ] Environment variables set up
+- [ ] Environment variables verified
 
 ---
 
