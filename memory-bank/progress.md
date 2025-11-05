@@ -9,10 +9,10 @@
 - [x] Memory Bank templates filled in
 - [x] Comprehensive documentation created (_docs/)
 - [x] Project architecture designed
-- [ ] Next.js 14 project initialized (Task 0.1)
-- [ ] Tailwind CSS installed (Task 0.2)
-- [ ] shadcn/ui setup (Task 0.3)
-- [ ] ESLint + Prettier configured (Task 0.4)
+- [x] Next.js 16 project initialized (Task 0.1)
+- [x] Tailwind CSS installed (Task 0.2)
+- [x] Headless UI setup (Task 0.3)
+- [x] ESLint + Prettier configured (Task 0.4)
 - [ ] Husky + lint-staged setup (Task 0.5)
 - [ ] TypeScript strict mode enabled (Task 0.6)
 - [ ] Drizzle ORM installed (Task 0.7)
@@ -206,9 +206,9 @@
 ## What's Next
 
 ### Priority 1 (Today - Phase 0)
-- [ ] Initialize Next.js 14 project with TypeScript
-- [ ] Install Tailwind CSS + shadcn/ui
-- [ ] Configure linting and formatting
+- [x] Initialize Next.js 16 project with TypeScript
+- [x] Install Tailwind CSS v4 + Headless UI
+- [x] Configure linting and formatting
 - [ ] Set up development environment
 - [ ] Verify `pnpm dev` runs successfully
 

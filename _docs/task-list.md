@@ -52,9 +52,9 @@ This task list breaks down the complete implementation into manageable tasks wit
 
 | ID | Task | Priority | Est. | Status | Notes |
 |----|------|----------|------|--------|-------|
-| 0.1 | Create Next.js 14 project with TypeScript | 🔴 P0 | 🕐 | ⬜ | `npx create-next-app@latest` |
+| 0.1 | Create Next.js 16 project with TypeScript | 🔴 P0 | 🕐 | ✅ | `npx create-next-app@latest` |
 | 0.2 | Install and configure Tailwind CSS | 🔴 P0 | 🕐 | ⬜ | Official Next.js + Tailwind guide |
-| 0.3 | Set up shadcn/ui component library | 🔴 P0 | 🕐 | ⬜ | `npx shadcn-ui@latest init` |
+| 0.3 | Set up Headless UI component library | 🔴 P0 | 🕐 | ✅ | `pnpm add @headlessui/react` |
 | 0.4 | Configure ESLint + Prettier | 🔴 P0 | 🕐 | ⬜ | Strict mode, auto-format on save |
 | 0.5 | Set up Husky + lint-staged | 🟡 P1 | 🕐 | ⬜ | Pre-commit hooks |
 | 0.6 | Configure TypeScript strict mode | 🔴 P0 | 🕐 | ⬜ | `"strict": true` in tsconfig.json |

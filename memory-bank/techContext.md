@@ -5,33 +5,34 @@
 ## Tech Stack
 
 ### Frontend
-- **Framework**: Next.js 14.0+ (App Router)
-- **Language**: TypeScript 5.3+
-- **UI Library**: React 18
-- **Styling**: Tailwind CSS 3.4
-- **Component Library**: shadcn/ui (Radix UI primitives)
-- **Charts**: Recharts 2.x
+- **Framework**: Next.js 16.0.1 (App Router)
+- **Language**: TypeScript 5.9.3
+- **UI Library**: React 19.2.0
+- **Styling**: Tailwind CSS 4.1.16
+- **Component Library**: Headless UI 2.2.9 (Tailwind Labs)
+- **Charts**: Recharts 3.3.0
 - **State Management**:
-  - Server State: TanStack Query (React Query)
-  - Client State: Zustand (minimal UI state only)
-- **Forms**: React Hook Form + Zod validation
-- **Icons**: Lucide React
+  - Server State: TanStack Query 5.90.6 (React Query)
+  - Client State: Zustand 5.0.8 (minimal UI state only)
+- **Forms**: React Hook Form 7.66.0 + Zod 4.1.12 validation
+- **Icons**: Lucide React 0.552.0
 
 ### Backend
 - **Runtime**: Node.js 20 LTS
-- **Framework**: Next.js 14 API Routes (unified codebase)
-- **Language**: TypeScript 5.3+
+- **Framework**: Next.js 16 API Routes (unified codebase)
+- **Language**: TypeScript 5.9.3
 - **Job Queue**: Bull 4.x (Redis-backed)
 - **Cron Jobs**: node-cron (for overnight batch processing)
-- **Validation**: Zod (runtime + compile-time type safety)
-- **Date/Time**: date-fns 3.x
+- **Validation**: Zod 4.1.12 (runtime + compile-time type safety)
+- **Date/Time**: date-fns 4.1.0
 
 ### Database
 - **Primary Database**: PostgreSQL 16 (Supabase managed)
 - **Vector Extension**: pgvector (for Phase 2 embeddings)
-- **ORM**: Drizzle ORM 0.29+
-- **Migrations**: Drizzle Kit
+- **ORM**: Drizzle ORM 0.44.7
+- **Migrations**: Drizzle Kit 0.31.6
 - **Connection Pooling**: PgBouncer (built into Supabase)
+- **Supabase SSR**: @supabase/ssr 0.7.0 (required for Next.js 16)
 
 ### AI/ML Services (Phase 2)
 - **LLM Provider**: OpenAI
@@ -51,7 +52,7 @@
 - **Logs**: Vercel Logs + Supabase Logs
 
 ### Testing
-- **Unit Tests**: Vitest 1.x
+- **Unit Tests**: Vitest 4.0.7
 - **Integration Tests**: Vitest + Supertest
 - **E2E Tests**: Playwright 1.x
 - **Coverage Tool**: Vitest coverage (c8)
@@ -59,13 +60,13 @@
 
 ### Development Tools
 - **IDE**: Cursor IDE (AI-assisted development)
-- **Package Manager**: pnpm 8.x (faster than npm, better monorepo support)
-- **Linting**: ESLint 8.x + TypeScript ESLint
-- **Formatting**: Prettier 3.x
+- **Package Manager**: pnpm 10.19.0 (faster than npm, better monorepo support)
+- **Linting**: ESLint 9.39.1 + eslint-config-next 16.0.1
+- **Formatting**: Prettier 3.6.2
 - **Git Hooks**: Husky + lint-staged
 - **Type Checking**: TypeScript strict mode
 - **API Testing**: Hoppscotch or Bruno (Postman alternative)
-- **Mock Data**: Faker.js 8.x
+- **Mock Data**: Faker.js 10.1.0
 
 ---
 
@@ -164,28 +165,33 @@ NEXT_PUBLIC_VERCEL_URL=...      # Auto-set by Vercel
 ### Core Dependencies
 ```json
 {
-  "next": "^14.0.0",
-  "react": "^18.2.0",
-  "typescript": "^5.3.0",
-  "drizzle-orm": "^0.29.0",
-  "@supabase/supabase-js": "^2.39.0",
+  "next": "16.0.1",
+  "react": "19.2.0",
+  "react-dom": "19.2.0",
+  "typescript": "^5.9.3",
+  "drizzle-orm": "^0.44.7",
+  "@supabase/supabase-js": "^2.79.0",
+  "@supabase/ssr": "^0.7.0",
   "bull": "^4.12.0",
   "ioredis": "^5.3.2",
-  "zod": "^3.22.4",
-  "date-fns": "^3.0.0"
+  "zod": "^4.1.12",
+  "date-fns": "^4.1.0"
 }
 ```
 
 ### UI Dependencies
 ```json
 {
-  "tailwindcss": "^3.4.0",
-  "@radix-ui/react-*": "^1.0.0",
-  "recharts": "^2.10.0",
-  "lucide-react": "^0.292.0",
-  "@tanstack/react-query": "^5.14.0",
-  "zustand": "^4.4.7",
-  "react-hook-form": "^7.49.0"
+  "tailwindcss": "^4.1.16",
+  "@tailwindcss/postcss": "^4",
+  "@headlessui/react": "^2.2.9",
+  "recharts": "^3.3.0",
+  "lucide-react": "^0.552.0",
+  "@tanstack/react-query": "^5.90.6",
+  "zustand": "^5.0.8",
+  "react-hook-form": "^7.66.0",
+  "tailwind-merge": "^3.3.1",
+  "clsx": "^2.1.1"
 }
 ```
 
@@ -199,27 +205,33 @@ NEXT_PUBLIC_VERCEL_URL=...      # Auto-set by Vercel
 ### Development Dependencies
 ```json
 {
-  "@types/node": "^20.0.0",
-  "@types/react": "^18.2.0",
-  "vitest": "^1.0.0",
+  "@types/node": "^20",
+  "@types/react": "^19",
+  "@types/react-dom": "^19",
+  "vitest": "^4.0.7",
+  "@vitest/ui": "^4.0.7",
   "playwright": "^1.40.0",
-  "eslint": "^8.55.0",
-  "prettier": "^3.1.0",
+  "eslint": "^9",
+  "eslint-config-next": "16.0.1",
+  "eslint-config-prettier": "^10.1.8",
+  "prettier": "^3.6.2",
   "husky": "^8.0.3",
   "lint-staged": "^15.2.0",
-  "drizzle-kit": "^0.20.0",
-  "@faker-js/faker": "^8.3.0"
+  "drizzle-kit": "^0.31.6",
+  "@faker-js/faker": "^10.1.0"
 }
 ```
 
 ### Why We Chose These
 
-**Next.js 14 (App Router)**:
+**Next.js 16 (App Router)**:
 - Unified frontend + backend in one codebase
 - Excellent TypeScript support
 - Built-in API routes (no separate Express server needed)
 - Vercel deployment is zero-config
 - App Router provides better performance than Pages Router
+- Requires React 19 (latest stable)
+- Includes latest performance improvements and features
 
 **Drizzle ORM**:
 - Type-safe queries (catches errors at compile time)
@@ -227,6 +239,7 @@ NEXT_PUBLIC_VERCEL_URL=...      # Auto-set by Vercel
 - SQL-like syntax (easier for those who know SQL)
 - Excellent TypeScript inference
 - Lightweight (smaller bundle size)
+- Version 0.44.7 compatible with Next.js 16
 
 **Bull + Redis**:
 - Industry-standard job queue
@@ -235,11 +248,12 @@ NEXT_PUBLIC_VERCEL_URL=...      # Auto-set by Vercel
 - Handles 3,000 jobs/day easily
 - Upstash Redis is serverless (no infrastructure management)
 
-**shadcn/ui**:
-- Not a library (copy-paste components into codebase)
-- Full control over styling and behavior
-- Built on Radix UI (accessible primitives)
-- Works perfectly with Tailwind CSS
+**Headless UI**:
+- Officially maintained by Tailwind Labs
+- Fully compatible with Tailwind CSS v4
+- Accessible components out of the box
+- Works perfectly with React 19
+- Better choice than shadcn/ui for Tailwind v4 compatibility
 - No bundle size bloat
 
 **TanStack Query**:
@@ -477,3 +491,10 @@ Catches bugs at compile time, not runtime. Worth the extra type annotations.
 - OpenAI API key not needed for MVP (Phase 1 uses behavioral signals only)
 - Add when ready for NLP analysis
 - Budget $30/day for OpenAI (~$900/month)
+
+**Dependency Compatibility (2025-11-04):**
+- All packages verified compatible with Next.js 16 + React 19
+- @supabase/ssr 0.7.0 installed (required for Next.js 16 SSR)
+- Zod v4.1.12 is very new; monitor for issues during Phase 1 validation work
+- React Hook Form and Recharts should work with React 19; verify during Phase 4
+- Full compatibility report available in `dependency-compatibility-report.md`

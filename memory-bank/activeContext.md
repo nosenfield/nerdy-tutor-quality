@@ -5,7 +5,7 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 0 Complete - Ready for Phase 1** - Next.js 14 project successfully initialized with all dependencies and tooling. Now ready to begin Phase 1 (Core Infrastructure) - database schema definition, utility functions, and authentication setup.
+**Phase 0 Complete - Ready for Phase 1** - Next.js 16 project successfully initialized with all dependencies and tooling. Now ready to begin Phase 1 (Core Infrastructure) - database schema definition, utility functions, and authentication setup.
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE
@@ -19,7 +19,7 @@ Next phases:
 - Phase 4: Dashboard UI
 
 ### Active Decisions
-- **Decision 1: Next.js 14 App Router** - Using latest App Router instead of Pages Router for better performance and simpler data fetching patterns. App Router is now stable and recommended by Next.js team.
+- **Decision 1: Next.js 16 App Router** - Using Next.js 16 with React 19 for latest performance improvements and features. App Router provides better performance and simpler data fetching patterns. Next.js 16 requires React 19, which includes latest React features and optimizations.
 
 - **Decision 2: Drizzle ORM over Prisma** - Chosen for 2-3x faster performance, SQL-like syntax, and better TypeScript inference. Lighter weight for our needs.
 
@@ -36,9 +36,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Phase 0 Complete** - Next.js 14 project initialized with TypeScript, Tailwind v4, Headless UI, all dependencies installed, directory structure created - 2025-11-04
-2. **Architectural decision: Headless UI** - Chose Headless UI over shadcn/ui for better Tailwind v4 compatibility and stability - 2025-11-04
-3. **Development environment ready** - All prerequisites set up (Supabase, Upstash, .env configured), tooling configured (ESLint, Prettier, Drizzle) - 2025-11-04
+1. **Phase 0 Complete** - Next.js 16 project initialized with TypeScript, React 19, Tailwind v4, Headless UI, all dependencies installed, directory structure created - 2025-11-04
+2. **Dependency compatibility verified** - Checked Next.js 16 compatibility with tech stack, installed missing @supabase/ssr package - 2025-11-04
+3. **Architectural decision: Headless UI** - Chose Headless UI over shadcn/ui for better Tailwind v4 compatibility and stability - 2025-11-04
 
 ---
 
@@ -105,6 +105,13 @@ None yet - project not initialized. After Phase 0, expect:
 - [x] Memory Bank populated
 - [x] Documentation complete (_docs/)
 - [x] Project requirements understood
+- [x] Next.js 16 project initialized
+- [x] Dependencies installed (all packages from package.json)
+- [x] TypeScript configured with strict mode
+- [x] ESLint + Prettier configured
+- [x] Tailwind CSS v4 configured
+- [x] Headless UI installed
+- [x] @supabase/ssr installed (required for Next.js 16)
 
 ### In Progress
 - [ ] Node.js 20 installed (prerequisite)
@@ -113,10 +120,9 @@ None yet - project not initialized. After Phase 0, expect:
 - [ ] Upstash account created (prerequisite)
 
 ### Pending
-- [ ] Next.js project initialized
-- [ ] Dependencies installed
 - [ ] Database configured
 - [ ] Development server running
+- [ ] Environment variables set up
 
 ---
 
@@ -143,10 +149,10 @@ None yet - project not initialized. After Phase 0, expect:
    - Coach dashboard for intervention tracking
 
 4. **Tech Stack** (refer to techContext.md for full details):
-   - Next.js 14 + TypeScript
+   - Next.js 16 + React 19 + TypeScript
    - PostgreSQL (Supabase) + Drizzle ORM
    - Bull + Redis job queue
-   - Tailwind + shadcn/ui
+   - Tailwind CSS v4 + Headless UI
 
 5. **Task Workflow**:
    - Follow task-list.md phase-by-phase

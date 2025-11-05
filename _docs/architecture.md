@@ -48,14 +48,14 @@ Build an automated tutor quality scoring system that processes 3,000 daily sessi
 
 ### Frontend
 ```yaml
-Framework: Next.js 14 (App Router)
-Language: TypeScript 5.3+
-UI Library: React 18
-Styling: Tailwind CSS 3.4
-Components: shadcn/ui
-Charts: Recharts
-State: Zustand (minimal client state)
-Data Fetching: TanStack Query (React Query)
+Framework: Next.js 16.0.1 (App Router)
+Language: TypeScript 5.9.3
+UI Library: React 19.2.0
+Styling: Tailwind CSS 4.1.16
+Components: Headless UI 2.2.9
+Charts: Recharts 3.3.0
+State: Zustand 5.0.8 (minimal client state)
+Data Fetching: TanStack Query 5.90.6 (React Query)
 ```
 
 **Rationale:**
@@ -309,7 +309,7 @@ tutor-quality-scoring/
 ├── .env.example
 │
 ├── src/
-│   ├── app/                          # Next.js 14 App Router
+│   ├── app/                          # Next.js 16 App Router
 │   │   ├── layout.tsx                # Root layout
 │   │   ├── page.tsx                  # Home/dashboard
 │   │   ├── globals.css               # Global styles

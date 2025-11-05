@@ -66,7 +66,7 @@
 ### Module Structure
 ```
 src/
-├── app/                    # Next.js 14 App Router
+├── app/                    # Next.js 16 App Router
 │   ├── api/                # API routes (webhooks, REST endpoints)
 │   ├── dashboard/          # Dashboard pages (flags, tutors, analytics)
 │   └── login/              # Authentication
