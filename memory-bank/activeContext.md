@@ -36,9 +36,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Database migrations generated** - Generated initial migration file with all 4 tables, constraints, foreign keys, and indexes - 2025-11-05
-2. **Drizzle schema for interventions table created** - Created interventions table definition in src/lib/db/schema.ts with foreign key reference to flags table - 2025-11-05
-3. **Drizzle schema for flags table created** - Created flags table definition in src/lib/db/schema.ts with all fields, JSONB supporting_data, and indexes matching architecture.md - 2025-11-05
+1. **Database client and connection test created** - Created src/lib/db/index.ts with Drizzle client and test-connection.ts script for testing database connectivity - 2025-11-05
+2. **Database migrations generated** - Generated initial migration file with all 4 tables, constraints, foreign keys, and indexes - 2025-11-05
+3. **Drizzle schema for interventions table created** - Created interventions table definition in src/lib/db/schema.ts with foreign key reference to flags table - 2025-11-05
 
 ---
 
@@ -53,7 +53,9 @@ Next phases:
 - [x] Define database schema (interventions table) (Task 1.6) ✅
 - [x] Generate and run initial migrations (Task 1.8) ✅
 - [x] Create database indexes (Task 1.9) ✅ - Indexes included in migration
-- [ ] Test database connection (Task 1.10) - NEXT
+- [x] Test database connection (Task 1.10) ✅ - Database client and test script created
+- [x] Create database client setup (Task 1.11) ✅
+- [ ] Create TypeScript interfaces (SessionData, Tutor, Flag) (Tasks 1.12-1.14) - NEXT
 
 ### Near-Term (This Week - Phase 1)
 - [ ] Create database client setup (Task 1.11)
