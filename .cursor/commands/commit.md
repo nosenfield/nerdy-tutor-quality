@@ -161,3 +161,5 @@ Break into multiple commits if possible, or ask user if they want one commit.
 
 ```
 User: /commit
+--- End Command ---
+```
