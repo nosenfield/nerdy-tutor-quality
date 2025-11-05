@@ -6,6 +6,7 @@ import {
   timestamp,
   boolean,
   integer,
+  numeric,
   index,
   unique,
   check,
@@ -120,6 +121,135 @@ export const sessions = pgTable(
     studentRatingCheck: check(
       "student_feedback_rating_check",
       sql`${table.studentFeedbackRating} IS NULL OR (${table.studentFeedbackRating} >= 1 AND ${table.studentFeedbackRating} <= 5)`
+    ),
+  })
+);
+
+/**
+ * TUTOR_SCORES TABLE
+ * Aggregated tutor performance metrics
+ *
+ * This table stores calculated tutor performance scores over time windows.
+ * Used for:
+ * - Dashboard display of tutor quality scores
+ * - Flag generation (identifying at-risk tutors)
+ * - Historical trend analysis
+ * - Peer comparison and percentile ranking
+ *
+ * Scores are recalculated periodically (e.g., daily) and stored with time windows
+ * to enable historical analysis and trend detection.
+ */
+export const tutorScores = pgTable(
+  "tutor_scores",
+  {
+    // Primary key
+    id: uuid("id").defaultRandom().primaryKey(),
+
+    // Identity
+    tutorId: varchar("tutor_id", { length: 255 }).notNull(),
+
+    // Time window for this score
+    calculatedAt: timestamp("calculated_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    windowStart: timestamp("window_start", {
+      withTimezone: true,
+    }).notNull(), // e.g., 30 days ago
+    windowEnd: timestamp("window_end", {
+      withTimezone: true,
+    }).notNull(), // e.g., today
+
+    // Session counts
+    totalSessions: integer("total_sessions").notNull().default(0),
+    firstSessions: integer("first_sessions").notNull().default(0),
+
+    // Attendance metrics
+    noShowCount: integer("no_show_count").notNull().default(0),
+    noShowRate: numeric("no_show_rate", { precision: 5, scale: 4 }), // 0.0000 to 1.0000
+    lateCount: integer("late_count").notNull().default(0),
+    lateRate: numeric("late_rate", { precision: 5, scale: 4 }),
+    avgLatenessMinutes: numeric("avg_lateness_minutes", {
+      precision: 6,
+      scale: 2,
+    }),
+
+    // Completion metrics
+    earlyEndCount: integer("early_end_count").notNull().default(0),
+    earlyEndRate: numeric("early_end_rate", { precision: 5, scale: 4 }),
+    avgEarlyEndMinutes: numeric("avg_early_end_minutes", {
+      precision: 6,
+      scale: 2,
+    }),
+
+    // Rescheduling
+    rescheduleCount: integer("reschedule_count").notNull().default(0),
+    rescheduleRate: numeric("reschedule_rate", { precision: 5, scale: 4 }),
+    tutorInitiatedReschedules: integer(
+      "tutor_initiated_reschedules"
+    ).notNull().default(0),
+
+    // Ratings
+    avgStudentRating: numeric("avg_student_rating", {
+      precision: 3,
+      scale: 2,
+    }), // 1.00 to 5.00
+    avgFirstSessionRating: numeric("avg_first_session_rating", {
+      precision: 3,
+      scale: 2,
+    }),
+    ratingTrend: varchar("rating_trend", { length: 20 }), // 'improving' | 'stable' | 'declining'
+
+    // Quality score (0-100)
+    overallScore: integer("overall_score"),
+
+    // Confidence
+    confidenceScore: numeric("confidence_score", {
+      precision: 3,
+      scale: 2,
+    }), // 0.00 to 1.00
+
+    // Metadata
+    createdAt: timestamp("created_at", {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    // Unique constraint: one score per tutor per time window
+    tutorWindowUnique: unique("tutor_scores_tutor_window_unique").on(
+      table.tutorId,
+      table.windowStart,
+      table.windowEnd
+    ),
+
+    // Indexes for common queries
+    tutorIdIdx: index("idx_tutor_scores_tutor").on(table.tutorId),
+    calculatedAtIdx: index("idx_tutor_scores_date").on(table.calculatedAt),
+    overallScoreIdx: index("idx_overall_score").on(table.overallScore),
+
+    // CHECK constraint for overall_score (0-100)
+    overallScoreCheck: check(
+      "tutor_scores_overall_score_check",
+      sql`${table.overallScore} IS NULL OR (${table.overallScore} >= 0 AND ${table.overallScore} <= 100)`
+    ),
+
+    // CHECK constraints for rating fields (1.00-5.00)
+    avgStudentRatingCheck: check(
+      "tutor_scores_avg_student_rating_check",
+      sql`${table.avgStudentRating} IS NULL OR (${table.avgStudentRating} >= 1.00 AND ${table.avgStudentRating} <= 5.00)`
+    ),
+    avgFirstSessionRatingCheck: check(
+      "tutor_scores_avg_first_session_rating_check",
+      sql`${table.avgFirstSessionRating} IS NULL OR (${table.avgFirstSessionRating} >= 1.00 AND ${table.avgFirstSessionRating} <= 5.00)`
+    ),
+
+    // CHECK constraint for confidence_score (0.00-1.00)
+    confidenceScoreCheck: check(
+      "tutor_scores_confidence_score_check",
+      sql`${table.confidenceScore} IS NULL OR (${table.confidenceScore} >= 0.00 AND ${table.confidenceScore} <= 1.00)`
     ),
   })
 );
