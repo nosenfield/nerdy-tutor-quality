@@ -39,7 +39,7 @@
 
 **Core Utilities** (Tasks 1.11-1.19):
 - [x] Database client setup (Task 1.11)
-- [ ] Type definitions (SessionData, Tutor, Flag interfaces)
+- [x] Type definitions (SessionData, Tutor, Flag interfaces) (Tasks 1.12-1.14)
 - [ ] Time utilities (differenceInMinutes, etc.)
 - [ ] Statistical helpers (averages, percentiles, trends)
 - [ ] Zod validation schemas
