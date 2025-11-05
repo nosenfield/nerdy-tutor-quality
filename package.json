@@ -15,7 +15,8 @@
     "db:push": "drizzle-kit push",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "test:db": "tsx src/lib/db/test-connection.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
@@ -27,6 +28,7 @@
     "drizzle-orm": "^0.44.7",
     "lucide-react": "^0.552.0",
     "next": "16.0.1",
+    "pg": "^8.16.3",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-hook-form": "^7.66.0",
@@ -39,6 +41,7 @@
     "@faker-js/faker": "^10.1.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.15.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/ui": "^4.0.7",
@@ -48,6 +51,7 @@
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.6.2",
     "tailwindcss": "^4",
+    "tsx": "^4.20.6",
     "typescript": "^5",
     "vitest": "^4.0.7"
   }
