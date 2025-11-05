@@ -30,7 +30,7 @@
 - [x] Configure database connection
 - [x] Create sessions table schema (Task 1.3)
 - [x] Create tutor_scores table schema (Task 1.4)
-- [ ] Create flags table schema (Task 1.5)
+- [x] Create flags table schema (Task 1.5)
 - [ ] Create interventions table schema (Task 1.6)
 - [ ] Create tutor_analytics table schema (Task 1.7 - optional)
 - [ ] Generate and run migrations
@@ -211,8 +211,8 @@
 
 ### Priority 1 (Today - Phase 1)
 - [x] Set up Supabase PostgreSQL database
-- [x] Create database schema with Drizzle ORM (sessions and tutor_scores tables complete)
-- [ ] Complete remaining schema tables (flags, interventions)
+- [x] Create database schema with Drizzle ORM (sessions, tutor_scores, and flags tables complete)
+- [ ] Complete remaining schema tables (interventions)
 - [ ] Run initial migrations
 - [ ] Build utility functions (time, stats, validation)
 - [ ] Write unit tests for utilities
@@ -221,7 +221,7 @@
 **Goal**: Complete Phase 1 database schema by end of day, then move to utilities
 
 ### Priority 2 (This Week - Phase 1)
-- [ ] Complete database schema (flags, interventions)
+- [ ] Complete database schema (interventions)
 - [ ] Run migrations and create indexes
 - [ ] Build utility functions (time, stats, validation)
 - [ ] Write unit tests for utilities

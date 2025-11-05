@@ -5,7 +5,7 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 1 In Progress** - Database schema definition. Sessions and tutor_scores tables complete (Tasks 1.3-1.4). Next: flags and interventions tables (Tasks 1.5-1.6).
+**Phase 1 In Progress** - Database schema definition. Sessions, tutor_scores, and flags tables complete (Tasks 1.3-1.5). Next: interventions table (Task 1.6).
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -36,9 +36,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Drizzle schema for tutor_scores table created** - Created tutor_scores table definition in src/lib/db/schema.ts with all fields, constraints, and indexes matching architecture.md - 2025-11-05
-2. **Drizzle schema for sessions table created** - Created src/lib/db/schema.ts with sessions table definition matching architecture.md - 2025-11-05
-3. **Supabase account and project created** - Supabase project initialized, connection strings configured in .env.local - 2025-11-05
+1. **Drizzle schema for flags table created** - Created flags table definition in src/lib/db/schema.ts with all fields, JSONB supporting_data, and indexes matching architecture.md - 2025-11-05
+2. **Drizzle schema for tutor_scores table created** - Created tutor_scores table definition in src/lib/db/schema.ts with all fields, constraints, and indexes matching architecture.md - 2025-11-05
+3. **Drizzle schema for sessions table created** - Created src/lib/db/schema.ts with sessions table definition matching architecture.md - 2025-11-05
 
 ---
 
@@ -49,8 +49,8 @@ Next phases:
 - [x] Configure Supabase connection in .env.local (Task 1.2) ✅
 - [x] Define database schema (sessions table) (Task 1.3) ✅
 - [x] Define database schema (tutor_scores table) (Task 1.4) ✅
-- [ ] Define database schema (flags table) (Task 1.5) - NEXT
-- [ ] Define database schema (interventions table) (Task 1.6)
+- [x] Define database schema (flags table) (Task 1.5) ✅
+- [ ] Define database schema (interventions table) (Task 1.6) - NEXT
 - [ ] Generate and run initial migrations (Task 1.8)
 - [ ] Create database indexes (Task 1.9)
 
@@ -89,7 +89,7 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Currently Modified
 
-- `src/lib/db/schema.ts` - Database schema definition (sessions and tutor_scores tables created)
+- `src/lib/db/schema.ts` - Database schema definition (sessions, tutor_scores, and flags tables created)
 
 ---
 
@@ -116,9 +116,10 @@ None - Project is greenfield, no blockers.
 - [x] Drizzle ORM installed and configured
 - [x] Sessions table schema created
 - [x] Tutor_scores table schema created
+- [x] Flags table schema created
 
 ### In Progress
-- [ ] Remaining database schema tables (flags, interventions)
+- [ ] Remaining database schema tables (interventions)
 
 ### Pending
 - [ ] Husky + lint-staged setup (P1 optional, can defer)
