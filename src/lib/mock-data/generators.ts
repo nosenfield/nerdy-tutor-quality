@@ -95,6 +95,7 @@ export function generateMockSession(
     sessionLengthMinutes?: number;
     noShowRate?: number; // Override persona no-show rate
     avgLatenessMinutes?: number; // Override average lateness (forces 100% late rate)
+    avgFirstSessionRating?: number; // Override average first session rating
   } = {}
 ): SessionInsert {
   const persona = getPersona(tutor.personaType);
@@ -187,9 +188,21 @@ export function generateMockSession(
     max: persona.avgRatingRange.max,
   });
 
-  // Modulate rating to match persona average
+  // Modulate rating based on persona average rating or override
   let studentRating = baseRating;
-  if (personaAvgRating < 4.0 && baseRating >= 4) {
+  
+  // If avgFirstSessionRating override is provided and this is a first session, use it
+  if (isFirstSession && options.avgFirstSessionRating !== undefined) {
+    // Generate rating around the target average (±0.3 variance)
+    const targetRating = options.avgFirstSessionRating;
+    studentRating = faker.number.float({
+      min: Math.max(1, targetRating - 0.3),
+      max: Math.min(5, targetRating + 0.3),
+      fractionDigits: 1,
+    });
+    // Round to nearest integer (1-5 scale)
+    studentRating = Math.round(studentRating);
+  } else if (personaAvgRating < 4.0 && baseRating >= 4) {
     studentRating = faker.number.int({ min: 1, max: 3 });
   } else if (personaAvgRating < 3.5 && baseRating >= 3) {
     studentRating = faker.number.int({ min: 1, max: 2 });
