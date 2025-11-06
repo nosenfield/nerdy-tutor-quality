@@ -14,6 +14,7 @@ import {
   TUTOR_PERSONA_DISTRIBUTION,
   type TutorPersonaType,
 } from "../lib/mock-data/personas";
+import { validateMockData, printValidationReport } from "../lib/mock-data/validation";
 
 /**
  * Seed Script for Mock Data
@@ -212,6 +213,16 @@ export async function seedMockData(options: SeedOptions = {}) {
 
     console.log("\n✅ Mock data seeded successfully!");
     console.log(`   Total sessions inserted: ${allSessions.length}`);
+
+    // Validate mock data
+    console.log("\n🔍 Validating mock data distributions...");
+    const validation = await validateMockData(daysBack);
+    printValidationReport(validation);
+
+    if (!validation.valid) {
+      console.warn("\n⚠️  Warning: Some distributions are outside expected ranges");
+      console.warn("   This may be normal for smaller datasets or specific persona distributions");
+    }
   } catch (error) {
     console.error("\n❌ Error seeding data:", error);
     throw error;
