@@ -5,7 +5,7 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 2 In Progress** - Mock Data & Testing. Core mock data generation complete (Tasks 2.1-2.13). Next: Individual problem tutor scenarios (Tasks 2.14-2.19).
+**Phase 2 In Progress** - Mock Data & Testing. Chronic no-show tutor scenario complete (Task 2.14). Next: Always late tutor scenario (Task 2.15).
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -38,9 +38,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Mock data generation system created** - Created comprehensive mock data generation with personas, generators, validation, and seed script - 2025-11-05
-2. **Tutor persona types implemented** - Created persona system with 5 types (excellent, good, average, struggling, problematic) and realistic distributions - 2025-11-05
-3. **Supabase Auth setup complete** - Created login page, auth middleware, and logout functionality for basic authentication flow - 2025-11-05
+1. **Chronic no-show tutor scenario implemented** - Created scenario system with configurable overrides, implemented 16% no-show rate for chronic no-show tutor (Task 2.14) - 2025-11-05
+2. **Mock data generation system created** - Created comprehensive mock data generation with personas, generators, validation, and seed script - 2025-11-05
+3. **Tutor persona types implemented** - Created persona system with 5 types (excellent, good, average, struggling, problematic) and realistic distributions - 2025-11-05
 
 ---
 
@@ -53,7 +53,9 @@ Next phases:
 - [x] Create seed script (Task 2.11) ✅
 - [x] Validate mock data distributions (Task 2.12) ✅
 - [x] Create database reset script (Task 2.13) ✅
-- [ ] Create individual problem tutor scenarios (Tasks 2.14-2.19) - NEXT
+- [x] Create chronic no-show tutor scenario (Task 2.14) ✅
+- [ ] Create always late tutor scenario (Task 2.15) - NEXT
+- [ ] Create remaining problem tutor scenarios (Tasks 2.16-2.19)
 
 ### Near-Term (Week 2)
 - [ ] Generate realistic mock data (Phase 2)
@@ -84,9 +86,9 @@ None - Project is greenfield, no blockers.
 ## Key Files Currently Modified
 
 - `src/lib/db/schema.ts` - Database schema definition (all 4 core tables created: sessions, tutor_scores, flags, interventions)
-- `src/lib/mock-data/` - Mock data generation system (personas, generators, validation)
-- `src/scripts/seed-mock-data.ts` - Seed script for generating 3,000 sessions
-- `src/scripts/reset-db.ts` - Database reset script
+- `src/lib/mock-data/scenarios.ts` - Scenario configurations for problem tutors
+- `src/lib/mock-data/generators.ts` - Mock data generation (updated with noShowRate override)
+- `src/scripts/seed-mock-data.ts` - Seed script with scenario validation
 
 ---
 
@@ -117,7 +119,7 @@ None - Project is greenfield, no blockers.
 - [x] Interventions table schema created
 
 ### In Progress
-- [ ] Individual problem tutor scenario definitions (Tasks 2.14-2.19)
+- [ ] Remaining problem tutor scenario definitions (Tasks 2.15-2.19)
 
 ### Pending
 - [ ] Husky + lint-staged setup (P1 optional, can defer)

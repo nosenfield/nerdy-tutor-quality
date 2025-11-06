@@ -93,6 +93,7 @@ export function generateMockSession(
     isFirstSession?: boolean;
     scheduledStartTime?: Date;
     sessionLengthMinutes?: number;
+    noShowRate?: number; // Override persona no-show rate
   } = {}
 ): SessionInsert {
   const persona = getPersona(tutor.personaType);
@@ -112,8 +113,9 @@ export function generateMockSession(
       : "student"
     : null;
 
-  // Determine if this is a no-show
-  const isNoShow = faker.datatype.boolean({ probability: persona.noShowRate });
+  // Determine if this is a no-show (use override if provided, otherwise use persona default)
+  const noShowRate = options.noShowRate !== undefined ? options.noShowRate : persona.noShowRate;
+  const isNoShow = faker.datatype.boolean({ probability: noShowRate });
 
   // Determine lateness
   const isLate = faker.datatype.boolean({
