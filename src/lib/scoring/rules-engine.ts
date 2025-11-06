@@ -540,3 +540,79 @@ export function detectEarlyEnd(context: RuleContext): RuleResult {
   );
 }
 
+/**
+ * Poor First Session Detection Rule
+ * 
+ * Detects when a tutor receives a low rating (≤ threshold) on a first session.
+ * First sessions are critical for student retention (24% churn driver).
+ * Default threshold is 2 stars (configurable via RulesEngineConfig).
+ * 
+ * This is a session-level rule that evaluates individual sessions.
+ * 
+ * @param context - Rule evaluation context (must include session)
+ * @returns RuleResult indicating if poor first session flag should be created
+ */
+export function detectPoorFirstSession(context: RuleContext): RuleResult {
+  const { session, config } = context;
+
+  // Session-level rule requires session data
+  if (!session) {
+    return createNoTriggerResult("poor_first_session");
+  }
+
+  // Only evaluate first sessions
+  if (!session.isFirstSession) {
+    return createNoTriggerResult("poor_first_session");
+  }
+
+  // Check if student provided a rating
+  const studentRating = session.studentFeedbackRating;
+  if (studentRating === null || studentRating === undefined) {
+    return createNoTriggerResult("poor_first_session");
+  }
+
+  // Check if rating is at or below threshold
+  if (studentRating > config.poorFirstSessionRatingThreshold) {
+    return createNoTriggerResult("poor_first_session");
+  }
+
+  // Determine severity based on rating
+  let severity: FlagSeverity;
+  if (studentRating === 1) {
+    severity = "critical"; // Very poor (1 star)
+  } else if (studentRating === 2) {
+    severity = "high"; // Poor (2 stars)
+  } else {
+    severity = "medium"; // Below threshold but not terrible
+  }
+
+  // Format session date for description
+  const sessionDate = new Date(session.sessionStartTime).toLocaleDateString();
+
+  return createRuleResult(
+    "poor_first_session",
+    severity,
+    `Poor first session rating (${studentRating}/5) on ${sessionDate}`,
+    `Tutor ${session.tutorId} received a ${studentRating}-star rating on their first session with student ${session.studentId} on ${sessionDate}. Poor first sessions are a major churn driver (24% of students don't return).`,
+    {
+      recommendedAction: "Review session recording/transcript if available. Discuss first session best practices with tutor. Consider pairing tutor with a mentor for first session coaching. Follow up with student to understand concerns.",
+      supportingData: {
+        sessions: [
+          {
+            sessionId: session.sessionId,
+            date: session.sessionStartTime.toISOString(),
+            reason: `First session rating: ${studentRating}/5`,
+          },
+        ],
+        metrics: {
+          studentRating,
+          threshold: config.poorFirstSessionRatingThreshold,
+          isFirstSession: true,
+          studentId: session.studentId,
+        },
+      },
+      confidence: 0.9, // High confidence - rating is explicit feedback
+    }
+  );
+}
+
