@@ -18,8 +18,10 @@ import {
   SCENARIO_IDS,
   getScenarioConfig,
   isChronicNoShowTutor,
+  isAlwaysLateTutor,
 } from "../lib/mock-data/scenarios";
 import { validateMockData, printValidationReport } from "../lib/mock-data/validation";
+import { differenceInMinutes } from "../lib/utils/time";
 
 /**
  * Seed Script for Mock Data
@@ -134,7 +136,10 @@ function generateSessionsForTutor(
       if (scenarioConfig.noShowRate !== undefined) {
         sessionOptions.noShowRate = scenarioConfig.noShowRate;
       }
-      // Other scenario overrides will be added in future tasks (2.15-2.19)
+      if (scenarioConfig.avgLatenessMinutes !== undefined) {
+        sessionOptions.avgLatenessMinutes = scenarioConfig.avgLatenessMinutes;
+      }
+      // Other scenario overrides will be added in future tasks (2.16-2.19)
     }
 
     sessionList.push(generateMockSession(tutor, student, sessionOptions));
@@ -231,6 +236,29 @@ export async function seedMockData(options: SeedOptions = {}) {
           console.log("   ✅ No-show rate within expected range (14-18%)");
         } else {
           console.warn(`   ⚠️  No-show rate outside expected range (expected ~16%)`);
+        }
+      const alwaysLateTutorSessions = allSessions.filter(
+        (s) => s.tutorId === SCENARIO_IDS.ALWAYS_LATE
+      );
+      if (alwaysLateTutorSessions.length > 0) {
+        const sessionsWithJoinTimes = alwaysLateTutorSessions.filter(
+          (s) => s.tutorJoinTime !== null && s.tutorJoinTime !== undefined
+        );
+        if (sessionsWithJoinTimes.length > 0) {
+          const latenessValues = sessionsWithJoinTimes.map((s) => {
+            const joinTime = s.tutorJoinTime instanceof Date ? s.tutorJoinTime : new Date(s.tutorJoinTime!);
+            const scheduledStart = s.sessionStartTime instanceof Date ? s.sessionStartTime : new Date(s.sessionStartTime);
+            return differenceInMinutes(scheduledStart, joinTime);
+          });
+          const avgLateness = latenessValues.reduce((sum, lateness) => sum + lateness, 0) / latenessValues.length;
+          console.log(
+            `   Always late tutor (${SCENARIO_IDS.ALWAYS_LATE}): Avg lateness ${avgLateness.toFixed(1)} min (${sessionsWithJoinTimes.length} sessions)`
+          );
+          if (avgLateness >= 13 && avgLateness <= 17) {
+            console.log("   ✅ Average lateness within expected range (13-17 min)");
+          } else {
+            console.warn(`   ⚠️  Average lateness outside expected range (expected ~15 min)`);
+          }
         }
       }
     }

@@ -94,6 +94,7 @@ export function generateMockSession(
     scheduledStartTime?: Date;
     sessionLengthMinutes?: number;
     noShowRate?: number; // Override persona no-show rate
+    avgLatenessMinutes?: number; // Override average lateness (forces 100% late rate)
   } = {}
 ): SessionInsert {
   const persona = getPersona(tutor.personaType);
@@ -118,18 +119,32 @@ export function generateMockSession(
   const isNoShow = faker.datatype.boolean({ probability: noShowRate });
 
   // Determine lateness
-  const isLate = faker.datatype.boolean({
-    probability: faker.number.float({
-      min: persona.lateRate.min,
-      max: persona.lateRate.max,
-    }),
-  });
-  const latenessMinutes = isLate
-    ? faker.number.int({
-        min: persona.avgLatenessMinutes.min,
-        max: persona.avgLatenessMinutes.max,
-      })
-    : faker.number.int({ min: -2, max: 2 }); // Small variance for punctuality
+  // If avgLatenessMinutes override is provided, tutor is always late with that average
+  let isLate: boolean;
+  let latenessMinutes: number;
+  
+  if (options.avgLatenessMinutes !== undefined) {
+    // Always late scenario - 100% late rate with specified average
+    isLate = true;
+    latenessMinutes = faker.number.int({
+      min: options.avgLatenessMinutes - 2,
+      max: options.avgLatenessMinutes + 2,
+    });
+  } else {
+    // Use persona defaults
+    isLate = faker.datatype.boolean({
+      probability: faker.number.float({
+        min: persona.lateRate.min,
+        max: persona.lateRate.max,
+      }),
+    });
+    latenessMinutes = isLate
+      ? faker.number.int({
+          min: persona.avgLatenessMinutes.min,
+          max: persona.avgLatenessMinutes.max,
+        })
+      : faker.number.int({ min: -2, max: 2 }); // Small variance for punctuality
+  }
 
   // Determine early end
   const isEarlyEnd = faker.datatype.boolean({

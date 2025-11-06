@@ -5,7 +5,7 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 2 In Progress** - Mock Data & Testing. Chronic no-show tutor scenario complete (Task 2.14). Next: Always late tutor scenario (Task 2.15).
+**Phase 2 In Progress** - Mock Data & Testing. Always late tutor scenario complete (Task 2.15). Next: Poor first sessions tutor scenario (Task 2.16).
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -38,9 +38,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Chronic no-show tutor scenario implemented** - Created scenario system with configurable overrides, implemented 16% no-show rate for chronic no-show tutor (Task 2.14) - 2025-11-05
-2. **Mock data generation system created** - Created comprehensive mock data generation with personas, generators, validation, and seed script - 2025-11-05
-3. **Tutor persona types implemented** - Created persona system with 5 types (excellent, good, average, struggling, problematic) and realistic distributions - 2025-11-05
+1. **Always late tutor scenario implemented** - Added avgLatenessMinutes override support, implemented 15 min average lateness for always late tutor (Task 2.15) - 2025-11-05
+2. **Chronic no-show tutor scenario implemented** - Created scenario system with configurable overrides, implemented 16% no-show rate for chronic no-show tutor (Task 2.14) - 2025-11-05
+3. **Mock data generation system created** - Created comprehensive mock data generation with personas, generators, validation, and seed script - 2025-11-05
 
 ---
 
@@ -54,8 +54,9 @@ Next phases:
 - [x] Validate mock data distributions (Task 2.12) ✅
 - [x] Create database reset script (Task 2.13) ✅
 - [x] Create chronic no-show tutor scenario (Task 2.14) ✅
-- [ ] Create always late tutor scenario (Task 2.15) - NEXT
-- [ ] Create remaining problem tutor scenarios (Tasks 2.16-2.19)
+- [x] Create always late tutor scenario (Task 2.15) ✅
+- [ ] Create poor first sessions tutor scenario (Task 2.16) - NEXT
+- [ ] Create remaining problem tutor scenarios (Tasks 2.17-2.19)
 
 ### Near-Term (Week 2)
 - [ ] Generate realistic mock data (Phase 2)
