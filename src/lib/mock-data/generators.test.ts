@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { faker } from "@faker-js/faker";
 import { generateMockSession, generateMockTutor, generateMockStudent } from "./generators";
-import { SCENARIO_IDS, isChronicNoShowTutor, isAlwaysLateTutor } from "./scenarios";
+import { SCENARIO_IDS, isChronicNoShowTutor, isAlwaysLateTutor, isPoorFirstSessionsTutor } from "./scenarios";
 import { differenceInMinutes } from "@/lib/utils/time";
 
 describe("generateMockSession with noShowRate override", () => {
@@ -205,5 +205,91 @@ describe("always late tutor scenario", () => {
     // Should be approximately 15 minutes (±3 min tolerance)
     expect(avgLateness).toBeGreaterThanOrEqual(12);
     expect(avgLateness).toBeLessThanOrEqual(18);
+  });
+});
+
+describe("generateMockSession with avgFirstSessionRating override", () => {
+  beforeEach(() => {
+    faker.seed(12345);
+  });
+
+  it("should respect avgFirstSessionRating override for first sessions", () => {
+    const tutor = generateMockTutor("excellent", 1);
+    const student = generateMockStudent(1);
+    
+    // Generate 50 first sessions with 2.1 average rating override
+    const sessions = Array.from({ length: 50 }, () =>
+      generateMockSession(tutor, student, {
+        isFirstSession: true,
+        avgFirstSessionRating: 2.1,
+      })
+    );
+
+    const firstSessionsWithRatings = sessions.filter(
+      (s) => s.isFirstSession && s.studentFeedbackRating !== null && s.studentFeedbackRating !== undefined
+    );
+
+    const avgRating = firstSessionsWithRatings.reduce(
+      (sum, s) => sum + (s.studentFeedbackRating || 0),
+      0
+    ) / firstSessionsWithRatings.length;
+
+    // Should be approximately 2.1 (±0.3 tolerance)
+    expect(avgRating).toBeGreaterThanOrEqual(1.8);
+    expect(avgRating).toBeLessThanOrEqual(2.4);
+  });
+
+  it("should not affect non-first sessions when override is provided", () => {
+    const tutor = generateMockTutor("excellent", 1);
+    const student = generateMockStudent(1);
+    
+    // Generate ongoing sessions - override should not apply
+    const sessions = Array.from({ length: 50 }, () =>
+      generateMockSession(tutor, student, {
+        isFirstSession: false,
+        avgFirstSessionRating: 2.1,
+      })
+    );
+
+    const avgRating = sessions.reduce(
+      (sum, s) => sum + (s.studentFeedbackRating || 0),
+      0
+    ) / sessions.length;
+
+    // Ongoing sessions should have higher ratings (excellent tutor)
+    expect(avgRating).toBeGreaterThan(3.0);
+  });
+});
+
+describe("poor first sessions tutor scenario", () => {
+  it("should identify poor first sessions tutor correctly", () => {
+    expect(isPoorFirstSessionsTutor(SCENARIO_IDS.POOR_FIRST_SESSIONS)).toBe(true);
+    expect(isPoorFirstSessionsTutor("tutor_00001")).toBe(false);
+  });
+
+  it("should generate approximately 2.1 average rating for first sessions", () => {
+    const tutor = generateMockTutor("struggling", 10002);
+    const student = generateMockStudent(1);
+    
+    // Generate 50 first sessions for poor first sessions tutor
+    const sessions = Array.from({ length: 50 }, () =>
+      generateMockSession(tutor, student, {
+        isFirstSession: true,
+        avgFirstSessionRating: 2.1,
+      })
+    );
+
+    const firstSessionsWithRatings = sessions.filter(
+      (s) => s.isFirstSession && s.studentFeedbackRating !== null && s.studentFeedbackRating !== undefined
+    );
+
+    const avgRating = firstSessionsWithRatings.reduce(
+      (sum, s) => sum + (s.studentFeedbackRating || 0),
+      0
+    ) / firstSessionsWithRatings.length;
+
+    // Should be approximately 2.1 (±0.3 tolerance)
+    expect(avgRating).toBeGreaterThanOrEqual(1.8);
+    expect(avgRating).toBeLessThanOrEqual(2.4);
   });
 });

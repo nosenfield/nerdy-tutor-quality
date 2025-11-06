@@ -78,3 +78,10 @@ export function isAlwaysLateTutor(tutorId: string): boolean {
   return tutorId === SCENARIO_IDS.ALWAYS_LATE;
 }
 
+/**
+ * Check if a tutor ID is a poor first sessions tutor
+ */
+export function isPoorFirstSessionsTutor(tutorId: string): boolean {
+  return tutorId === SCENARIO_IDS.POOR_FIRST_SESSIONS;
+}
+

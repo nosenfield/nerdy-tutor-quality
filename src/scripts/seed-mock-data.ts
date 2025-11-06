@@ -19,6 +19,7 @@ import {
   getScenarioConfig,
   isChronicNoShowTutor,
   isAlwaysLateTutor,
+  isPoorFirstSessionsTutor,
 } from "../lib/mock-data/scenarios";
 import { validateMockData, printValidationReport } from "../lib/mock-data/validation";
 import { differenceInMinutes } from "../lib/utils/time";
@@ -139,7 +140,10 @@ function generateSessionsForTutor(
       if (scenarioConfig.avgLatenessMinutes !== undefined) {
         sessionOptions.avgLatenessMinutes = scenarioConfig.avgLatenessMinutes;
       }
-      // Other scenario overrides will be added in future tasks (2.16-2.19)
+      if (scenarioConfig.avgFirstSessionRating !== undefined && isFirstSession) {
+        sessionOptions.avgFirstSessionRating = scenarioConfig.avgFirstSessionRating;
+      }
+      // Other scenario overrides will be added in future tasks (2.17-2.19)
     }
 
     sessionList.push(generateMockSession(tutor, student, sessionOptions));
@@ -258,6 +262,29 @@ export async function seedMockData(options: SeedOptions = {}) {
             console.log("   ✅ Average lateness within expected range (13-17 min)");
           } else {
             console.warn(`   ⚠️  Average lateness outside expected range (expected ~15 min)`);
+          }
+        }
+      }
+      
+      const poorFirstSessionsTutorSessions = allSessions.filter(
+        (s) => s.tutorId === SCENARIO_IDS.POOR_FIRST_SESSIONS && s.isFirstSession
+      );
+      if (poorFirstSessionsTutorSessions.length > 0) {
+        const sessionsWithRatings = poorFirstSessionsTutorSessions.filter(
+          (s) => s.studentFeedbackRating !== null && s.studentFeedbackRating !== undefined
+        );
+        if (sessionsWithRatings.length > 0) {
+          const avgRating = sessionsWithRatings.reduce(
+            (sum, s) => sum + (s.studentFeedbackRating || 0),
+            0
+          ) / sessionsWithRatings.length;
+          console.log(
+            `   Poor first sessions tutor (${SCENARIO_IDS.POOR_FIRST_SESSIONS}): Avg first session rating ${avgRating.toFixed(2)} (${sessionsWithRatings.length} first sessions)`
+          );
+          if (avgRating >= 1.8 && avgRating <= 2.4) {
+            console.log("   ✅ Average first session rating within expected range (1.8-2.4)");
+          } else {
+            console.warn(`   ⚠️  Average first session rating outside expected range (expected ~2.1)`);
           }
         }
       }
