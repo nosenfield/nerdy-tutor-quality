@@ -5,7 +5,7 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 2 In Progress** - Mock Data & Testing. Always late tutor scenario complete (Task 2.15). Next: Poor first sessions tutor scenario (Task 2.16).
+**Phase 2 In Progress** - Mock Data & Testing. All problem tutor scenarios complete (Tasks 2.14-2.19). Ready for Phase 3: Rules Engine.
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -38,9 +38,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Always late tutor scenario implemented** - Added avgLatenessMinutes override support, implemented 15 min average lateness for always late tutor (Task 2.15) - 2025-11-05
-2. **Chronic no-show tutor scenario implemented** - Created scenario system with configurable overrides, implemented 16% no-show rate for chronic no-show tutor (Task 2.14) - 2025-11-05
-3. **Mock data generation system created** - Created comprehensive mock data generation with personas, generators, validation, and seed script - 2025-11-05
+1. **All problem tutor scenarios implemented** - Completed Tasks 2.14-2.19: chronic no-show, always late, poor first sessions, frequent rescheduler, ends early, and excellent tutor scenarios - 2025-11-05
+2. **Always late tutor scenario implemented** - Added avgLatenessMinutes override support, implemented 15 min average lateness for always late tutor (Task 2.15) - 2025-11-05
+3. **Chronic no-show tutor scenario implemented** - Created scenario system with configurable overrides, implemented 16% no-show rate for chronic no-show tutor (Task 2.14) - 2025-11-05
 
 ---
 
@@ -55,8 +55,11 @@ Next phases:
 - [x] Create database reset script (Task 2.13) ✅
 - [x] Create chronic no-show tutor scenario (Task 2.14) ✅
 - [x] Create always late tutor scenario (Task 2.15) ✅
-- [ ] Create poor first sessions tutor scenario (Task 2.16) - NEXT
-- [ ] Create remaining problem tutor scenarios (Tasks 2.17-2.19)
+- [x] Create poor first sessions tutor scenario (Task 2.16) ✅
+- [x] Create frequent rescheduler tutor scenario (Task 2.17) ✅
+- [x] Create ends early tutor scenario (Task 2.18) ✅
+- [x] Create excellent tutor scenario (Task 2.19) ✅
+- [ ] Begin Phase 3: Rules Engine - NEXT
 
 ### Near-Term (Week 2)
 - [ ] Generate realistic mock data (Phase 2)
