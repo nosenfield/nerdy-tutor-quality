@@ -71,10 +71,10 @@
 - [x] Create script to reset database (Task 2.13)
 - [x] Create "chronic no-show tutor" scenario (Task 2.14)
 - [x] Create "always late tutor" scenario (Task 2.15)
-- [ ] Create "poor first sessions tutor" scenario (Task 2.16)
-- [ ] Create "frequent rescheduler tutor" scenario (Task 2.17)
-- [ ] Create "ends sessions early tutor" scenario (Task 2.18)
-- [ ] Create "excellent tutor" scenario (Task 2.19)
+- [x] Create "poor first sessions tutor" scenario (Task 2.16)
+- [x] Create "frequent rescheduler tutor" scenario (Task 2.17)
+- [x] Create "ends sessions early tutor" scenario (Task 2.18)
+- [x] Create "excellent tutor" scenario (Task 2.19)
 
 **Target Completion**: Week 2, Day 1-3 (2-3 days)
 
