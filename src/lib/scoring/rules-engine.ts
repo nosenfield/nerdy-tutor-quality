@@ -948,3 +948,120 @@ export function detectChronicLateness(context: RuleContext): RuleResult {
   );
 }
 
+/**
+ * Declining Rating Trend Detection Rule
+ * 
+ * Detects when a tutor's ratings show a declining trend across time windows.
+ * Compares 7-day average < 30-day average < 90-day average to detect decline.
+ * 
+ * This is an aggregate-level rule that evaluates tutor statistics over multiple time windows.
+ * Requires minimum number of sessions in each window to trigger.
+ * 
+ * @param context - Rule evaluation context (must include tutorStats for 30-day window)
+ * @param tutorId - Tutor ID (needed to fetch additional time windows)
+ * @param config - Rules engine configuration
+ * @returns RuleResult indicating if declining rating trend flag should be created
+ */
+export async function detectDecliningRatingTrend(
+  context: RuleContext,
+  tutorId: string
+): Promise<RuleResult> {
+  const { tutorStats, config } = context;
+
+  // Aggregate-level rule requires tutor stats (30-day window)
+  if (!tutorStats) {
+    return createNoTriggerResult("low_ratings");
+  }
+
+  // Require minimum sessions for aggregate rules
+  if (tutorStats.totalSessions < config.minSessionsForAggregateRules) {
+    return createNoTriggerResult("low_ratings");
+  }
+
+  // Get stats for different time windows
+  const windowEnd = new Date();
+  const window7dStart = new Date();
+  window7dStart.setDate(window7dStart.getDate() - 7);
+  const window90dStart = new Date();
+  window90dStart.setDate(window90dStart.getDate() - 90);
+
+  const stats7d = await getTutorStats(
+    tutorId,
+    window7dStart,
+    windowEnd,
+    config.latenessThresholdMinutes,
+    config.earlyEndThresholdMinutes
+  );
+  const stats90d = await getTutorStats(
+    tutorId,
+    window90dStart,
+    windowEnd,
+    config.latenessThresholdMinutes,
+    config.earlyEndThresholdMinutes
+  );
+
+  // Need ratings for all three windows
+  const avg7d = stats7d.avgStudentRating;
+  const avg30d = tutorStats.avgStudentRating;
+  const avg90d = stats90d.avgStudentRating;
+
+  if (avg7d === null || avg30d === null || avg90d === null) {
+    return createNoTriggerResult("low_ratings");
+  }
+
+  // Check for declining trend: 7d < 30d < 90d
+  const isDeclining = avg7d < avg30d && avg30d < avg90d;
+
+  if (!isDeclining) {
+    return createNoTriggerResult("low_ratings");
+  }
+
+  // Calculate decline magnitude
+  const declineFrom90d = avg90d - avg7d;
+  const declinePercent = (declineFrom90d / avg90d) * 100;
+
+  // Determine severity based on decline magnitude and current rating
+  let severity: FlagSeverity;
+  if (declinePercent >= 20 || avg7d <= 2.5) {
+    severity = "critical"; // Very steep decline or very low current rating
+  } else if (declinePercent >= 15 || avg7d <= 3.0) {
+    severity = "high"; // Steep decline or low current rating
+  } else if (declinePercent >= 10 || avg7d <= 3.5) {
+    severity = "medium"; // Moderate decline or below-average rating
+  } else {
+    severity = "low"; // Slight decline
+  }
+
+  return createRuleResult(
+    "low_ratings",
+    severity,
+    `Declining rating trend: ${avg7d.toFixed(2)} (7d) < ${avg30d.toFixed(2)} (30d) < ${avg90d.toFixed(2)} (90d)`,
+    `Tutor ${tutorStats.tutorId} shows a declining rating trend: ${avg7d.toFixed(2)} stars (7-day avg) < ${avg30d.toFixed(2)} stars (30-day avg) < ${avg90d.toFixed(2)} stars (90-day avg). This represents a ${declinePercent.toFixed(1)}% decline from the 90-day average and may indicate quality issues.`,
+    {
+      recommendedAction: "Review recent session recordings/transcripts if available. Discuss feedback patterns with tutor. Identify specific areas of concern and provide targeted coaching. Consider pairing with a mentor or additional training.",
+      supportingData: {
+        sessions: tutorStats.recentSessions
+          ?.filter((s) => s.studentFeedbackRating !== null)
+          .slice(0, 10)
+          .map((s) => ({
+            sessionId: s.sessionId,
+            date: s.sessionStartTime.toISOString(),
+            reason: `Rating: ${s.studentFeedbackRating}/5`,
+          })),
+        metrics: {
+          avgRating7d: avg7d,
+          avgRating30d: avg30d,
+          avgRating90d: avg90d,
+          declineFrom90d,
+          declinePercent,
+          totalSessions7d: stats7d.totalSessions,
+          totalSessions30d: tutorStats.totalSessions,
+          totalSessions90d: stats90d.totalSessions,
+        },
+        trend: "declining",
+      },
+      confidence: 0.85, // High confidence but slightly lower due to multi-window comparison
+    }
+  );
+}
+
