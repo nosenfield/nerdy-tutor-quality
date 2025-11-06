@@ -323,3 +323,60 @@ export function createNoTriggerResult(flagType: FlagType): RuleResult {
   };
 }
 
+/**
+ * No-show Detection Rule
+ * 
+ * Detects when a tutor fails to join a scheduled session.
+ * A no-show is defined as tutor_join_time === null.
+ * 
+ * This is a session-level rule that evaluates individual sessions.
+ * 
+ * @param context - Rule evaluation context (must include session)
+ * @returns RuleResult indicating if no-show flag should be created
+ */
+export function detectNoShow(context: RuleContext): RuleResult {
+  const { session } = context;
+
+  // Session-level rule requires session data
+  if (!session) {
+    return createNoTriggerResult("no_show");
+  }
+
+  // Check if tutor failed to join (tutor_join_time is null)
+  const isNoShow = session.tutorJoinTime === null;
+
+  if (!isNoShow) {
+    return createNoTriggerResult("no_show");
+  }
+
+  // Determine severity: critical for no-shows (high impact on student experience)
+  const severity: FlagSeverity = "critical";
+
+  // Format session date for description
+  const sessionDate = new Date(session.sessionStartTime).toLocaleDateString();
+
+  return createRuleResult(
+    "no_show",
+    severity,
+    `Tutor no-show on ${sessionDate}`,
+    `Tutor ${session.tutorId} did not join the scheduled session on ${sessionDate}. This impacts student experience and may indicate reliability issues.`,
+    {
+      recommendedAction: "Contact tutor to understand reason for no-show. Review tutor's attendance history and consider coaching if this is a pattern.",
+      supportingData: {
+        sessions: [
+          {
+            sessionId: session.sessionId,
+            date: session.sessionStartTime.toISOString(),
+            reason: "Tutor did not join session",
+          },
+        ],
+        metrics: {
+          scheduledStartTime: session.sessionStartTime.toISOString(),
+          studentId: session.studentId,
+        },
+      },
+      confidence: 1.0, // Very high confidence - no-show is unambiguous
+    }
+  );
+}
+
