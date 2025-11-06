@@ -5,12 +5,14 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 1 Complete** ✅ - All core infrastructure tasks completed. Database schema, utilities, types, tests, and authentication are all in place. Ready for Phase 2: Mock Data & Testing.
+**Phase 2 In Progress** - Mock Data & Testing. Core mock data generation complete (Tasks 2.1-2.13). Next: Individual problem tutor scenarios (Tasks 2.14-2.19).
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
 
 **Current Phase: Phase 1 - Core Infrastructure** (Estimated: 3-4 days) - ✅ COMPLETE
+
+**Current Phase: Phase 2 - Mock Data & Testing** (Estimated: 2-3 days) - IN PROGRESS
 
 Next phases:
 - Phase 1: Core Infrastructure (Database + utilities)
@@ -36,29 +38,22 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Supabase Auth setup complete** - Created login page, auth middleware, and logout functionality for basic authentication flow - 2025-11-05
-2. **Unit tests added** - Created comprehensive unit tests for time and stats utilities with 51 passing tests - 2025-11-05
-3. **Utility functions created** - Created time.ts, stats.ts, and validation.ts with helper functions for rules engine and scoring - 2025-11-05
+1. **Mock data generation system created** - Created comprehensive mock data generation with personas, generators, validation, and seed script - 2025-11-05
+2. **Tutor persona types implemented** - Created persona system with 5 types (excellent, good, average, struggling, problematic) and realistic distributions - 2025-11-05
+3. **Supabase Auth setup complete** - Created login page, auth middleware, and logout functionality for basic authentication flow - 2025-11-05
 
 ---
 
 ## Next Steps
 
-### Immediate (Next Session - Phase 1)
-- [x] Create Supabase account and project (Task 1.1) ✅
-- [x] Configure Supabase connection in .env.local (Task 1.2) ✅
-- [x] Define database schema (sessions table) (Task 1.3) ✅
-- [x] Define database schema (tutor_scores table) (Task 1.4) ✅
-- [x] Define database schema (flags table) (Task 1.5) ✅
-- [x] Define database schema (interventions table) (Task 1.6) ✅
-- [x] Generate and run initial migrations (Task 1.8) ✅
-- [x] Create database indexes (Task 1.9) ✅ - Indexes included in migration
-- [x] Test database connection (Task 1.10) ✅ - Database client and test script created
-- [x] Create database client setup (Task 1.11) ✅
-- [x] Create TypeScript interfaces (SessionData, Tutor, Flag) (Tasks 1.12-1.14) ✅
-- [x] Create utility functions (time, stats, validation) (Tasks 1.15-1.17) ✅
-- [x] Write unit tests for utilities (Tasks 1.18-1.19) ✅
-- [x] Set up Supabase Auth (Tasks 1.20-1.23) ✅
+### Immediate (Next Session - Phase 2)
+- [x] Install Faker.js (Task 2.1) ✅
+- [x] Create tutor persona types (Task 2.2) ✅
+- [x] Create mock data generators (Tasks 2.3-2.11) ✅
+- [x] Create seed script (Task 2.11) ✅
+- [x] Validate mock data distributions (Task 2.12) ✅
+- [x] Create database reset script (Task 2.13) ✅
+- [ ] Create individual problem tutor scenarios (Tasks 2.14-2.19) - NEXT
 
 ### Near-Term (Week 2)
 - [ ] Generate realistic mock data (Phase 2)
@@ -89,6 +84,9 @@ None - Project is greenfield, no blockers.
 ## Key Files Currently Modified
 
 - `src/lib/db/schema.ts` - Database schema definition (all 4 core tables created: sessions, tutor_scores, flags, interventions)
+- `src/lib/mock-data/` - Mock data generation system (personas, generators, validation)
+- `src/scripts/seed-mock-data.ts` - Seed script for generating 3,000 sessions
+- `src/scripts/reset-db.ts` - Database reset script
 
 ---
 
@@ -119,7 +117,7 @@ None - Project is greenfield, no blockers.
 - [x] Interventions table schema created
 
 ### In Progress
-- [ ] Database migrations generation and execution
+- [ ] Individual problem tutor scenario definitions (Tasks 2.14-2.19)
 
 ### Pending
 - [ ] Husky + lint-staged setup (P1 optional, can defer)
@@ -166,8 +164,8 @@ None - Project is greenfield, no blockers.
 
 ## Notes
 
-**Project Status**: Phase 1 in progress. Phase 0 complete (except optional Husky setup). Database schema partially implemented (sessions table done).
+**Project Status**: Phase 2 in progress. Core mock data generation complete. Seed script ready to generate 3,000 sessions with realistic distributions.
 
-**Next Major Milestone**: Complete remaining database schema tables (tutor_scores, flags, interventions) and run initial migrations. This unblocks utility functions and auth setup.
+**Next Major Milestone**: Complete individual problem tutor scenarios, then move to Phase 3 (Rules Engine).
 
 **Risk Level**: LOW - Well-planned project with clear requirements, proven tech stack, and comprehensive documentation. Main risks are timeline management and maintaining code quality at pace.

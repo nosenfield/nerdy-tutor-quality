@@ -55,14 +55,26 @@
 
 ---
 
-### Phase 2: Mock Data & Testing - NOT STARTED
-- [ ] Install Faker.js
-- [ ] Create tutor persona types (excellent, good, average, struggling, problematic)
-- [ ] Generate mock tutor/student/session functions
-- [ ] Add realistic distributions (ratings, timing, reschedules)
-- [ ] Create "problem tutor" test scenarios
-- [ ] Seed script (100 tutors, 3,000 sessions)
-- [ ] Validate mock data distributions
+### Phase 2: Mock Data & Testing - IN PROGRESS
+- [x] Install Faker.js (Task 2.1)
+- [x] Create tutor persona types (Task 2.2)
+- [x] Create generateMockTutor function (Task 2.3)
+- [x] Create generateMockStudent function (Task 2.4)
+- [x] Create generateMockSession function (Task 2.5)
+- [x] Add realistic rating distributions (Task 2.6)
+- [x] Add realistic timing patterns (Task 2.7)
+- [x] Add first session vs. ongoing logic (Task 2.8)
+- [x] Add reschedule patterns (Task 2.9)
+- [x] Create "problem tutor" seed scenarios (Task 2.10)
+- [x] Create seed script (Task 2.11)
+- [x] Validate mock data distributions (Task 2.12)
+- [x] Create script to reset database (Task 2.13)
+- [ ] Create "chronic no-show tutor" scenario (Task 2.14)
+- [ ] Create "always late tutor" scenario (Task 2.15)
+- [ ] Create "poor first sessions tutor" scenario (Task 2.16)
+- [ ] Create "frequent rescheduler tutor" scenario (Task 2.17)
+- [ ] Create "ends sessions early tutor" scenario (Task 2.18)
+- [ ] Create "excellent tutor" scenario (Task 2.19)
 
 **Target Completion**: Week 2, Day 1-3 (2-3 days)
 
