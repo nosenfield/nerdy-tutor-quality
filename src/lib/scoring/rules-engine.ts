@@ -1065,3 +1065,56 @@ export async function detectDecliningRatingTrend(
   );
 }
 
+/**
+ * Determine Flag Severity
+ * 
+ * Helper function to determine flag severity based on percentage thresholds.
+ * Provides consistent severity determination across rules.
+ * 
+ * @param value - Value to evaluate (e.g., percentage, rate)
+ * @param thresholds - Thresholds for each severity level
+ * @returns FlagSeverity level
+ */
+export function determineSeverity(
+  value: number,
+  thresholds: {
+    critical?: number; // Value >= this is critical
+    high?: number; // Value >= this is high (if not critical)
+    medium?: number; // Value >= this is medium (if not high)
+    // Below medium threshold is low
+  }
+): FlagSeverity {
+  if (thresholds.critical !== undefined && value >= thresholds.critical) {
+    return "critical";
+  }
+  if (thresholds.high !== undefined && value >= thresholds.high) {
+    return "high";
+  }
+  if (thresholds.medium !== undefined && value >= thresholds.medium) {
+    return "medium";
+  }
+  return "low";
+}
+
+/**
+ * Determine Severity by Rating
+ * 
+ * Helper function to determine severity based on rating value.
+ * Lower ratings indicate more severe issues.
+ * 
+ * @param rating - Rating value (typically 1-5)
+ * @returns FlagSeverity level
+ */
+export function determineSeverityByRating(rating: number): FlagSeverity {
+  if (rating <= 1) {
+    return "critical";
+  }
+  if (rating <= 2) {
+    return "high";
+  }
+  if (rating <= 3) {
+    return "medium";
+  }
+  return "low";
+}
+
