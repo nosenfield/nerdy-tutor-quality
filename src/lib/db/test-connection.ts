@@ -1,20 +1,26 @@
 #!/usr/bin/env node
 /**
  * Database Connection Test Script
- * 
+ *
  * Tests database connection by running a simple SELECT query.
- * 
+ *
  * Usage:
  *   pnpm test:db
- * 
+ *
  * Requires DATABASE_URL environment variable to be set.
  */
 
-import { db } from "./index.js";
-import { sql } from "drizzle-orm";
+// IMPORTANT: Load environment variables BEFORE any imports
+// We must use dynamic imports to ensure env vars are loaded first
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
 async function testConnection() {
   try {
+    // Dynamic import to ensure env vars are loaded before db module initialization
+    const { db } = await import("./index.js");
+    const { sql } = await import("drizzle-orm");
+
     console.log("Testing database connection...");
 
     // Simple SELECT query to test connection
@@ -30,7 +36,16 @@ async function testConnection() {
     }
   } catch (error) {
     console.error("❌ Database connection failed:");
-    console.error(error instanceof Error ? error.message : String(error));
+    if (error instanceof Error) {
+      console.error(error.message);
+      // Check if error has a cause (common in Drizzle ORM errors)
+      if ('cause' in error && error.cause) {
+        console.error("\nUnderlying cause:");
+        console.error(error.cause);
+      }
+    } else {
+      console.error(error);
+    }
     process.exit(1);
   }
 }
