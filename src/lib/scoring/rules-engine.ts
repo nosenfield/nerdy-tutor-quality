@@ -30,6 +30,11 @@ import type { FlagType, FlagSeverity, FlagSupportingData } from "../types/flag";
 import type { TutorScore } from "../types/tutor";
 import { calculateLateness } from "../utils/time";
 import { endedEarly } from "../utils/time";
+import { db, sessions } from "../db";
+import { and, eq, gte, lte } from "drizzle-orm";
+import { asc } from "drizzle-orm";
+import { average, calculateRate, calculateTrend } from "../utils/stats";
+import { isNoShow, isLate } from "../utils/time";
 
 /**
  * Result of evaluating a single rule
@@ -614,5 +619,163 @@ export function detectPoorFirstSession(context: RuleContext): RuleResult {
       confidence: 0.9, // High confidence - rating is explicit feedback
     }
   );
+}
+
+/**
+ * Get Tutor Statistics
+ * 
+ * Aggregates session data for a tutor over a specified time window.
+ * Calculates all metrics needed for aggregate-level rules:
+ * - No-show count and rate
+ * - Late session count, rate, and average lateness
+ * - Early-end count, rate, and average early minutes
+ * - Reschedule count, rate, and tutor-initiated count
+ * - Average student rating and first session rating
+ * - Rating trend
+ * 
+ * @param tutorId - Tutor ID to aggregate statistics for
+ * @param windowStart - Start of time window
+ * @param windowEnd - End of time window
+ * @param latenessThresholdMinutes - Threshold for considering a session "late" (default: 5)
+ * @param earlyEndThresholdMinutes - Threshold for considering a session "ended early" (default: 10)
+ * @returns TutorStats object with aggregated metrics
+ */
+export async function getTutorStats(
+  tutorId: string,
+  windowStart: Date,
+  windowEnd: Date,
+  latenessThresholdMinutes: number = 5,
+  earlyEndThresholdMinutes: number = 10
+): Promise<TutorStats> {
+  // Query sessions for tutor within time window
+  const tutorSessions = await db
+    .select()
+    .from(sessions)
+    .where(
+      and(
+        eq(sessions.tutorId, tutorId),
+        gte(sessions.sessionStartTime, windowStart),
+        lte(sessions.sessionStartTime, windowEnd)
+      )
+    )
+    .orderBy(asc(sessions.sessionStartTime));
+
+  const totalSessions = tutorSessions.length;
+  const firstSessions = tutorSessions.filter((s) => s.isFirstSession).length;
+
+  // Calculate no-show metrics
+  const noShowSessions = tutorSessions.filter((s) =>
+    isNoShow(s.tutorJoinTime)
+  );
+  const noShowCount = noShowSessions.length;
+  const noShowRate = calculateRate(noShowCount, totalSessions);
+
+  // Calculate lateness metrics
+  const lateSessions = tutorSessions.filter((s) =>
+    isLate(s.sessionStartTime, s.tutorJoinTime, latenessThresholdMinutes)
+  );
+  const lateCount = lateSessions.length;
+  const lateRate = calculateRate(lateCount, totalSessions);
+
+  const latenessMinutes = tutorSessions
+    .map((s) => calculateLateness(s.sessionStartTime, s.tutorJoinTime))
+    .filter((m): m is number => m !== null && m > 0);
+  const avgLatenessMinutes =
+    latenessMinutes.length > 0 ? average(latenessMinutes) : null;
+
+  // Calculate early-end metrics
+  const earlyEndSessions = tutorSessions.filter((s) =>
+    endedEarly(s.sessionEndTime, s.tutorLeaveTime, earlyEndThresholdMinutes)
+  );
+  const earlyEndCount = earlyEndSessions.length;
+  const earlyEndRate = calculateRate(earlyEndCount, totalSessions);
+
+  const earlyEndMinutesList = tutorSessions
+    .map((s) => {
+      if (!s.tutorLeaveTime) return null;
+      const early = Math.abs(
+        Math.round(
+          (s.tutorLeaveTime.getTime() - s.sessionEndTime.getTime()) / 60000
+        )
+      );
+      return early >= earlyEndThresholdMinutes ? early : null;
+    })
+    .filter((m): m is number => m !== null);
+  const avgEarlyEndMinutes =
+    earlyEndMinutesList.length > 0 ? average(earlyEndMinutesList) : null;
+
+  // Calculate reschedule metrics
+  const rescheduledSessions = tutorSessions.filter((s) => s.wasRescheduled);
+  const rescheduleCount = rescheduledSessions.length;
+  const rescheduleRate = calculateRate(rescheduleCount, totalSessions);
+  const tutorInitiatedReschedules = rescheduledSessions.filter(
+    (s) => s.rescheduledBy === "tutor"
+  ).length;
+
+  // Calculate rating metrics
+  const studentRatings = tutorSessions
+    .map((s) => s.studentFeedbackRating)
+    .filter((r): r is number => r !== null && r !== undefined);
+  const avgStudentRating =
+    studentRatings.length > 0 ? average(studentRatings) : null;
+
+  const firstSessionRatings = tutorSessions
+    .filter((s) => s.isFirstSession)
+    .map((s) => s.studentFeedbackRating)
+    .filter((r): r is number => r !== null && r !== undefined);
+  const avgFirstSessionRating =
+    firstSessionRatings.length > 0 ? average(firstSessionRatings) : null;
+
+  // Calculate rating trend (compare recent vs older sessions)
+  // Split sessions into two halves for trend calculation
+  const sortedSessions = [...tutorSessions].sort(
+    (a, b) => a.sessionStartTime.getTime() - b.sessionStartTime.getTime()
+  );
+  const midPoint = Math.floor(sortedSessions.length / 2);
+  const olderSessions = sortedSessions.slice(0, midPoint);
+  const recentSessions = sortedSessions.slice(midPoint);
+
+  const olderRatings = olderSessions
+    .map((s) => s.studentFeedbackRating)
+    .filter((r): r is number => r !== null && r !== undefined);
+  const recentRatings = recentSessions
+    .map((s) => s.studentFeedbackRating)
+    .filter((r): r is number => r !== null && r !== undefined);
+
+  const olderAvg =
+    olderRatings.length > 0 ? average(olderRatings) : null;
+  const recentAvg =
+    recentRatings.length > 0 ? average(recentRatings) : null;
+
+  const ratingTrend = calculateTrend(olderAvg, recentAvg);
+
+  // Get recent sessions for supporting data (last 10)
+  const recentSessionsForData = sortedSessions
+    .slice(-10)
+    .reverse() // Most recent first
+    .map((s) => s as Session);
+
+  return {
+    tutorId,
+    windowStart,
+    windowEnd,
+    totalSessions,
+    firstSessions,
+    noShowCount,
+    noShowRate,
+    lateCount,
+    lateRate,
+    avgLatenessMinutes,
+    earlyEndCount,
+    earlyEndRate,
+    avgEarlyEndMinutes,
+    rescheduleCount,
+    rescheduleRate,
+    tutorInitiatedReschedules,
+    avgStudentRating,
+    avgFirstSessionRating,
+    ratingTrend,
+    recentSessions: recentSessionsForData,
+  };
 }
 
