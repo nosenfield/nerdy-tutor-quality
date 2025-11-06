@@ -29,6 +29,7 @@ import type { Session } from "../types/session";
 import type { FlagType, FlagSeverity, FlagSupportingData } from "../types/flag";
 import type { TutorScore } from "../types/tutor";
 import { calculateLateness } from "../utils/time";
+import { endedEarly } from "../utils/time";
 
 /**
  * Result of evaluating a single rule
@@ -452,6 +453,89 @@ export function detectLateness(context: RuleContext): RuleResult {
         },
       },
       confidence: 0.95, // High confidence - lateness is measurable
+    }
+  );
+}
+
+/**
+ * Early-End Detection Rule
+ * 
+ * Detects when a tutor ends a session more than the configured threshold minutes early.
+ * Default threshold is 10 minutes (configurable via RulesEngineConfig).
+ * 
+ * This is a session-level rule that evaluates individual sessions.
+ * 
+ * @param context - Rule evaluation context (must include session)
+ * @returns RuleResult indicating if early-end flag should be created
+ */
+export function detectEarlyEnd(context: RuleContext): RuleResult {
+  const { session, config } = context;
+
+  // Session-level rule requires session data
+  if (!session) {
+    return createNoTriggerResult("early_end");
+  }
+
+  // Skip if tutor didn't join or leave (handled by other rules)
+  if (session.tutorJoinTime === null || session.tutorLeaveTime === null) {
+    return createNoTriggerResult("early_end");
+  }
+
+  // Check if session ended early
+  const endedEarlyFlag = endedEarly(
+    session.sessionEndTime,
+    session.tutorLeaveTime,
+    config.earlyEndThresholdMinutes
+  );
+
+  if (!endedEarlyFlag) {
+    return createNoTriggerResult("early_end");
+  }
+
+  // Calculate how many minutes early
+  const earlyMinutes = Math.abs(
+    Math.round(
+      (session.tutorLeaveTime.getTime() - session.sessionEndTime.getTime()) /
+        60000
+    )
+  );
+
+  // Determine severity based on how early
+  let severity: FlagSeverity;
+  if (earlyMinutes >= 20) {
+    severity = "high"; // Very early (>20 min)
+  } else if (earlyMinutes >= 15) {
+    severity = "medium"; // Moderately early (15-20 min)
+  } else {
+    severity = "low"; // Slightly early (10-15 min)
+  }
+
+  // Format session date for description
+  const sessionDate = new Date(session.sessionStartTime).toLocaleDateString();
+
+  return createRuleResult(
+    "early_end",
+    severity,
+    `Tutor ended session ${earlyMinutes} minutes early on ${sessionDate}`,
+    `Tutor ${session.tutorId} ended the session ${earlyMinutes} minutes early on ${sessionDate}. This may indicate incomplete coverage of material or time management issues.`,
+    {
+      recommendedAction: "Review session content to ensure all material was covered. Discuss session completion expectations with tutor. Check if this is a pattern.",
+      supportingData: {
+        sessions: [
+          {
+            sessionId: session.sessionId,
+            date: session.sessionStartTime.toISOString(),
+            reason: `Ended ${earlyMinutes} minutes early`,
+          },
+        ],
+        metrics: {
+          scheduledEndTime: session.sessionEndTime.toISOString(),
+          actualLeaveTime: session.tutorLeaveTime.toISOString(),
+          earlyMinutes,
+          thresholdMinutes: config.earlyEndThresholdMinutes,
+        },
+      },
+      confidence: 0.95, // High confidence - early end is measurable
     }
   );
 }
