@@ -28,6 +28,7 @@
 import type { Session } from "../types/session";
 import type { FlagType, FlagSeverity, FlagSupportingData } from "../types/flag";
 import type { TutorScore } from "../types/tutor";
+import { calculateLateness } from "../utils/time";
 
 /**
  * Result of evaluating a single rule
@@ -376,6 +377,81 @@ export function detectNoShow(context: RuleContext): RuleResult {
         },
       },
       confidence: 1.0, // Very high confidence - no-show is unambiguous
+    }
+  );
+}
+
+/**
+ * Lateness Detection Rule
+ * 
+ * Detects when a tutor joins a session more than the configured threshold minutes late.
+ * Default threshold is 5 minutes (configurable via RulesEngineConfig).
+ * 
+ * This is a session-level rule that evaluates individual sessions.
+ * 
+ * @param context - Rule evaluation context (must include session)
+ * @returns RuleResult indicating if lateness flag should be created
+ */
+export function detectLateness(context: RuleContext): RuleResult {
+  const { session, config } = context;
+
+  // Session-level rule requires session data
+  if (!session) {
+    return createNoTriggerResult("chronic_lateness");
+  }
+
+  // Skip if tutor didn't join (handled by no-show rule)
+  if (session.tutorJoinTime === null) {
+    return createNoTriggerResult("chronic_lateness");
+  }
+
+  // Calculate lateness in minutes
+  const latenessMinutes = calculateLateness(
+    session.sessionStartTime,
+    session.tutorJoinTime
+  );
+
+  // Check if lateness exceeds threshold
+  if (latenessMinutes === null || latenessMinutes < config.latenessThresholdMinutes) {
+    return createNoTriggerResult("chronic_lateness");
+  }
+
+  // Determine severity based on lateness amount
+  let severity: FlagSeverity;
+  if (latenessMinutes >= 15) {
+    severity = "high"; // Very late (>15 min)
+  } else if (latenessMinutes >= 10) {
+    severity = "medium"; // Moderately late (10-15 min)
+  } else {
+    severity = "low"; // Slightly late (5-10 min)
+  }
+
+  // Format session date for description
+  const sessionDate = new Date(session.sessionStartTime).toLocaleDateString();
+
+  return createRuleResult(
+    "chronic_lateness",
+    severity,
+    `Tutor ${latenessMinutes} minutes late on ${sessionDate}`,
+    `Tutor ${session.tutorId} joined the session ${latenessMinutes} minutes late on ${sessionDate}. This impacts student experience and may indicate time management issues.`,
+    {
+      recommendedAction: "Discuss punctuality expectations with tutor. Review their schedule management and provide coaching on time management if this is a pattern.",
+      supportingData: {
+        sessions: [
+          {
+            sessionId: session.sessionId,
+            date: session.sessionStartTime.toISOString(),
+            reason: `Joined ${latenessMinutes} minutes late`,
+          },
+        ],
+        metrics: {
+          scheduledStartTime: session.sessionStartTime.toISOString(),
+          actualJoinTime: session.tutorJoinTime.toISOString(),
+          latenessMinutes,
+          thresholdMinutes: config.latenessThresholdMinutes,
+        },
+      },
+      confidence: 0.95, // High confidence - lateness is measurable
     }
   );
 }
