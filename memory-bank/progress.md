@@ -70,7 +70,7 @@
 - [x] Validate mock data distributions (Task 2.12)
 - [x] Create script to reset database (Task 2.13)
 - [x] Create "chronic no-show tutor" scenario (Task 2.14)
-- [ ] Create "always late tutor" scenario (Task 2.15)
+- [x] Create "always late tutor" scenario (Task 2.15)
 - [ ] Create "poor first sessions tutor" scenario (Task 2.16)
 - [ ] Create "frequent rescheduler tutor" scenario (Task 2.17)
 - [ ] Create "ends sessions early tutor" scenario (Task 2.18)

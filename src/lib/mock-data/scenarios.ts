@@ -71,3 +71,10 @@ export function isChronicNoShowTutor(tutorId: string): boolean {
   return tutorId === SCENARIO_IDS.CHRONIC_NO_SHOW;
 }
 
+/**
+ * Check if a tutor ID is an always late tutor
+ */
+export function isAlwaysLateTutor(tutorId: string): boolean {
+  return tutorId === SCENARIO_IDS.ALWAYS_LATE;
+}
+

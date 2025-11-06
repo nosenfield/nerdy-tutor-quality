@@ -4,6 +4,7 @@ import {
   getScenarioConfig,
   isScenarioTutor,
   isChronicNoShowTutor,
+  isAlwaysLateTutor,
 } from "./scenarios";
 
 describe("scenarios", () => {
@@ -54,6 +55,17 @@ describe("scenarios", () => {
     it("should return false for other tutors", () => {
       expect(isChronicNoShowTutor("tutor_00001")).toBe(false);
       expect(isChronicNoShowTutor(SCENARIO_IDS.ALWAYS_LATE)).toBe(false);
+    });
+  });
+
+  describe("isAlwaysLateTutor", () => {
+    it("should return true for always late tutor", () => {
+      expect(isAlwaysLateTutor(SCENARIO_IDS.ALWAYS_LATE)).toBe(true);
+    });
+
+    it("should return false for other tutors", () => {
+      expect(isAlwaysLateTutor("tutor_00001")).toBe(false);
+      expect(isAlwaysLateTutor(SCENARIO_IDS.CHRONIC_NO_SHOW)).toBe(false);
     });
   });
 });
