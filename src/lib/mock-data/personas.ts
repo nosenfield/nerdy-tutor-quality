@@ -14,6 +14,18 @@ import type {
  * Used for generating realistic mock data that matches real-world distributions.
  */
 
+// Re-export types for convenience
+export type { TutorPersonaType, TutorPersona };
+
+/**
+ * Tutor Persona Configurations
+ * 
+ * Defines realistic behavioral patterns for different tutor quality levels.
+ * Based on industry benchmarks and research.
+ * 
+ * Used for generating realistic mock data that matches real-world distributions.
+ */
+
 /**
  * Realistic tutor persona type distribution
  * Based on 80/20 rule: 20% excellent, 50% good, 20% average, 8% struggling, 2% problematic
