@@ -103,9 +103,9 @@
 
 ---
 
-### Phase 4: Dashboard UI - NOT STARTED
-- [ ] Dashboard layout component
-- [ ] Dashboard home page (overview stats)
+### Phase 4: Dashboard UI - IN PROGRESS
+- [x] Dashboard layout component (Task 4.1) ✅
+- [ ] Dashboard home page (overview stats) (Task 4.2)
 - [ ] Stats overview component (KPI cards)
 - [ ] Performance trend charts (Recharts)
 - [ ] Tutors list page (sortable, filterable table)
