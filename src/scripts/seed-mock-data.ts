@@ -14,6 +14,11 @@ import {
   TUTOR_PERSONA_DISTRIBUTION,
   type TutorPersonaType,
 } from "../lib/mock-data/personas";
+import {
+  SCENARIO_IDS,
+  getScenarioConfig,
+  isChronicNoShowTutor,
+} from "../lib/mock-data/scenarios";
 import { validateMockData, printValidationReport } from "../lib/mock-data/validation";
 
 /**
@@ -96,6 +101,9 @@ function generateSessionsForTutor(
   // Track first sessions per student
   const studentFirstSessions = new Set<string>();
 
+  // Get scenario config if this tutor matches a scenario
+  const scenarioConfig = getScenarioConfig(tutor.tutorId);
+
   for (let i = 0; i < sessionsCount; i++) {
     // Distribute sessions over the time period
     const randomDaysAgo = faker.number.int({ min: 0, max: daysBack });
@@ -115,27 +123,18 @@ function generateSessionsForTutor(
       studentFirstSessions.add(student.studentId);
     }
 
-    // Special handling for problem tutor scenarios
-    let sessionOptions: Parameters<typeof generateMockSession>[2] = {
+    // Build session options with scenario overrides
+    const sessionOptions: Parameters<typeof generateMockSession>[2] = {
       isFirstSession,
       scheduledStartTime: sessionTime,
     };
 
-    // Apply problem tutor patterns
-    if (tutor.tutorId === "tutor_10000") {
-      // Chronic no-show: 16% no-show rate
-      sessionOptions = {
-        ...sessionOptions,
-        // Force no-show pattern
-      };
-    } else if (tutor.tutorId === "tutor_10001") {
-      // Always late: avg 15 min late (handled by persona)
-    } else if (tutor.tutorId === "tutor_10002") {
-      // Poor first sessions: handled by persona
-    } else if (tutor.tutorId === "tutor_10003") {
-      // Frequent rescheduler: handled by persona
-    } else if (tutor.tutorId === "tutor_10004") {
-      // Ends early: handled by persona
+    // Apply scenario-specific overrides
+    if (scenarioConfig) {
+      if (scenarioConfig.noShowRate !== undefined) {
+        sessionOptions.noShowRate = scenarioConfig.noShowRate;
+      }
+      // Other scenario overrides will be added in future tasks (2.15-2.19)
     }
 
     sessionList.push(generateMockSession(tutor, student, sessionOptions));
@@ -213,6 +212,28 @@ export async function seedMockData(options: SeedOptions = {}) {
 
     console.log("\n✅ Mock data seeded successfully!");
     console.log(`   Total sessions inserted: ${allSessions.length}`);
+
+    // Validate scenario-specific patterns
+    if (includeProblemTutors) {
+      console.log("\n🔍 Validating problem tutor scenarios...");
+      const chronicNoShowTutorSessions = allSessions.filter(
+        (s) => s.tutorId === SCENARIO_IDS.CHRONIC_NO_SHOW
+      );
+      if (chronicNoShowTutorSessions.length > 0) {
+        const noShowCount = chronicNoShowTutorSessions.filter(
+          (s) => s.tutorJoinTime === null || s.tutorJoinTime === undefined
+        ).length;
+        const noShowRate = (noShowCount / chronicNoShowTutorSessions.length) * 100;
+        console.log(
+          `   Chronic no-show tutor (${SCENARIO_IDS.CHRONIC_NO_SHOW}): ${noShowCount}/${chronicNoShowTutorSessions.length} no-shows (${noShowRate.toFixed(1)}%)`
+        );
+        if (noShowRate >= 14 && noShowRate <= 18) {
+          console.log("   ✅ No-show rate within expected range (14-18%)");
+        } else {
+          console.warn(`   ⚠️  No-show rate outside expected range (expected ~16%)`);
+        }
+      }
+    }
 
     // Validate mock data
     console.log("\n🔍 Validating mock data distributions...");
