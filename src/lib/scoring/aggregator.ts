@@ -55,9 +55,10 @@ export function calculateAttendanceScore(tutorStats: TutorStats): number {
   const lateRate = tutorStats.lateRate ?? 0;
 
   // No-shows are penalized more heavily than lateness
-  // Each no-show reduces score by 20 points, each late session by 5 points
-  const noShowPenalty = noShowRate * 20; // Max 20 points penalty
-  const latePenalty = lateRate * 5; // Max 5 points penalty
+  // Each 10% no-show reduces score by 20 points, each 10% late by 5 points
+  // Rates are decimals (0.0-1.0), so multiply by 10 to get penalty multiplier
+  const noShowPenalty = noShowRate * 10 * 20; // 0.1 (10%) = 20 points penalty
+  const latePenalty = lateRate * 10 * 5; // 0.2 (20%) = 10 points penalty
 
   // Start with perfect score and subtract penalties
   const score = 100 - noShowPenalty - latePenalty;
@@ -103,8 +104,9 @@ export function calculateRatingsScore(tutorStats: TutorStats): number {
 export function calculateCompletionScore(tutorStats: TutorStats): number {
   const earlyEndRate = tutorStats.earlyEndRate ?? 0;
 
-  // Each early-end session reduces score by 10 points
-  const penalty = earlyEndRate * 10; // Max 10 points penalty
+  // Each 10% early-end reduces score by 10 points
+  // Rate is decimal (0.0-1.0), so multiply by 10 to get penalty multiplier
+  const penalty = earlyEndRate * 10 * 10; // 0.1 (10%) = 10 points penalty
 
   // Start with perfect score and subtract penalty
   const score = 100 - penalty;
@@ -125,9 +127,9 @@ export function calculateCompletionScore(tutorStats: TutorStats): number {
 export function calculateReliabilityScore(tutorStats: TutorStats): number {
   const rescheduleRate = tutorStats.rescheduleRate ?? 0;
 
-  // Each reschedule reduces score by 5 points
-  // Tutor-initiated reschedules are penalized more (handled separately if needed)
-  const penalty = rescheduleRate * 5; // Max 5 points penalty
+  // Each 10% reschedule reduces score by 5 points
+  // Rate is decimal (0.0-1.0), so multiply by 10 to get penalty multiplier
+  const penalty = rescheduleRate * 10 * 5; // 0.2 (20%) = 10 points penalty
 
   // Start with perfect score and subtract penalty
   const score = 100 - penalty;
