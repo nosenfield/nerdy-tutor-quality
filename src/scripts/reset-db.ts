@@ -1,11 +1,12 @@
-import { db } from "../lib/db";
-import { sessions, tutorScores, flags, interventions } from "../lib/db/schema";
+// Load environment variables first
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
 /**
  * Database Reset Script
- * 
+ *
  * Clears all data from database tables for re-seeding.
- * 
+ *
  * Usage: tsx src/scripts/reset-db.ts
  */
 
@@ -13,6 +14,10 @@ import { sessions, tutorScores, flags, interventions } from "../lib/db/schema";
  * Reset database by truncating all tables
  */
 export async function resetDatabase() {
+  // Dynamic import to ensure env vars are loaded before db module initialization
+  const { db } = await import("../lib/db");
+  const { sessions, tutorScores, flags, interventions } = await import("../lib/db/schema");
+
   console.log("🔄 Resetting database...");
 
   try {
@@ -39,7 +44,10 @@ export async function resetDatabase() {
 }
 
 // Run if executed directly
-if (require.main === module) {
+// Note: In ESM, we check import.meta.url to determine if this is the main module
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMainModule) {
   resetDatabase()
     .then(() => {
       console.log("\n🎉 Reset complete!");

@@ -98,10 +98,13 @@ cp .env.example .env.local
 pnpm db:generate  # Generate migration files
 pnpm db:migrate   # Apply migrations to database
 
-# 5. Seed mock data (for development)
-pnpm seed         # Generates 100 tutors, 3,000 sessions
+# 5. Test database connection
+pnpm test:db      # Verify connection works
 
-# 6. Start development server
+# 6. Seed mock data (for development)
+pnpm db:reset && pnpm db:seed  # Generates 105 tutors, 3,150 sessions
+
+# 7. Start development server
 pnpm dev
 
 # Access at http://localhost:3000
@@ -396,12 +399,13 @@ jobs:
 ### Common Issues
 
 #### Issue 1: Database Connection Fails
-**Symptoms**: `Error: connection refused` or timeout
+**Symptoms**: `Error: connection refused` or `ECONNREFUSED localhost:5432`
 **Solution**:
-1. Check `DATABASE_URL` in `.env.local`
+1. Check `DATABASE_URL` in `.env.local` is set correctly
 2. Verify Supabase project is active
 3. Check if IP is whitelisted (Supabase > Project Settings > Database > Restrictions)
 4. Try `DIRECT_URL` instead for local development
+5. If using tsx scripts directly, ensure dotenv is loaded before imports (see script patterns in src/scripts/)
 
 #### Issue 2: Redis Queue Not Processing Jobs
 **Symptoms**: Jobs stay in "waiting" state, never complete
@@ -447,11 +451,13 @@ pnpm lint         # Run ESLint
 pnpm format       # Format with Prettier
 
 # Database
-pnpm db:generate  # Generate migrations
-pnpm db:migrate   # Apply migrations
-pnpm db:studio    # Visual DB editor
-pnpm db:seed      # Seed mock data
-pnpm db:reset     # Reset and re-seed
+pnpm db:generate  # Generate migrations from schema
+pnpm db:migrate   # Apply migrations to database
+pnpm db:studio    # Open Drizzle Studio (visual DB editor)
+pnpm db:push      # Push schema changes (skip migrations)
+pnpm db:seed      # Seed mock data (3,150 sessions)
+pnpm db:reset     # Clear all tables
+pnpm test:db      # Test database connection
 
 # Testing
 pnpm test         # Run all tests
