@@ -863,3 +863,88 @@ export function detectHighRescheduleRate(context: RuleContext): RuleResult {
   );
 }
 
+/**
+ * Chronic Lateness Detection Rule
+ * 
+ * Detects when a tutor has a late rate above the configured threshold.
+ * Default threshold is 30% (configurable via RulesEngineConfig).
+ * 
+ * This is an aggregate-level rule that evaluates tutor statistics over a time window.
+ * Requires minimum number of sessions (config.minSessionsForAggregateRules) to trigger.
+ * 
+ * @param context - Rule evaluation context (must include tutorStats)
+ * @returns RuleResult indicating if chronic lateness flag should be created
+ */
+export function detectChronicLateness(context: RuleContext): RuleResult {
+  const { tutorStats, config } = context;
+
+  // Aggregate-level rule requires tutor stats
+  if (!tutorStats) {
+    return createNoTriggerResult("chronic_lateness");
+  }
+
+  // Require minimum sessions for aggregate rules
+  if (tutorStats.totalSessions < config.minSessionsForAggregateRules) {
+    return createNoTriggerResult("chronic_lateness");
+  }
+
+  // Check if late rate exceeds threshold
+  if (
+    tutorStats.lateRate === null ||
+    tutorStats.lateRate <= config.chronicLatenessRateThreshold
+  ) {
+    return createNoTriggerResult("chronic_lateness");
+  }
+
+  // Determine severity based on late rate and average lateness
+  let severity: FlagSeverity;
+  const latePercent = tutorStats.lateRate * 100;
+  const avgLateness = tutorStats.avgLatenessMinutes ?? 0;
+
+  if (latePercent >= 50 || avgLateness >= 15) {
+    severity = "critical"; // Very high rate or very late on average
+  } else if (latePercent >= 40 || avgLateness >= 10) {
+    severity = "high"; // High rate or moderately late on average
+  } else if (latePercent >= 35 || avgLateness >= 7) {
+    severity = "medium"; // Moderate rate or slightly late on average
+  } else {
+    severity = "low"; // Slightly above threshold
+  }
+
+  return createRuleResult(
+    "chronic_lateness",
+    severity,
+    `Chronic lateness: ${latePercent.toFixed(1)}% late (${tutorStats.lateCount}/${tutorStats.totalSessions} sessions)`,
+    `Tutor ${tutorStats.tutorId} was late to ${tutorStats.lateCount} out of ${tutorStats.totalSessions} sessions (${latePercent.toFixed(1)}%) in the last ${config.aggregateWindowDays} days. Average lateness: ${avgLateness.toFixed(1)} minutes. Chronic lateness impacts student experience and indicates time management issues.`,
+    {
+      recommendedAction: "Discuss punctuality expectations with tutor. Review their schedule management and identify root causes. Provide coaching on time management and consider adjusting their schedule if needed.",
+      supportingData: {
+        sessions: tutorStats.recentSessions
+          ?.filter((s) =>
+            isLate(s.sessionStartTime, s.tutorJoinTime, config.latenessThresholdMinutes)
+          )
+          .slice(0, 10)
+          .map((s) => {
+            const lateness = calculateLateness(s.sessionStartTime, s.tutorJoinTime);
+            return {
+              sessionId: s.sessionId,
+              date: s.sessionStartTime.toISOString(),
+              reason: `Late by ${lateness ?? 0} minutes`,
+            };
+          }),
+        metrics: {
+          lateRate: tutorStats.lateRate,
+          lateCount: tutorStats.lateCount,
+          totalSessions: tutorStats.totalSessions,
+          avgLatenessMinutes: tutorStats.avgLatenessMinutes,
+          threshold: config.chronicLatenessRateThreshold,
+          latenessThresholdMinutes: config.latenessThresholdMinutes,
+          windowDays: config.aggregateWindowDays,
+        },
+        trend: tutorStats.ratingTrend,
+      },
+      confidence: 0.9, // High confidence - lateness rate is measurable
+    }
+  );
+}
+
