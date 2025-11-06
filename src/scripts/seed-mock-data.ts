@@ -1,7 +1,9 @@
+// Load environment variables first
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import { faker } from "@faker-js/faker";
 import { subDays, addDays } from "date-fns";
-import { db } from "../lib/db";
-import { sessions } from "../lib/db/schema";
 import {
   generateMockTutor,
   generateMockStudent,
@@ -17,9 +19,6 @@ import {
 import {
   SCENARIO_IDS,
   getScenarioConfig,
-  isChronicNoShowTutor,
-  isAlwaysLateTutor,
-  isPoorFirstSessionsTutor,
 } from "../lib/mock-data/scenarios";
 import { validateMockData, printValidationReport } from "../lib/mock-data/validation";
 import { differenceInMinutes } from "../lib/utils/time";
@@ -161,6 +160,10 @@ function generateSessionsForTutor(
  * Main seed function
  */
 export async function seedMockData(options: SeedOptions = {}) {
+  // Dynamic import to ensure env vars are loaded before db module initialization
+  const { db } = await import("../lib/db");
+  const { sessions } = await import("../lib/db/schema");
+
   const {
     tutorCount = 100,
     sessionsPerTutor = 30,
@@ -246,6 +249,8 @@ export async function seedMockData(options: SeedOptions = {}) {
         } else {
           console.warn(`   ⚠️  No-show rate outside expected range (expected ~16%)`);
         }
+      }
+      
       const alwaysLateTutorSessions = allSessions.filter(
         (s) => s.tutorId === SCENARIO_IDS.ALWAYS_LATE
       );
@@ -359,7 +364,7 @@ export async function seedMockData(options: SeedOptions = {}) {
 
     // Validate mock data
     console.log("\n🔍 Validating mock data distributions...");
-    const validation = await validateMockData(daysBack);
+    const validation = await validateMockData(db, sessions, daysBack);
     printValidationReport(validation);
 
     if (!validation.valid) {
@@ -367,13 +372,24 @@ export async function seedMockData(options: SeedOptions = {}) {
       console.warn("   This may be normal for smaller datasets or specific persona distributions");
     }
   } catch (error) {
-    console.error("\n❌ Error seeding data:", error);
+    console.error("\n❌ Error seeding data:");
+    if (error instanceof Error) {
+      console.error("Message:", error.message);
+      if ('cause' in error && error.cause) {
+        console.error("Cause:", error.cause);
+      }
+    } else {
+      console.error(error);
+    }
     throw error;
   }
 }
 
 // Run if executed directly
-if (require.main === module) {
+// Note: In ESM, we check import.meta.url to determine if this is the main module
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+
+if (isMainModule) {
   seedMockData()
     .then(() => {
       console.log("\n🎉 Seed complete!");

@@ -1,24 +1,26 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-05
+**Last Updated**: 2025-11-06
 
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 2 In Progress** - Mock Data & Testing. All problem tutor scenarios complete (Tasks 2.14-2.19). Ready for Phase 3: Rules Engine.
+**Phase 2 Complete!** - Mock Data & Testing fully working with database seeding. Environment variable loading issues resolved. Ready to begin Phase 3: Rules Engine.
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
 
-**Current Phase: Phase 1 - Core Infrastructure** (Estimated: 3-4 days) - ✅ COMPLETE
+**Phase 1 - Core Infrastructure** (Estimated: 3-4 days) - ✅ COMPLETE
 
-**Current Phase: Phase 2 - Mock Data & Testing** (Estimated: 2-3 days) - IN PROGRESS
+**Phase 2 - Mock Data & Testing** (Estimated: 2-3 days) - ✅ COMPLETE
+
+**Phase 3 - Rules Engine (Tier 1)** (Estimated: 3-4 days) - STARTING NOW
 
 Next phases:
-- Phase 1: Core Infrastructure (Database + utilities)
-- Phase 2: Mock Data & Testing
-- Phase 3: Rules Engine (Tier 1 processing)
+- Phase 3: Rules Engine (Tier 1 processing) ← WE ARE HERE
 - Phase 4: Dashboard UI
+- Phase 5: Job Queue & Workers
+- Phase 6: API Routes
 
 ### Active Decisions
 - **Decision 1: Next.js 16 App Router** - Using Next.js 16 with React 19 for latest performance improvements and features. App Router provides better performance and simpler data fetching patterns. Next.js 16 requires React 19, which includes latest React features and optimizations.
@@ -38,33 +40,36 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **All problem tutor scenarios implemented** - Completed Tasks 2.14-2.19: chronic no-show, always late, poor first sessions, frequent rescheduler, ends early, and excellent tutor scenarios - 2025-11-05
-2. **Always late tutor scenario implemented** - Added avgLatenessMinutes override support, implemented 15 min average lateness for always late tutor (Task 2.15) - 2025-11-05
-3. **Chronic no-show tutor scenario implemented** - Created scenario system with configurable overrides, implemented 16% no-show rate for chronic no-show tutor (Task 2.14) - 2025-11-05
+1. **Phase 2 Complete - Database seeding working** - Fixed environment variable loading issues in all scripts using dotenv + dynamic imports. Added pnpm scripts (db:reset, db:seed, test:db). Can now seed 3,150 sessions successfully - 2025-11-06
+2. **All problem tutor scenarios implemented** - Completed Tasks 2.14-2.19: chronic no-show, always late, poor first sessions, frequent rescheduler, ends early, and excellent tutor scenarios - 2025-11-05
+3. **Database connection debugging** - Resolved ECONNREFUSED errors by ensuring environment variables load before database Pool initialization in all scripts and validation modules - 2025-11-06
 
 ---
 
 ## Next Steps
 
-### Immediate (Next Session - Phase 2)
-- [x] Install Faker.js (Task 2.1) ✅
-- [x] Create tutor persona types (Task 2.2) ✅
-- [x] Create mock data generators (Tasks 2.3-2.11) ✅
-- [x] Create seed script (Task 2.11) ✅
-- [x] Validate mock data distributions (Task 2.12) ✅
-- [x] Create database reset script (Task 2.13) ✅
-- [x] Create chronic no-show tutor scenario (Task 2.14) ✅
-- [x] Create always late tutor scenario (Task 2.15) ✅
-- [x] Create poor first sessions tutor scenario (Task 2.16) ✅
-- [x] Create frequent rescheduler tutor scenario (Task 2.17) ✅
-- [x] Create ends early tutor scenario (Task 2.18) ✅
-- [x] Create excellent tutor scenario (Task 2.19) ✅
-- [ ] Begin Phase 3: Rules Engine - NEXT
+### Immediate (Next Session - Phase 3)
+- [ ] Create rules-engine.ts with TypeScript interfaces (Task 3.1)
+- [ ] Implement no-show detection rule (Task 3.2)
+- [ ] Implement lateness detection rule (Task 3.3)
+- [ ] Implement early-end detection rule (Task 3.4)
+- [ ] Implement poor first session detection rule (Task 3.5)
+- [ ] Create getTutorStats aggregation function (Task 3.6)
+- [ ] Implement reschedule rate detection (Task 3.7)
+- [ ] Implement chronic lateness detection (Task 3.8)
 
-### Near-Term (Week 2)
-- [ ] Generate realistic mock data (Phase 2)
-- [ ] Build rules engine for tutor scoring (Phase 3)
-- [ ] Begin dashboard UI development (Phase 4)
+### Near-Term (This Week - Phase 3)
+- [ ] Create aggregator.ts to combine all signals
+- [ ] Implement scoring algorithm (attendance, ratings, completion, reliability)
+- [ ] Write comprehensive unit tests for all rules
+- [ ] Test rules engine against seeded "problem tutor" data
+- [ ] Validate false positive rate is acceptable
+
+### Following Week (Phase 4)
+- [ ] Begin dashboard UI development
+- [ ] Dashboard layout and navigation
+- [ ] Stats overview with KPI cards
+- [ ] Performance trend charts using Recharts
 
 ---
 
@@ -87,12 +92,17 @@ None - Project is greenfield, no blockers.
 
 ---
 
-## Key Files Currently Modified
+## Key Files Recently Modified
 
-- `src/lib/db/schema.ts` - Database schema definition (all 4 core tables created: sessions, tutor_scores, flags, interventions)
+- `src/lib/db/schema.ts` - Database schema definition (all 4 core tables created)
 - `src/lib/mock-data/scenarios.ts` - Scenario configurations for problem tutors
-- `src/lib/mock-data/generators.ts` - Mock data generation (updated with noShowRate override)
-- `src/scripts/seed-mock-data.ts` - Seed script with scenario validation
+- `src/lib/mock-data/generators.ts` - Mock data generation with all overrides
+- `src/lib/mock-data/validation.ts` - Updated to accept db/sessions as parameters (fixes import hoisting)
+- `src/scripts/seed-mock-data.ts` - Seed script with dotenv + dynamic imports
+- `src/scripts/reset-db.ts` - Database reset script with dotenv + dynamic imports
+- `src/lib/db/test-connection.ts` - Database test script with dotenv + dynamic imports
+- `drizzle.config.ts` - Added dotenv loading for migrations
+- `package.json` - Added db:reset, db:seed, test:db scripts
 
 ---
 
@@ -117,17 +127,18 @@ None - Project is greenfield, no blockers.
 - [x] Directory structure created (all folders exist)
 - [x] .env.example created
 - [x] Drizzle ORM installed and configured
-- [x] Sessions table schema created
-- [x] Tutor_scores table schema created
-- [x] Flags table schema created
-- [x] Interventions table schema created
+- [x] All database tables created (sessions, tutor_scores, flags, interventions)
+- [x] Database migrations run and tracked
+- [x] Mock data generation complete (3,150 sessions)
+- [x] All problem tutor scenarios implemented
+- [x] Database seeding scripts working (db:reset, db:seed, test:db)
+- [x] Environment variable loading fixed in all scripts
 
 ### In Progress
-- [ ] Remaining problem tutor scenario definitions (Tasks 2.15-2.19)
+- [ ] Rules engine development (Phase 3) - STARTING NOW
 
 ### Pending
 - [ ] Husky + lint-staged setup (P1 optional, can defer)
-- [ ] Database migrations run
 - [ ] Upstash account created (prerequisite for Phase 5)
 
 ---
@@ -170,8 +181,10 @@ None - Project is greenfield, no blockers.
 
 ## Notes
 
-**Project Status**: Phase 2 in progress. Core mock data generation complete. Seed script ready to generate 3,000 sessions with realistic distributions.
+**Project Status**: Phase 2 complete! Mock data generation working perfectly with 3,150 sessions. Database seeding confirmed working. Moving to Phase 3 (Rules Engine).
 
-**Next Major Milestone**: Complete individual problem tutor scenarios, then move to Phase 3 (Rules Engine).
+**Next Major Milestone**: Build Tier 1 rules engine with all behavioral signal detection (no-show, lateness, early-end, poor first sessions, reschedule patterns).
 
-**Risk Level**: LOW - Well-planned project with clear requirements, proven tech stack, and comprehensive documentation. Main risks are timeline management and maintaining code quality at pace.
+**Risk Level**: LOW - Well-planned project with clear requirements, proven tech stack, and comprehensive documentation. Phases 0-2 completed successfully. Main risks are timeline management and maintaining code quality at pace.
+
+**Technical Note**: All scripts now use dotenv + dynamic imports pattern to ensure environment variables load before database connections. This pattern should be followed for any new scripts that need database access.

@@ -1,12 +1,11 @@
-import { db } from "../db";
-import { sessions } from "../db/schema";
 import { gte } from "drizzle-orm";
 import { subDays } from "date-fns";
 import type { Session } from "../types/session";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 /**
  * Validation Utilities for Mock Data
- * 
+ *
  * Validates that generated mock data matches realistic industry benchmarks.
  */
 
@@ -26,14 +25,16 @@ interface ValidationStats {
  * Calculate statistics from sessions data
  */
 export async function calculateMockDataStats(
+  db: NodePgDatabase<any>,
+  sessionsTable: any,
   daysBack: number = 30
 ): Promise<ValidationStats> {
   const cutoffDate = subDays(new Date(), daysBack);
 
   const allSessions = await db
     .select()
-    .from(sessions)
-    .where(gte(sessions.sessionStartTime, cutoffDate));
+    .from(sessionsTable)
+    .where(gte(sessionsTable.sessionStartTime, cutoffDate));
 
   const totalSessions = allSessions.length;
   if (totalSessions === 0) {
@@ -123,13 +124,15 @@ export async function calculateMockDataStats(
  * Validate mock data against industry benchmarks
  */
 export async function validateMockData(
+  db: NodePgDatabase<any>,
+  sessionsTable: any,
   daysBack: number = 30
 ): Promise<{
   valid: boolean;
   stats: ValidationStats;
   errors: string[];
 }> {
-  const stats = await calculateMockDataStats(daysBack);
+  const stats = await calculateMockDataStats(db, sessionsTable, daysBack);
   const errors: string[] = [];
 
   // Validation checks based on industry benchmarks

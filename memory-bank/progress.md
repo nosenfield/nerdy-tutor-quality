@@ -55,7 +55,7 @@
 
 ---
 
-### Phase 2: Mock Data & Testing - IN PROGRESS
+### Phase 2: Mock Data & Testing - ✅ COMPLETE
 - [x] Install Faker.js (Task 2.1)
 - [x] Create tutor persona types (Task 2.2)
 - [x] Create generateMockTutor function (Task 2.3)
@@ -75,8 +75,10 @@
 - [x] Create "frequent rescheduler tutor" scenario (Task 2.17)
 - [x] Create "ends sessions early tutor" scenario (Task 2.18)
 - [x] Create "excellent tutor" scenario (Task 2.19)
+- [x] Fix environment variable loading in scripts (dotenv + dynamic imports)
+- [x] Add pnpm scripts for database operations (db:reset, db:seed, test:db)
 
-**Target Completion**: Week 2, Day 1-3 (2-3 days)
+**Target Completion**: Week 2, Day 1-3 (2-3 days) - **ACHIEVED**
 
 ---
 
@@ -221,33 +223,35 @@
 
 ## What's Next
 
-### Priority 1 (Today - Phase 1)
-- [x] Set up Supabase PostgreSQL database
-- [x] Create database schema with Drizzle ORM (all 4 core tables complete: sessions, tutor_scores, flags, interventions)
-- [ ] Run initial migrations
-- [ ] Build utility functions (time, stats, validation)
-- [ ] Write unit tests for utilities
-- [ ] Set up basic authentication
+### Priority 1 (Now - Phase 3)
+- [ ] Create rules-engine.ts with TypeScript interfaces
+- [ ] Implement no-show detection rule
+- [ ] Implement lateness detection rule
+- [ ] Implement early-end detection rule
+- [ ] Implement poor first session detection rule
+- [ ] Create getTutorStats aggregation function
+- [ ] Implement reschedule rate detection
+- [ ] Implement chronic lateness detection
 
-**Goal**: Complete Phase 1 database schema by end of day, then move to utilities
+**Goal**: Build out the Tier 1 rules engine with all behavioral signal detection
 
-### Priority 2 (This Week - Phase 1)
-- [ ] Complete database schema (tutor_analytics optional, can defer)
-- [ ] Run migrations and create indexes
-- [ ] Build utility functions (time, stats, validation)
-- [ ] Write unit tests for utilities
-- [ ] Set up basic authentication
+### Priority 2 (This Week - Phase 3)
+- [ ] Create aggregator.ts to combine signals
+- [ ] Implement scoring algorithm (attendance, ratings, completion, reliability)
+- [ ] Write unit tests for all rules
+- [ ] Test rules engine with seeded "problem tutor" data
+- [ ] Validate false positive rate is acceptable
 
-**Goal**: Complete Phase 1 by Friday (Day 5)
+**Goal**: Complete Phase 3 rules engine with comprehensive testing
 
-### Priority 3 (Next Week - Phase 2-3)
-- [ ] Generate realistic mock data (3,000 sessions)
-- [ ] Build Tier 1 rules engine
-- [ ] Implement all flag detection logic
-- [ ] Create scoring algorithm
-- [ ] Test with "problem tutor" scenarios
+### Priority 3 (Next Week - Phase 4)
+- [ ] Start building Dashboard UI
+- [ ] Dashboard layout component
+- [ ] Stats overview (KPI cards)
+- [ ] Performance trend charts
+- [ ] Tutors list page
 
-**Goal**: Working rules engine with validated mock data
+**Goal**: Begin frontend development with dashboard foundation
 
 ---
 
