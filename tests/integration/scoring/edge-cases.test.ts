@@ -9,6 +9,7 @@ import {
   detectHighRescheduleRate,
   detectChronicLateness,
   detectDecliningRatingTrend,
+  detectLateness,
   getTutorStats,
   DEFAULT_RULES_ENGINE_CONFIG,
   type RuleContext,
@@ -107,9 +108,6 @@ describe("Edge Cases Integration Tests", () => {
 
   describe("Timezone Handling", () => {
     it("should handle timezone differences correctly in lateness detection", () => {
-      const { detectLateness } = require("../../../src/lib/scoring/rules-engine");
-      const { DEFAULT_RULES_ENGINE_CONFIG } = require("../../../src/lib/scoring/rules-engine");
-
       // Create session with UTC times
       const sessionStartTime = new Date("2024-01-01T10:00:00Z");
       const tutorJoinTime = new Date("2024-01-01T10:06:00Z"); // 6 minutes late in UTC
