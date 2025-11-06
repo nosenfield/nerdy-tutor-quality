@@ -23,6 +23,20 @@ import { SCENARIO_IDS } from "../../../src/lib/mock-data/scenarios";
 import { setupTestDatabase, teardownTestDatabase, getTutorSessions } from "../utils/test-db";
 import { db, sessions } from "../../../src/lib/db";
 import { eq } from "drizzle-orm";
+import type { FlagSeverity } from "../../../src/lib/types/flag";
+
+/**
+ * Helper function to convert severity to numeric value for comparisons
+ */
+function severityToNumber(severity: FlagSeverity): number {
+  const severityMap: Record<FlagSeverity, number> = {
+    low: 1,
+    medium: 2,
+    high: 3,
+    critical: 4,
+  };
+  return severityMap[severity];
+}
 
 describe("Problem Tutor Integration Tests", () => {
   beforeAll(async () => {
@@ -110,7 +124,7 @@ describe("Problem Tutor Integration Tests", () => {
 
       expect(result.triggered).toBe(true);
       expect(result.flagType).toBe("chronic_lateness");
-      expect(result.severity).toBeGreaterThanOrEqual("medium"); // Should be medium or higher
+      expect(severityToNumber(result.severity)).toBeGreaterThanOrEqual(severityToNumber("medium")); // Should be medium or higher
 
       // Test individual late sessions
       const tutorSessions = await getTutorSessions(tutorId);
@@ -171,7 +185,7 @@ describe("Problem Tutor Integration Tests", () => {
           if (result.triggered) {
             flaggedCount++;
             expect(result.flagType).toBe("poor_first_session");
-            expect(result.severity).toBeGreaterThanOrEqual("high");
+            expect(severityToNumber(result.severity)).toBeGreaterThanOrEqual(severityToNumber("high"));
           }
         }
       }
@@ -214,7 +228,7 @@ describe("Problem Tutor Integration Tests", () => {
 
       expect(result.triggered).toBe(true);
       expect(result.flagType).toBe("high_reschedule_rate");
-      expect(result.severity).toBeGreaterThanOrEqual("medium");
+      expect(severityToNumber(result.severity)).toBeGreaterThanOrEqual(severityToNumber("medium"));
 
       // Verify overall score is low
       const scores = calculateAllScores(stats);

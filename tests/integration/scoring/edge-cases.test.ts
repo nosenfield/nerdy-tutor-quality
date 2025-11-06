@@ -19,6 +19,20 @@ import { db, sessions } from "../../../src/lib/db";
 import { eq } from "drizzle-orm";
 import { generateMockSession, generateMockTutor, generateMockStudent } from "../../../src/lib/mock-data/generators";
 import { faker } from "@faker-js/faker";
+import type { FlagSeverity } from "../../../src/lib/types/flag";
+
+/**
+ * Helper function to convert severity to numeric value for comparisons
+ */
+function severityToNumber(severity: FlagSeverity): number {
+  const severityMap: Record<FlagSeverity, number> = {
+    low: 1,
+    medium: 2,
+    high: 3,
+    critical: 4,
+  };
+  return severityMap[severity];
+}
 
 describe("Edge Cases Integration Tests", () => {
   beforeAll(async () => {
@@ -289,7 +303,7 @@ describe("Edge Cases Integration Tests", () => {
       // Should detect declining trend
       expect(result.triggered).toBe(true);
       expect(result.flagType).toBe("low_ratings");
-      expect(result.severity).toBeGreaterThanOrEqual("low");
+      expect(severityToNumber(result.severity)).toBeGreaterThanOrEqual(severityToNumber("low"));
 
       // Cleanup
       await db.delete(sessions).where(eq(sessions.tutorId, tutorId));

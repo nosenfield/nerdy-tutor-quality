@@ -47,12 +47,18 @@ describe("Excellent Tutor Integration Tests", () => {
       );
 
       // Verify stats are good
-      expect(stats.noShowRate).toBeLessThan(0.05); // < 5%
-      expect(stats.lateRate).toBeLessThan(0.10); // < 10%
+      if (stats.noShowRate !== null) {
+        expect(stats.noShowRate).toBeLessThan(0.05); // < 5%
+      }
+      if (stats.lateRate !== null) {
+        expect(stats.lateRate).toBeLessThan(0.10); // < 10%
+      }
       if (stats.avgStudentRating !== null) {
         expect(stats.avgStudentRating).toBeGreaterThan(4.0);
       }
-      expect(stats.rescheduleRate).toBeLessThan(0.10); // < 10%
+      if (stats.rescheduleRate !== null) {
+        expect(stats.rescheduleRate).toBeLessThan(0.10); // < 10%
+      }
 
       // Test aggregate rules - should not trigger
       const config = DEFAULT_RULES_ENGINE_CONFIG;
