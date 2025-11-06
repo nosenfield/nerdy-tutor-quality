@@ -96,6 +96,8 @@ export function generateMockSession(
     noShowRate?: number; // Override persona no-show rate
     avgLatenessMinutes?: number; // Override average lateness (forces 100% late rate)
     avgFirstSessionRating?: number; // Override average first session rating
+    rescheduleRate?: number; // Override reschedule rate
+    avgEarlyEndMinutes?: number; // Override average early end minutes
   } = {}
 ): SessionInsert {
   const persona = getPersona(tutor.personaType);
@@ -104,10 +106,13 @@ export function generateMockSession(
   const scheduledStartTime = options.scheduledStartTime ?? faker.date.recent({ days: 30 });
 
   // Determine if this session should be rescheduled
-  const rescheduleRate = faker.number.float({
-    min: persona.rescheduleRate.min,
-    max: persona.rescheduleRate.max,
-  });
+  const rescheduleRateOverride = options.rescheduleRate !== undefined ? options.rescheduleRate : null;
+  const rescheduleRate = rescheduleRateOverride !== null
+    ? rescheduleRateOverride
+    : faker.number.float({
+        min: persona.rescheduleRate.min,
+        max: persona.rescheduleRate.max,
+      });
   const wasRescheduled = faker.datatype.boolean({ probability: rescheduleRate });
   const rescheduledBy = wasRescheduled
     ? faker.datatype.boolean({ probability: persona.tutorInitiatedRescheduleRate })
@@ -148,18 +153,31 @@ export function generateMockSession(
   }
 
   // Determine early end
-  const isEarlyEnd = faker.datatype.boolean({
-    probability: faker.number.float({
-      min: persona.earlyEndRate.min,
-      max: persona.earlyEndRate.max,
-    }),
-  });
-  const earlyEndMinutes = isEarlyEnd
-    ? faker.number.int({
-        min: persona.avgEarlyEndMinutes.min,
-        max: persona.avgEarlyEndMinutes.max,
-      })
-    : 0;
+  const earlyEndOverride = options.avgEarlyEndMinutes !== undefined;
+  let isEarlyEnd: boolean;
+  let earlyEndMinutes: number;
+  
+  if (earlyEndOverride) {
+    // Always ends early scenario - 100% early end rate with specified average
+    isEarlyEnd = true;
+    earlyEndMinutes = faker.number.int({
+      min: options.avgEarlyEndMinutes! - 2,
+      max: options.avgEarlyEndMinutes! + 2,
+    });
+  } else {
+    isEarlyEnd = faker.datatype.boolean({
+      probability: faker.number.float({
+        min: persona.earlyEndRate.min,
+        max: persona.earlyEndRate.max,
+      }),
+    });
+    earlyEndMinutes = isEarlyEnd
+      ? faker.number.int({
+          min: persona.avgEarlyEndMinutes.min,
+          max: persona.avgEarlyEndMinutes.max,
+        })
+      : 0;
+  }
 
   // Calculate actual times
   const scheduledEndTime = addMinutes(scheduledStartTime, sessionLengthMinutes);
