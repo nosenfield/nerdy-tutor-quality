@@ -85,3 +85,24 @@ export function isPoorFirstSessionsTutor(tutorId: string): boolean {
   return tutorId === SCENARIO_IDS.POOR_FIRST_SESSIONS;
 }
 
+/**
+ * Check if a tutor ID is a frequent rescheduler tutor
+ */
+export function isFrequentReschedulerTutor(tutorId: string): boolean {
+  return tutorId === SCENARIO_IDS.FREQUENT_RESCHEDULER;
+}
+
+/**
+ * Check if a tutor ID is an ends early tutor
+ */
+export function isEndsEarlyTutor(tutorId: string): boolean {
+  return tutorId === SCENARIO_IDS.ENDS_EARLY;
+}
+
+/**
+ * Check if a tutor ID is an excellent tutor
+ */
+export function isExcellentTutor(tutorId: string): boolean {
+  return tutorId === SCENARIO_IDS.EXCELLENT;
+}
+

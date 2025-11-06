@@ -143,7 +143,12 @@ function generateSessionsForTutor(
       if (scenarioConfig.avgFirstSessionRating !== undefined && isFirstSession) {
         sessionOptions.avgFirstSessionRating = scenarioConfig.avgFirstSessionRating;
       }
-      // Other scenario overrides will be added in future tasks (2.17-2.19)
+      if (scenarioConfig.rescheduleRate !== undefined) {
+        sessionOptions.rescheduleRate = scenarioConfig.rescheduleRate;
+      }
+      if (scenarioConfig.avgEarlyEndMinutes !== undefined) {
+        sessionOptions.avgEarlyEndMinutes = scenarioConfig.avgEarlyEndMinutes;
+      }
     }
 
     sessionList.push(generateMockSession(tutor, student, sessionOptions));
@@ -285,6 +290,68 @@ export async function seedMockData(options: SeedOptions = {}) {
             console.log("   ✅ Average first session rating within expected range (1.8-2.4)");
           } else {
             console.warn(`   ⚠️  Average first session rating outside expected range (expected ~2.1)`);
+          }
+        }
+      }
+      
+      const frequentReschedulerTutorSessions = allSessions.filter(
+        (s) => s.tutorId === SCENARIO_IDS.FREQUENT_RESCHEDULER
+      );
+      if (frequentReschedulerTutorSessions.length > 0) {
+        const rescheduledCount = frequentReschedulerTutorSessions.filter(
+          (s) => s.wasRescheduled
+        ).length;
+        const rescheduleRate = (rescheduledCount / frequentReschedulerTutorSessions.length) * 100;
+        console.log(
+          `   Frequent rescheduler tutor (${SCENARIO_IDS.FREQUENT_RESCHEDULER}): ${rescheduledCount}/${frequentReschedulerTutorSessions.length} rescheduled (${rescheduleRate.toFixed(1)}%)`
+        );
+        if (rescheduleRate >= 25 && rescheduleRate <= 35) {
+          console.log("   ✅ Reschedule rate within expected range (25-35%)");
+        } else {
+          console.warn(`   ⚠️  Reschedule rate outside expected range (expected ~30%)`);
+        }
+      }
+      
+      const endsEarlyTutorSessions = allSessions.filter(
+        (s) => s.tutorId === SCENARIO_IDS.ENDS_EARLY && s.tutorLeaveTime !== null && s.tutorLeaveTime !== undefined
+      );
+      if (endsEarlyTutorSessions.length > 0) {
+        const earlyEndValues = endsEarlyTutorSessions.map((s) => {
+          const leaveTime = s.tutorLeaveTime instanceof Date ? s.tutorLeaveTime : new Date(s.tutorLeaveTime!);
+          const scheduledEnd = s.sessionEndTime instanceof Date ? s.sessionEndTime : new Date(s.sessionEndTime);
+          return differenceInMinutes(leaveTime, scheduledEnd); // Negative = early
+        });
+        const avgEarlyEnd = earlyEndValues.reduce((sum, val) => sum + Math.abs(val), 0) / earlyEndValues.length;
+        console.log(
+          `   Ends early tutor (${SCENARIO_IDS.ENDS_EARLY}): Avg early end ${avgEarlyEnd.toFixed(1)} min (${endsEarlyTutorSessions.length} sessions)`
+        );
+        if (avgEarlyEnd >= 18 && avgEarlyEnd <= 22) {
+          console.log("   ✅ Average early end within expected range (18-22 min)");
+        } else {
+          console.warn(`   ⚠️  Average early end outside expected range (expected ~20 min)`);
+        }
+      }
+      
+      const excellentTutorSessions = allSessions.filter(
+        (s) => s.tutorId === SCENARIO_IDS.EXCELLENT
+      );
+      if (excellentTutorSessions.length > 0) {
+        const sessionsWithRatings = excellentTutorSessions.filter(
+          (s) => s.studentFeedbackRating !== null && s.studentFeedbackRating !== undefined
+        );
+        if (sessionsWithRatings.length > 0) {
+          const avgRating = sessionsWithRatings.reduce(
+            (sum, s) => sum + (s.studentFeedbackRating || 0),
+            0
+          ) / sessionsWithRatings.length;
+          const noShowCount = excellentTutorSessions.filter(
+            (s) => s.tutorJoinTime === null || s.tutorJoinTime === undefined
+          ).length;
+          console.log(
+            `   Excellent tutor (${SCENARIO_IDS.EXCELLENT}): Avg rating ${avgRating.toFixed(2)}, ${noShowCount} no-shows (${excellentTutorSessions.length} sessions)`
+          );
+          if (avgRating >= 4.5 && noShowCount === 0) {
+            console.log("   ✅ Excellent tutor metrics within expected range");
           }
         }
       }
