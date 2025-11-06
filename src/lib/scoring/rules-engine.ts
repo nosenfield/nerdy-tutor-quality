@@ -779,3 +779,87 @@ export async function getTutorStats(
   };
 }
 
+/**
+ * High Reschedule Rate Detection Rule
+ * 
+ * Detects when a tutor has a reschedule rate above the configured threshold.
+ * Default threshold is 15% (configurable via RulesEngineConfig).
+ * 
+ * This is an aggregate-level rule that evaluates tutor statistics over a time window.
+ * Requires minimum number of sessions (config.minSessionsForAggregateRules) to trigger.
+ * 
+ * @param context - Rule evaluation context (must include tutorStats)
+ * @returns RuleResult indicating if high reschedule rate flag should be created
+ */
+export function detectHighRescheduleRate(context: RuleContext): RuleResult {
+  const { tutorStats, config } = context;
+
+  // Aggregate-level rule requires tutor stats
+  if (!tutorStats) {
+    return createNoTriggerResult("high_reschedule_rate");
+  }
+
+  // Require minimum sessions for aggregate rules
+  if (tutorStats.totalSessions < config.minSessionsForAggregateRules) {
+    return createNoTriggerResult("high_reschedule_rate");
+  }
+
+  // Check if reschedule rate exceeds threshold
+  if (
+    tutorStats.rescheduleRate === null ||
+    tutorStats.rescheduleRate <= config.highRescheduleRateThreshold
+  ) {
+    return createNoTriggerResult("high_reschedule_rate");
+  }
+
+  // Determine severity based on reschedule rate
+  let severity: FlagSeverity;
+  const reschedulePercent = tutorStats.rescheduleRate * 100;
+  if (reschedulePercent >= 30) {
+    severity = "critical"; // Very high (>30%)
+  } else if (reschedulePercent >= 25) {
+    severity = "high"; // High (25-30%)
+  } else if (reschedulePercent >= 20) {
+    severity = "medium"; // Moderate (20-25%)
+  } else {
+    severity = "low"; // Slightly above threshold (15-20%)
+  }
+
+  // Calculate tutor-initiated percentage
+  const tutorInitiatedPercent =
+    tutorStats.totalSessions > 0
+      ? (tutorStats.tutorInitiatedReschedules / tutorStats.totalSessions) * 100
+      : 0;
+
+  return createRuleResult(
+    "high_reschedule_rate",
+    severity,
+    `High reschedule rate: ${reschedulePercent.toFixed(1)}% (${tutorStats.rescheduleCount}/${tutorStats.totalSessions} sessions)`,
+    `Tutor ${tutorStats.tutorId} has rescheduled ${tutorStats.rescheduleCount} out of ${tutorStats.totalSessions} sessions (${reschedulePercent.toFixed(1)}%) in the last ${config.aggregateWindowDays} days. ${tutorInitiatedPercent.toFixed(1)}% were tutor-initiated. High reschedule rates can indicate scheduling issues or reliability problems.`,
+    {
+      recommendedAction: "Review tutor's schedule management and availability. Discuss rescheduling patterns and identify root causes. Consider coaching on time management and commitment if tutor-initiated reschedules are high.",
+      supportingData: {
+        sessions: tutorStats.recentSessions
+          ?.filter((s) => s.wasRescheduled)
+          .slice(0, 10)
+          .map((s) => ({
+            sessionId: s.sessionId,
+            date: s.sessionStartTime.toISOString(),
+            reason: `Rescheduled by ${s.rescheduledBy || "unknown"}`,
+          })),
+        metrics: {
+          rescheduleRate: tutorStats.rescheduleRate,
+          rescheduleCount: tutorStats.rescheduleCount,
+          totalSessions: tutorStats.totalSessions,
+          tutorInitiatedReschedules: tutorStats.tutorInitiatedReschedules,
+          tutorInitiatedPercent,
+          threshold: config.highRescheduleRateThreshold,
+          windowDays: config.aggregateWindowDays,
+        },
+        trend: tutorStats.ratingTrend,
+      },
+      confidence: 0.9, // High confidence - reschedule rate is measurable
+    }
+  );
+}
+
