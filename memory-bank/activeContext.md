@@ -55,6 +55,7 @@ Next phases:
 - [x] DL-2: State Management (Zustand) ✅
 - [x] DL-3: Mock Data Generator ✅
 - [x] CC-1: Page Layout ✅
+- [x] CC-2: Scatter Plot Component (Base) ✅
 
 ### Near-Term (This Week - Phase 3)
 - [ ] Create aggregator.ts to combine all signals
