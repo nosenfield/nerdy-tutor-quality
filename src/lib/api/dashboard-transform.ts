@@ -7,16 +7,91 @@
 
 import type { TutorScore } from "@/lib/types/tutor";
 import type { TutorSummary, TutorDetail } from "@/lib/types/dashboard";
-import { db, tutorScores, flags } from "@/lib/db";
-import { eq, and, gte, lte, inArray } from "drizzle-orm";
+import { db, tutorScores, flags, sessions } from "@/lib/db";
+import { eq, and, gte, lte, inArray, asc } from "drizzle-orm";
+import { isNoShow } from "@/lib/utils/time";
+
+/**
+ * Calculate first session metrics from sessions table
+ * 
+ * Aggregates attendance and kept rates across all first sessions (isFirstSession = true)
+ * for a tutor within the date range. A tutor can have multiple first sessions (one per student).
+ * 
+ * - Attendance: Percentage of first sessions where tutor attended (not a no-show)
+ * - Kept: Percentage of first sessions that were kept (not rescheduled)
+ */
+async function calculateFirstSessionMetrics(
+  tutorId: string,
+  dateRange: { start: Date; end: Date }
+): Promise<{
+  attendancePercentage?: number;
+  keptSessionsPercentage?: number;
+}> {
+  try {
+    // Query all first sessions (isFirstSession = true) for this tutor within the date range
+    // A tutor can have multiple first sessions (one per student)
+    const firstSessions = await db
+      .select()
+      .from(sessions)
+      .where(
+        and(
+          eq(sessions.tutorId, tutorId),
+          eq(sessions.isFirstSession, true),
+          gte(sessions.sessionStartTime, dateRange.start),
+          lte(sessions.sessionStartTime, dateRange.end)
+        )
+      );
+
+    if (firstSessions.length === 0) {
+      return {
+        attendancePercentage: undefined,
+        keptSessionsPercentage: undefined,
+      };
+    }
+
+    // Calculate attendance percentage across all first sessions
+    // Attendance = percentage of first sessions where tutor attended (not a no-show)
+    const noShowCount = firstSessions.filter((s) =>
+      isNoShow(s.tutorJoinTime)
+    ).length;
+    const attendancePercentage =
+      firstSessions.length > 0
+        ? Math.max(0, (1 - noShowCount / firstSessions.length) * 100)
+        : undefined;
+
+    // Calculate kept sessions percentage across all first sessions
+    // Kept = percentage of first sessions that were kept (not rescheduled)
+    const rescheduledCount = firstSessions.filter(
+      (s) => s.wasRescheduled
+    ).length;
+    const keptSessionsPercentage =
+      firstSessions.length > 0
+        ? Math.max(0, (1 - rescheduledCount / firstSessions.length) * 100)
+        : undefined;
+
+    return {
+      attendancePercentage,
+      keptSessionsPercentage,
+    };
+  } catch (error) {
+    console.error(
+      `Error calculating first session metrics for tutor ${tutorId}:`,
+      error
+    );
+    return {
+      attendancePercentage: undefined,
+      keptSessionsPercentage: undefined,
+    };
+  }
+}
 
 /**
  * Transform TutorScore to TutorSummary
  */
-export function transformTutorScoreToSummary(
+export async function transformTutorScoreToSummary(
   score: TutorScore,
   activeFlags: Array<{ type: string; severity: string }> = []
-): TutorSummary {
+): Promise<TutorSummary> {
   // Calculate attendance percentage (100% - no_show_rate)
   const noShowRate = score.noShowRate ? Number(score.noShowRate) : 0;
   const attendancePercentage = Math.max(0, (1 - noShowRate) * 100);
@@ -42,6 +117,15 @@ export function transformTutorScoreToSummary(
   // Extract risk flags
   const riskFlagTypes = activeFlags.map((flag) => flag.type);
 
+  // Calculate first session metrics from sessions table
+  const firstSessionMetrics = await calculateFirstSessionMetrics(
+    score.tutorId,
+    {
+      start: score.windowStart,
+      end: score.windowEnd,
+    }
+  );
+
   return {
     tutorId: score.tutorId,
     totalSessions: score.totalSessions,
@@ -49,6 +133,8 @@ export function transformTutorScoreToSummary(
     keptSessionsPercentage,
     avgRating,
     firstSessionAvgRating,
+    firstSessionAttendancePercentage: firstSessionMetrics.attendancePercentage,
+    firstSessionKeptSessionsPercentage: firstSessionMetrics.keptSessionsPercentage,
     daysOnPlatform,
     riskFlags: riskFlagTypes,
   };

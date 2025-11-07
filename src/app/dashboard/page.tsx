@@ -4,7 +4,6 @@ import { useMemo, useState, useEffect } from "react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import { ScatterPlot } from "@/components/dashboard/ScatterPlot";
-import { QualityPlot } from "@/components/dashboard/QualityPlot";
 import { TutorDetailCard } from "@/components/dashboard/TutorDetailCard";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import { useTutorSessions } from "@/lib/hooks/useDashboardData";
@@ -32,6 +31,7 @@ export default function DashboardPage() {
     setForceMockData,
     lastRefreshAt,
     setLastRefreshAt,
+    qualityView,
   } = useDashboardStore();
   const queryClient = useQueryClient();
   const { data: tutorsResponse, isLoading, dataUpdatedAt } = useTutorSessions(
@@ -66,47 +66,62 @@ export default function DashboardPage() {
     };
   }, [tutorsResponse]);
 
-  // Transform data for plots
+  // Transform data for plots - respect qualityView toggle
   const attendanceData: ScatterPlotDataPoint[] = useMemo(
     () =>
-      displayTutors.map((tutor) => ({
-        x: tutor.totalSessions,
-        y: tutor.attendancePercentage,
-        tutorId: tutor.tutorId,
-      })),
-    [displayTutors]
+      displayTutors
+        .filter((tutor) =>
+          qualityView === "first"
+            ? tutor.firstSessionAttendancePercentage !== undefined
+            : true
+        )
+        .map((tutor) => ({
+          x: tutor.totalSessions,
+          y:
+            qualityView === "first"
+              ? tutor.firstSessionAttendancePercentage || tutor.attendancePercentage
+              : tutor.attendancePercentage,
+          tutorId: tutor.tutorId,
+        })),
+    [displayTutors, qualityView]
   );
 
   const reschedulesData: ScatterPlotDataPoint[] = useMemo(
     () =>
-      displayTutors.map((tutor) => ({
-        x: tutor.totalSessions,
-        y: tutor.keptSessionsPercentage,
-        tutorId: tutor.tutorId,
-      })),
-    [displayTutors]
+      displayTutors
+        .filter((tutor) =>
+          qualityView === "first"
+            ? tutor.firstSessionKeptSessionsPercentage !== undefined
+            : true
+        )
+        .map((tutor) => ({
+          x: tutor.totalSessions,
+          y:
+            qualityView === "first"
+              ? tutor.firstSessionKeptSessionsPercentage || tutor.keptSessionsPercentage
+              : tutor.keptSessionsPercentage,
+          tutorId: tutor.tutorId,
+        })),
+    [displayTutors, qualityView]
   );
 
   const qualityData: ScatterPlotDataPoint[] = useMemo(
     () =>
-      displayTutors.map((tutor) => ({
-        x: tutor.totalSessions,
-        y: tutor.avgRating * 20, // Convert to percentage (5.0 = 100%)
-        tutorId: tutor.tutorId,
-      })),
-    [displayTutors]
-  );
-
-  const firstSessionQualityData: ScatterPlotDataPoint[] = useMemo(
-    () =>
       displayTutors
-        .filter((tutor) => tutor.firstSessionAvgRating !== undefined)
+        .filter((tutor) =>
+          qualityView === "first"
+            ? tutor.firstSessionAvgRating !== undefined
+            : true
+        )
         .map((tutor) => ({
           x: tutor.totalSessions,
-          y: (tutor.firstSessionAvgRating || 0) * 20, // Convert to percentage
+          y:
+            qualityView === "first"
+              ? tutor.firstSessionAvgRating || tutor.avgRating
+              : tutor.avgRating, // Use 1-5 rating scale directly
           tutorId: tutor.tutorId,
         })),
-    [displayTutors]
+    [displayTutors, qualityView]
   );
 
   // Handle dot click
@@ -251,7 +266,11 @@ export default function DashboardPage() {
                   title="Tutor Attendance"
                   data={attendanceData}
                   xLabel="Total Sessions"
-                  yLabel="Attendance %"
+                  yLabel={
+                    qualityView === "first"
+                      ? "First Session Attendance %"
+                      : "Attendance %"
+                  }
                   onDotClick={handleDotClick}
                   selectedTutorId={selectedTutorId}
                   plotType="attendance"
@@ -266,15 +285,19 @@ export default function DashboardPage() {
                   <p className="text-gray-500 text-sm">Loading...</p>
                 </div>
               ) : (
-                <ScatterPlot
-                  title="Sessions Kept"
-                  data={reschedulesData}
-                  xLabel="Total Sessions"
-                  yLabel="Sessions Kept %"
-                  onDotClick={handleDotClick}
-                  selectedTutorId={selectedTutorId}
-                  plotType="reschedules"
-                />
+                      <ScatterPlot
+                        title="Sessions Kept"
+                        data={reschedulesData}
+                        xLabel="Total Sessions"
+                        yLabel={
+                          qualityView === "first"
+                            ? "First Session Kept %"
+                            : "Sessions Kept %"
+                        }
+                        onDotClick={handleDotClick}
+                        selectedTutorId={selectedTutorId}
+                        plotType="reschedules"
+                      />
               )}
             </div>
 
@@ -285,15 +308,19 @@ export default function DashboardPage() {
                   <p className="text-gray-500 text-sm">Loading...</p>
                 </div>
               ) : (
-                <QualityPlot
-                  title="Tutor Quality"
-                  allSessionsData={qualityData}
-                  firstSessionsData={firstSessionQualityData}
-                  xLabel="Total Sessions"
-                  onDotClick={handleDotClick}
-                  selectedTutorId={selectedTutorId}
-                  plotType="quality"
-                />
+                      <ScatterPlot
+                        title="Tutor Quality"
+                        data={qualityData}
+                        xLabel="Total Sessions"
+                        yLabel={
+                          qualityView === "first"
+                            ? "First Session Rating"
+                            : "Average Rating"
+                        }
+                        onDotClick={handleDotClick}
+                        selectedTutorId={selectedTutorId}
+                        plotType="quality"
+                      />
               )}
             </div>
           </div>

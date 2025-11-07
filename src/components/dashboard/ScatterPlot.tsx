@@ -53,7 +53,10 @@ export function ScatterPlot({
 }: ScatterPlotProps) {
   const { setFullscreenPlot } = useDashboardStore();
   const [xDomain, setXDomain] = useState<[number, number]>([0, 150]);
-  const [yDomain, setYDomain] = useState<[number, number]>([0, 100]);
+  // Quality plot uses 1-5 rating scale, others use 0-100 percentage
+  const [yDomain, setYDomain] = useState<[number, number]>(
+    plotType === "quality" ? [0, 5] : [0, 100]
+  );
   // Transform data for Recharts (expects { x, y } format)
   const chartData = data.map((point) => ({
     x: point.x,
@@ -87,16 +90,18 @@ export function ScatterPlot({
   const displayZones = normalizedZones;
 
   // Extract threshold values from zones for threshold lines
+  // For quality plot (1-5 scale), filter values between 0 and 5; for others (0-100), filter between 0 and 100
+  const maxYValue = plotType === "quality" ? 5 : 100;
   const thresholdValues = Array.from(
     new Set(
-      displayZones.flatMap((zone) => [zone.min, zone.max]).filter((v) => v > 0 && v < 100)
+      displayZones.flatMap((zone) => [zone.min, zone.max]).filter((v) => v > 0 && v < maxYValue)
     )
   ).sort((a, b) => a - b);
 
   // Handle reset view
   const handleResetView = () => {
     setXDomain([0, 150]);
-    setYDomain([0, 100]);
+    setYDomain(plotType === "quality" ? [0, 5] : [0, 100]);
   };
 
   // Handle fullscreen
@@ -124,7 +129,7 @@ export function ScatterPlot({
           opacity={1}
           style={{ cursor: "pointer" }}
           onClick={() => onDotClick(payload.tutorId)}
-          aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${payload.y}%`}
+          aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${plotType === "quality" ? payload.y : `${payload.y}%`}`}
         />
       );
     }
@@ -139,7 +144,7 @@ export function ScatterPlot({
         opacity={selectedTutorId ? 0.6 : CHART_THEME.dot.default.opacity} // Dim if another is selected
         style={{ cursor: "pointer" }}
         onClick={() => onDotClick(payload.tutorId)}
-        aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${payload.y}%`}
+          aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${plotType === "quality" ? payload.y : `${payload.y}%`}`}
       />
     );
   };
@@ -270,7 +275,7 @@ export function ScatterPlot({
                       {xLabel}: {data.x}
                     </p>
                     <p className="text-sm text-gray-600">
-                      {yLabel}: {data.y.toFixed(1)}%
+                      {yLabel}: {plotType === "quality" ? data.y.toFixed(1) : `${data.y.toFixed(1)}%`}
                     </p>
                   </div>
                 );

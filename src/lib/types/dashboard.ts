@@ -23,6 +23,8 @@ export interface TutorSummary {
   keptSessionsPercentage: number;
   avgRating: number;
   firstSessionAvgRating?: number;
+  firstSessionAttendancePercentage?: number;
+  firstSessionKeptSessionsPercentage?: number;
   daysOnPlatform: number;
   riskFlags: string[];
 }

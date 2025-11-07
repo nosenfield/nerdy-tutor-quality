@@ -35,6 +35,8 @@ function generateMockTutorSummary(
   let keptSessionsPercentage: number;
   let avgRating: number;
   let firstSessionAvgRating: number | undefined;
+  let firstSessionAttendancePercentage: number | undefined;
+  let firstSessionKeptSessionsPercentage: number | undefined;
   let riskFlags: string[] = [];
 
   if (index < zoneThreshold) {
@@ -43,12 +45,18 @@ function generateMockTutorSummary(
     keptSessionsPercentage = faker.number.float({ min: 85, max: 100, fractionDigits: 1 });
     avgRating = faker.number.float({ min: 4.0, max: 5.0, fractionDigits: 1 });
     firstSessionAvgRating = faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 });
+    // First sessions typically have slightly lower attendance/kept rates
+    firstSessionAttendancePercentage = faker.number.float({ min: 85, max: 98, fractionDigits: 1 });
+    firstSessionKeptSessionsPercentage = faker.number.float({ min: 80, max: 95, fractionDigits: 1 });
   } else if (index < warningThreshold) {
     // Warning zone (70-90% attendance)
     attendancePercentage = faker.number.float({ min: 70, max: 90, fractionDigits: 1 });
     keptSessionsPercentage = faker.number.float({ min: 60, max: 85, fractionDigits: 1 });
     avgRating = faker.number.float({ min: 3.0, max: 4.5, fractionDigits: 1 });
     firstSessionAvgRating = faker.number.float({ min: 2.5, max: 4.0, fractionDigits: 1 });
+    // First sessions may have more issues
+    firstSessionAttendancePercentage = faker.number.float({ min: 60, max: 85, fractionDigits: 1 });
+    firstSessionKeptSessionsPercentage = faker.number.float({ min: 50, max: 80, fractionDigits: 1 });
     riskFlags = ["low-attendance"];
   } else {
     // Risk zone (<70% attendance)
@@ -56,6 +64,9 @@ function generateMockTutorSummary(
     keptSessionsPercentage = faker.number.float({ min: 40, max: 70, fractionDigits: 1 });
     avgRating = faker.number.float({ min: 2.0, max: 3.5, fractionDigits: 1 });
     firstSessionAvgRating = faker.number.float({ min: 1.5, max: 3.0, fractionDigits: 1 });
+    // First sessions often have worse metrics
+    firstSessionAttendancePercentage = faker.number.float({ min: 20, max: 65, fractionDigits: 1 });
+    firstSessionKeptSessionsPercentage = faker.number.float({ min: 30, max: 65, fractionDigits: 1 });
     riskFlags = ["low-attendance", "low-rating"];
   }
 
@@ -90,6 +101,8 @@ function generateMockTutorSummary(
     keptSessionsPercentage,
     avgRating,
     firstSessionAvgRating,
+    firstSessionAttendancePercentage,
+    firstSessionKeptSessionsPercentage,
     daysOnPlatform,
     riskFlags,
   };
@@ -142,6 +155,8 @@ function generateAlternateMockTutorSummary(
   let keptSessionsPercentage: number;
   let avgRating: number;
   let firstSessionAvgRating: number | undefined;
+  let firstSessionAttendancePercentage: number | undefined;
+  let firstSessionKeptSessionsPercentage: number | undefined;
   let riskFlags: string[] = [];
 
   if (index < zoneThreshold) {
@@ -150,12 +165,16 @@ function generateAlternateMockTutorSummary(
     keptSessionsPercentage = faker.number.float({ min: 80, max: 95, fractionDigits: 1 });
     avgRating = faker.number.float({ min: 3.8, max: 4.8, fractionDigits: 1 });
     firstSessionAvgRating = faker.number.float({ min: 3.2, max: 4.8, fractionDigits: 1 });
+    firstSessionAttendancePercentage = faker.number.float({ min: 80, max: 95, fractionDigits: 1 });
+    firstSessionKeptSessionsPercentage = faker.number.float({ min: 75, max: 90, fractionDigits: 1 });
   } else if (index < warningThreshold) {
     // Warning zone - wider range
     attendancePercentage = faker.number.float({ min: 65, max: 85, fractionDigits: 1 });
     keptSessionsPercentage = faker.number.float({ min: 55, max: 80, fractionDigits: 1 });
     avgRating = faker.number.float({ min: 2.8, max: 4.2, fractionDigits: 1 });
     firstSessionAvgRating = faker.number.float({ min: 2.2, max: 3.8, fractionDigits: 1 });
+    firstSessionAttendancePercentage = faker.number.float({ min: 55, max: 80, fractionDigits: 1 });
+    firstSessionKeptSessionsPercentage = faker.number.float({ min: 45, max: 75, fractionDigits: 1 });
     riskFlags = ["low-attendance"];
   } else {
     // Risk zone - more extreme values
@@ -163,6 +182,8 @@ function generateAlternateMockTutorSummary(
     keptSessionsPercentage = faker.number.float({ min: 30, max: 65, fractionDigits: 1 });
     avgRating = faker.number.float({ min: 1.5, max: 3.2, fractionDigits: 1 });
     firstSessionAvgRating = faker.number.float({ min: 1.0, max: 2.8, fractionDigits: 1 });
+    firstSessionAttendancePercentage = faker.number.float({ min: 15, max: 60, fractionDigits: 1 });
+    firstSessionKeptSessionsPercentage = faker.number.float({ min: 25, max: 60, fractionDigits: 1 });
     riskFlags = ["low-attendance", "low-rating"];
   }
 
@@ -192,6 +213,8 @@ function generateAlternateMockTutorSummary(
     keptSessionsPercentage,
     avgRating,
     firstSessionAvgRating: totalSessions > 5 ? firstSessionAvgRating : undefined,
+    firstSessionAttendancePercentage: totalSessions > 5 ? firstSessionAttendancePercentage : undefined,
+    firstSessionKeptSessionsPercentage: totalSessions > 5 ? firstSessionKeptSessionsPercentage : undefined,
     daysOnPlatform,
     riskFlags,
   };
