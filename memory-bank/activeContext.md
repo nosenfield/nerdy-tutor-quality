@@ -51,7 +51,7 @@ Next phases:
 - [x] PS-0: Codebase cleanup and dependency verification ✅
 - [x] PS-1: Initialize Dashboard Module ✅ (page created, TanStack Query provider, Tailwind theme)
 - [x] PS-2: TypeScript interfaces for dashboard ✅
-- [ ] DL-1: API Integration (TanStack Query hooks)
+- [x] DL-1: API Integration (TanStack Query hooks) ✅
 
 ### Near-Term (This Week - Phase 3)
 - [ ] Create aggregator.ts to combine all signals
