@@ -113,6 +113,7 @@
 - [x] CC-1: Page Layout ✅
 - [x] CC-2: Scatter Plot Component (Base) ✅
 - [x] CC-3: Scatter Plot - Threshold Zones ✅
+- [x] CC-4: Scatter Plot - First Session Toggle ✅
 - [ ] Dashboard layout component
 - [ ] Dashboard home page (overview stats)
 - [ ] Stats overview component (KPI cards)
