@@ -7,7 +7,6 @@ import { ScatterPlot } from "@/components/dashboard/ScatterPlot";
 import { TutorDetailCard } from "@/components/dashboard/TutorDetailCard";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import { useTutorSessions } from "@/lib/hooks/useDashboardData";
-import { generateMockTutorSummaries } from "@/lib/mock-data/dashboard";
 import type {
   ScatterPlotDataPoint,
   TutorSummary,
@@ -34,7 +33,7 @@ export default function DashboardPage() {
     qualityView,
   } = useDashboardStore();
   const queryClient = useQueryClient();
-  const { data: tutorsResponse, isLoading, dataUpdatedAt } = useTutorSessions(
+  const { data: tutorsResponse, isLoading, error, dataUpdatedAt } = useTutorSessions(
     dateRange,
     forceMockData
   );
@@ -53,16 +52,16 @@ export default function DashboardPage() {
           displayTutors: (tutorsResponse.data as TutorSummary[]) || [],
         };
       }
-      // Fallback: assume it's an array (old format or error)
+      // Fallback: assume it's an array (old format)
       if (Array.isArray(tutorsResponse)) {
         return {
           displayTutors: tutorsResponse,
         };
       }
     }
-    // If API returns empty, use mock data as final fallback
+    // If API returns empty, return empty array (no fallback to mock data)
     return {
-      displayTutors: generateMockTutorSummaries(150, 42),
+      displayTutors: [],
     };
   }, [tutorsResponse]);
 
@@ -141,13 +140,15 @@ export default function DashboardPage() {
   };
 
   // Handle data source toggle
+  // When toggle is ON (enabled = true), show LIVE data (forceMockData = false)
+  // When toggle is OFF (enabled = false), show MOCK data (forceMockData = true)
   const handleDataSourceToggle = (enabled: boolean) => {
     setIsRefreshing(true);
-    setForceMockData(enabled);
+    setForceMockData(!enabled); // Reverse: enabled = live, !enabled = mock
     // Invalidate all queries to refresh data
     queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     setLastRefreshAt(new Date());
-    
+
     // Ensure animation plays for at least 500ms
     setTimeout(() => {
       if (!isLoading) {
@@ -209,18 +210,18 @@ export default function DashboardPage() {
             {/* Data Source Toggle */}
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-700">
-                {forceMockData ? "Mock" : "Live"}
+                {isMockData ? "Mock" : "Live"}
               </span>
               <Switch
-                checked={forceMockData}
+                checked={!forceMockData} // Toggle ON = Live (forceMockData = false)
                 onChange={handleDataSourceToggle}
                 className={`${
-                  forceMockData ? "bg-yellow-500" : "bg-green-500"
+                  !forceMockData ? "bg-green-500" : "bg-yellow-500"
                 } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
               >
                 <span
                   className={`${
-                    forceMockData ? "translate-x-6" : "translate-x-1"
+                    !forceMockData ? "translate-x-6" : "translate-x-1"
                   } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                 />
               </Switch>
@@ -245,6 +246,37 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="p-6">
         <div className="max-w-7xl mx-auto space-y-6">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-center gap-2">
+                <div className="flex-shrink-0">
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-red-800">
+                    Failed to load tutor data
+                  </h3>
+                  <p className="mt-1 text-sm text-red-700">
+                    {error instanceof Error
+                      ? error.message
+                      : "Unable to fetch data from the database. Please check your connection and try again."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Date Range Filter */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <DateRangeFilter

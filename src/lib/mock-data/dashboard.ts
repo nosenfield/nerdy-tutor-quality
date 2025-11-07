@@ -111,12 +111,12 @@ function generateMockTutorSummary(
 /**
  * Generate mock tutor summaries for dashboard
  * 
- * @param count Number of tutors to generate (default: 150)
+ * @param count Number of tutors to generate (default: 10)
  * @param seed Optional seed for reproducible data
  * @returns Array of TutorSummary objects
  */
 export function generateMockTutorSummaries(
-  count: number = 150,
+  count: number = 10,
   seed?: number
 ): TutorSummary[] {
   if (seed !== undefined) {
@@ -124,9 +124,132 @@ export function generateMockTutorSummaries(
   }
 
   const tutors: TutorSummary[] = [];
+  
   for (let i = 0; i < count; i++) {
     const tutorId = `tutor_${i.toString().padStart(4, "0")}`;
-    tutors.push(generateMockTutorSummary(tutorId, i, count));
+    
+    // Generate specific tutors based on requirements
+    if (i === 0) {
+      // Tutor 0: 100% attendance, 100% sessions kept, 5/5 rating, 8 sessions
+      tutors.push({
+        tutorId,
+        totalSessions: 8,
+        attendancePercentage: 100,
+        keptSessionsPercentage: 100,
+        avgRating: 5.0,
+        firstSessionAvgRating: 5.0,
+        firstSessionAttendancePercentage: 100,
+        firstSessionKeptSessionsPercentage: 100,
+        daysOnPlatform: Math.max(1, Math.floor(8 * 1.5)),
+        riskFlags: [],
+      });
+    } else if (i === 1) {
+      // Tutor 1: 100% attendance, 100% sessions kept, 5/5 rating, 1 session
+      tutors.push({
+        tutorId,
+        totalSessions: 1,
+        attendancePercentage: 100,
+        keptSessionsPercentage: 100,
+        avgRating: 5.0,
+        firstSessionAvgRating: 5.0,
+        firstSessionAttendancePercentage: 100,
+        firstSessionKeptSessionsPercentage: 100,
+        daysOnPlatform: 1,
+        riskFlags: [],
+      });
+    } else if (i === 2) {
+      // Tutor 2: 10 total sessions (normal profile)
+      tutors.push({
+        tutorId,
+        totalSessions: 10,
+        attendancePercentage: faker.number.float({ min: 80, max: 95, fractionDigits: 1 }),
+        keptSessionsPercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
+        avgRating: faker.number.float({ min: 3.5, max: 4.5, fractionDigits: 1 }),
+        firstSessionAvgRating: faker.number.float({ min: 3.0, max: 4.5, fractionDigits: 1 }),
+        firstSessionAttendancePercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
+        firstSessionKeptSessionsPercentage: faker.number.float({ min: 70, max: 85, fractionDigits: 1 }),
+        daysOnPlatform: Math.max(1, Math.floor(10 * faker.number.float({ min: 0.5, max: 2.0 }))),
+        riskFlags: [],
+      });
+    } else if (i === 3) {
+      // Tutor 3: 0% attendance, 0% sessions kept, 1/5 rating, multiple sessions (5)
+      tutors.push({
+        tutorId,
+        totalSessions: 5,
+        attendancePercentage: 0,
+        keptSessionsPercentage: 0,
+        avgRating: 1.0,
+        firstSessionAvgRating: 1.0,
+        firstSessionAttendancePercentage: 0,
+        firstSessionKeptSessionsPercentage: 0,
+        daysOnPlatform: Math.max(1, Math.floor(5 * 1.0)),
+        riskFlags: ["low-attendance", "low-rating"],
+      });
+    } else if (i === 4) {
+      // Tutor 4: 0% attendance, 0% sessions kept, 1/5 rating, 1 session
+      tutors.push({
+        tutorId,
+        totalSessions: 1,
+        attendancePercentage: 0,
+        keptSessionsPercentage: 0,
+        avgRating: 1.0,
+        firstSessionAvgRating: 1.0,
+        firstSessionAttendancePercentage: 0,
+        firstSessionKeptSessionsPercentage: 0,
+        daysOnPlatform: 1,
+        riskFlags: ["low-attendance", "low-rating"],
+      });
+    } else {
+      // Tutors 5-9: Fill with varied profiles (max 10 sessions each)
+      const totalSessions = faker.number.int({ min: 1, max: 10 });
+      const zone = i < 7 ? "safe" : i < 9 ? "warning" : "risk";
+      
+      let attendancePercentage: number;
+      let keptSessionsPercentage: number;
+      let avgRating: number;
+      let firstSessionAvgRating: number | undefined;
+      let firstSessionAttendancePercentage: number | undefined;
+      let firstSessionKeptSessionsPercentage: number | undefined;
+      let riskFlags: string[] = [];
+      
+      if (zone === "safe") {
+        attendancePercentage = faker.number.float({ min: 85, max: 100, fractionDigits: 1 });
+        keptSessionsPercentage = faker.number.float({ min: 80, max: 100, fractionDigits: 1 });
+        avgRating = faker.number.float({ min: 4.0, max: 5.0, fractionDigits: 1 });
+        firstSessionAvgRating = faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 });
+        firstSessionAttendancePercentage = faker.number.float({ min: 80, max: 100, fractionDigits: 1 });
+        firstSessionKeptSessionsPercentage = faker.number.float({ min: 75, max: 100, fractionDigits: 1 });
+      } else if (zone === "warning") {
+        attendancePercentage = faker.number.float({ min: 60, max: 85, fractionDigits: 1 });
+        keptSessionsPercentage = faker.number.float({ min: 55, max: 80, fractionDigits: 1 });
+        avgRating = faker.number.float({ min: 2.5, max: 4.0, fractionDigits: 1 });
+        firstSessionAvgRating = faker.number.float({ min: 2.0, max: 3.5, fractionDigits: 1 });
+        firstSessionAttendancePercentage = faker.number.float({ min: 55, max: 80, fractionDigits: 1 });
+        firstSessionKeptSessionsPercentage = faker.number.float({ min: 50, max: 75, fractionDigits: 1 });
+        riskFlags = ["low-attendance"];
+      } else {
+        attendancePercentage = faker.number.float({ min: 20, max: 60, fractionDigits: 1 });
+        keptSessionsPercentage = faker.number.float({ min: 25, max: 60, fractionDigits: 1 });
+        avgRating = faker.number.float({ min: 1.5, max: 2.5, fractionDigits: 1 });
+        firstSessionAvgRating = faker.number.float({ min: 1.0, max: 2.0, fractionDigits: 1 });
+        firstSessionAttendancePercentage = faker.number.float({ min: 15, max: 55, fractionDigits: 1 });
+        firstSessionKeptSessionsPercentage = faker.number.float({ min: 20, max: 55, fractionDigits: 1 });
+        riskFlags = ["low-attendance", "low-rating"];
+      }
+      
+      tutors.push({
+        tutorId,
+        totalSessions,
+        attendancePercentage,
+        keptSessionsPercentage,
+        avgRating,
+        firstSessionAvgRating: totalSessions > 1 ? firstSessionAvgRating : undefined,
+        firstSessionAttendancePercentage: totalSessions > 1 ? firstSessionAttendancePercentage : undefined,
+        firstSessionKeptSessionsPercentage: totalSessions > 1 ? firstSessionKeptSessionsPercentage : undefined,
+        daysOnPlatform: Math.max(1, Math.floor(totalSessions * faker.number.float({ min: 0.5, max: 2.0 }))),
+        riskFlags,
+      });
+    }
   }
 
   return tutors;

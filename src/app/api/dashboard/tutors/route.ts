@@ -3,14 +3,11 @@
  * 
  * Returns aggregated tutor data for scatter plots.
  * Queries tutor_scores table and transforms to TutorSummary format.
- * Falls back to mock data if database query fails.
+ * Returns error if database query fails or no data available.
  */
 
 import { NextResponse } from "next/server";
-import {
-  generateMockTutorSummaries,
-  generateAlternateMockTutorSummaries,
-} from "@/lib/mock-data/dashboard";
+import { generateAlternateMockTutorSummaries } from "@/lib/mock-data/dashboard";
 import type { TutorSummary } from "@/lib/types/dashboard";
 import {
   getLatestTutorScores,
@@ -36,7 +33,7 @@ export async function GET(request: Request) {
     // If forceMock is true, skip database and return alternate mock data
     // This ensures visual differences when switching between mock and live
     if (forceMock) {
-      const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
+      const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(10, 42);
       return NextResponse.json(tutors, {
         headers: {
           "X-Data-Source": "mock",
@@ -45,61 +42,45 @@ export async function GET(request: Request) {
       });
     }
 
-    // Try to fetch from database
-    try {
-      const scores = await getLatestTutorScores(dateRange);
+    // Fetch from database - no fallback to mock data
+    const scores = await getLatestTutorScores(dateRange);
 
-      if (scores.length === 0) {
-        // No data in database, fall back to default mock data (not alternate)
-        console.log("No tutor scores found in database, using default mock data");
-        const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
-        return NextResponse.json(tutors, {
-          headers: {
-            "X-Data-Source": "mock",
-            "X-Tutor-Count": tutors.length.toString(),
-          },
-        });
-      }
-
-      // Transform scores to summaries
-      const tutors: TutorSummary[] = await Promise.all(
-        scores.map(async (score) => {
-          const activeFlags = await getTutorActiveFlags(
-            score.tutorId,
-            dateRange
-          );
-          return transformTutorScoreToSummary(score, activeFlags);
-        })
+    if (scores.length === 0) {
+      // No data in database - return error
+      return NextResponse.json(
+        { error: "No tutor data available for the selected date range" },
+        { status: 404 }
       );
-
-      // Add metadata to indicate real data
-      return NextResponse.json(tutors, {
-        headers: {
-          "X-Data-Source": "database",
-          "X-Tutor-Count": tutors.length.toString(),
-        },
-      });
-    } catch (dbError) {
-      // Database error, fall back to default mock data (not alternate)
-      console.error("Database error, falling back to mock data:", dbError);
-      const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
-      return NextResponse.json(tutors, {
-        headers: {
-          "X-Data-Source": "mock",
-          "X-Tutor-Count": tutors.length.toString(),
-        },
-      });
     }
-  } catch (error) {
-    console.error("Error fetching tutors:", error);
-    // Final fallback to default mock data (not alternate)
-    const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+
+    // Transform scores to summaries
+    const tutors: TutorSummary[] = await Promise.all(
+      scores.map(async (score) => {
+        const activeFlags = await getTutorActiveFlags(
+          score.tutorId,
+          dateRange
+        );
+        return transformTutorScoreToSummary(score, activeFlags);
+      })
+    );
+
+    // Add metadata to indicate real data
     return NextResponse.json(tutors, {
       headers: {
-        "X-Data-Source": "mock",
+        "X-Data-Source": "database",
         "X-Tutor-Count": tutors.length.toString(),
       },
     });
+  } catch (error) {
+    console.error("Error fetching tutors:", error);
+    // Return error instead of falling back to mock data
+    return NextResponse.json(
+      { 
+        error: "Failed to fetch tutor data",
+        message: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 }
+    );
   }
 }
 

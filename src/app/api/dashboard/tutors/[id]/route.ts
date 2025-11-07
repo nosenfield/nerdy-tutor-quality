@@ -41,7 +41,7 @@ export async function GET(
         console.log(
           `No tutor score found for ${tutorId}, using mock data`
         );
-        const tutors = generateMockTutorSummaries(150, 42);
+        const tutors = generateMockTutorSummaries(10, 42);
         const tutor = tutors.find((t) => t.tutorId === tutorId);
 
         if (!tutor) {
@@ -72,7 +72,7 @@ export async function GET(
     } catch (dbError) {
       // Database error, fall back to mock data
       console.error("Database error, falling back to mock data:", dbError);
-      const tutors = generateMockTutorSummaries(150, 42);
+      const tutors = generateMockTutorSummaries(10, 42);
       const tutor = tutors.find((t) => t.tutorId === tutorId);
 
       if (!tutor) {

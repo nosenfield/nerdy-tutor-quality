@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -52,11 +52,26 @@ export function ScatterPlot({
   plotType,
 }: ScatterPlotProps) {
   const { setFullscreenPlot } = useDashboardStore();
-  const [xDomain, setXDomain] = useState<[number, number]>([0, 150]);
+  
+  // Calculate maximum total sessions from data (with 10% padding)
+  const maxTotalSessions = useMemo(() => {
+    if (data.length === 0) return 10; // Default if no data
+    const maxX = Math.max(...data.map((point) => point.x));
+    // Add 10% padding, minimum of 1, and round up to nearest integer
+    return Math.ceil(maxX * 1.1) || 10;
+  }, [data]);
+  
+  const [xDomain, setXDomain] = useState<[number, number]>([0, maxTotalSessions]);
   // Quality plot uses 1-5 rating scale, others use 0-100 percentage
   const [yDomain, setYDomain] = useState<[number, number]>(
     plotType === "quality" ? [0, 5] : [0, 100]
   );
+  
+  // Update xDomain when maxTotalSessions changes
+  useEffect(() => {
+    setXDomain([0, maxTotalSessions]);
+  }, [maxTotalSessions]);
+  
   // Transform data for Recharts (expects { x, y } format)
   const chartData = data.map((point) => ({
     x: point.x,
@@ -72,6 +87,9 @@ export function ScatterPlot({
     label: string;
   };
 
+  // Use quality-specific zones for quality plot, default zones for others
+  const defaultZones = plotType === "quality" ? CHART_THEME.qualityZones : CHART_THEME.zones;
+
   const normalizedZones: NormalizedZone[] = zones
     ? zones.map((z) => ({
         min: z.min,
@@ -79,7 +97,7 @@ export function ScatterPlot({
         fill: z.color,
         label: z.color, // Use color as label if no label provided
       }))
-    : CHART_THEME.zones.map((z) => ({
+    : defaultZones.map((z) => ({
         min: z.min,
         max: z.max,
         fill: z.fill,
@@ -100,7 +118,7 @@ export function ScatterPlot({
 
   // Handle reset view
   const handleResetView = () => {
-    setXDomain([0, 150]);
+    setXDomain([0, maxTotalSessions]);
     setYDomain(plotType === "quality" ? [0, 5] : [0, 100]);
   };
 
@@ -236,7 +254,7 @@ export function ScatterPlot({
               strokeWidth={CHART_THEME.thresholdLine.strokeWidth}
               strokeDasharray={CHART_THEME.thresholdLine.strokeDasharray}
               label={{
-                value: `${value}%`,
+                value: plotType === "quality" ? value.toFixed(1) : `${value}%`,
                 position: "right",
                 style: { fontSize: 10, fill: CHART_THEME.thresholdLine.stroke },
               }}

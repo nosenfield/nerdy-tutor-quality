@@ -38,7 +38,7 @@ export async function GET(request: Request) {
       if (scores.length === 0) {
         // No flagged tutors in database, fall back to mock data
         console.log("No flagged tutors found in database, using mock data");
-        const allTutors = generateMockTutorSummaries(150, 42);
+        const allTutors = generateMockTutorSummaries(10, 42);
         const flaggedTutors = getFlaggedTutors(allTutors);
         return NextResponse.json(flaggedTutors);
       }
@@ -58,14 +58,14 @@ export async function GET(request: Request) {
     } catch (dbError) {
       // Database error, fall back to mock data
       console.error("Database error, falling back to mock data:", dbError);
-      const allTutors = generateMockTutorSummaries(150, 42);
+      const allTutors = generateMockTutorSummaries(10, 42);
       const flaggedTutors = getFlaggedTutors(allTutors);
       return NextResponse.json(flaggedTutors);
     }
   } catch (error) {
     console.error("Error fetching flagged tutors:", error);
     // Final fallback to mock data
-    const allTutors = generateMockTutorSummaries(150, 42);
+    const allTutors = generateMockTutorSummaries(10, 42);
     const flaggedTutors = getFlaggedTutors(allTutors);
     return NextResponse.json(flaggedTutors);
   }
