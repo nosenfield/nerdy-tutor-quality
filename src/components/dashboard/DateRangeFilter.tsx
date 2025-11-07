@@ -7,7 +7,6 @@ import {
   subMonths,
   subQuarters,
   startOfToday,
-  format,
 } from "date-fns";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import type { DateRange } from "@/lib/types/dashboard";
@@ -97,12 +96,10 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
 
 interface DateRangeFilterProps {
   tutorCount?: number;
-  lastRefreshAt?: Date | null;
 }
 
 export function DateRangeFilter({
   tutorCount,
-  lastRefreshAt,
 }: DateRangeFilterProps) {
   const { dateRange, setDateRange, qualityView, setQualityView } = useDashboardStore();
   const currentFilter = getCurrentQuickFilter(dateRange);
@@ -116,14 +113,13 @@ export function DateRangeFilter({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4 flex-wrap">
-        <label className="text-sm font-medium text-gray-700">
-          Date Range:
-        </label>
-        <Listbox value={currentFilter} onChange={handleFilterChange}>
-          <div className="relative">
-            <Listbox.Button className="relative w-48 cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-sm shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm">
+    <div className="flex items-center gap-4 flex-wrap">
+      <label className="text-sm font-medium text-gray-700">
+        Date Range:
+      </label>
+      <Listbox value={currentFilter} onChange={handleFilterChange}>
+        <div className="relative">
+          <Listbox.Button className="relative w-48 cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-sm shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm">
             <span className="block truncate">
               {selectedFilter?.label || "Select range"}
             </span>
@@ -171,57 +167,51 @@ export function DateRangeFilter({
               ))}
             </Listbox.Options>
           </Transition>
-          </div>
-        </Listbox>
-        
-        {/* Quality View Toggle */}
-        <div className="flex items-center gap-2 ml-auto">
-          <label className="text-sm font-medium text-gray-700">
-            Quality View:
-          </label>
-          <RadioGroup value={qualityView} onChange={setQualityView}>
-            <div className="flex gap-2 rounded-md bg-gray-100 p-1">
-              <RadioGroup.Option value="all">
-                {({ checked }) => (
-                  <button
-                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                      checked
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    All Sessions
-                  </button>
-                )}
-              </RadioGroup.Option>
-              <RadioGroup.Option value="first">
-                {({ checked }) => (
-                  <button
-                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                      checked
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
-                  >
-                    First Only
-                  </button>
-                )}
-              </RadioGroup.Option>
-            </div>
-          </RadioGroup>
         </div>
-      </div>
-      <div className="flex items-center gap-4 text-sm text-gray-600">
-        {tutorCount !== undefined && (
-          <span className="font-medium">
-            {tutorCount} {tutorCount === 1 ? "tutor" : "tutors"}
-          </span>
-        )}
-        {lastRefreshAt && (
-          <span className="text-gray-500">
-            Refreshed at {format(lastRefreshAt, "h:mm:ss a")}
-          </span>
-        )}
+      </Listbox>
+      
+      {/* Tutor Counter */}
+      {tutorCount !== undefined && (
+        <span className="text-sm font-medium text-gray-600">
+          {tutorCount} {tutorCount === 1 ? "tutor" : "tutors"}
+        </span>
+      )}
+      
+      {/* Sessions Toggle */}
+      <div className="flex items-center gap-2 ml-auto">
+        <label className="text-sm font-medium text-gray-700">
+          Sessions:
+        </label>
+        <RadioGroup value={qualityView} onChange={setQualityView}>
+          <div className="flex gap-2 rounded-md bg-gray-100 p-1">
+            <RadioGroup.Option value="all">
+              {({ checked }) => (
+                <button
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    checked
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  All
+                </button>
+              )}
+            </RadioGroup.Option>
+            <RadioGroup.Option value="first">
+              {({ checked }) => (
+                <button
+                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    checked
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                >
+                  First
+                </button>
+              )}
+            </RadioGroup.Option>
+          </div>
+        </RadioGroup>
       </div>
     </div>
   );

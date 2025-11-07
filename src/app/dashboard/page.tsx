@@ -14,6 +14,7 @@ import type {
 import { Switch } from "@headlessui/react";
 import { RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
 
 /**
  * Tutor Assessment Dashboard
@@ -226,18 +227,25 @@ export default function DashboardPage() {
                 />
               </Switch>
             </div>
-            {/* Refresh Button */}
-            <button
-              onClick={handleRefresh}
-              disabled={isLoading || isRefreshing}
-              className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-              title="Refresh data"
-            >
-              <RefreshCw
-                className={`h-4 w-4 transition-transform ${isLoading || isRefreshing ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </button>
+                   {/* Refresh Button */}
+                   <div className="flex items-center gap-2">
+                     <button
+                       onClick={handleRefresh}
+                       disabled={isLoading || isRefreshing}
+                       className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                       title="Refresh data"
+                     >
+                       <RefreshCw
+                         className={`h-4 w-4 transition-transform ${isLoading || isRefreshing ? "animate-spin" : ""}`}
+                       />
+                       Refresh
+                     </button>
+                     {lastRefreshAt && (
+                       <span className="text-sm text-gray-500">
+                         {format(lastRefreshAt, "h:mm:ss a")}
+                       </span>
+                     )}
+                   </div>
           </div>
           <LogoutButton />
         </div>
@@ -278,12 +286,11 @@ export default function DashboardPage() {
           )}
 
           {/* Date Range Filter */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <DateRangeFilter
-              tutorCount={displayTutors.length}
-              lastRefreshAt={lastRefreshAt}
-            />
-          </div>
+                 <div className="bg-white rounded-lg shadow-sm p-6">
+                   <DateRangeFilter
+                     tutorCount={displayTutors.length}
+                   />
+                 </div>
 
           {/* Plots Grid - Responsive Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

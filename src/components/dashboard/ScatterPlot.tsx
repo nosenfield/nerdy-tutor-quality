@@ -12,7 +12,6 @@ import {
   Cell,
   ReferenceArea,
   ReferenceLine,
-  Legend,
 } from "recharts";
 import { CHART_THEME } from "@/lib/chart-theme";
 import type { ScatterPlotDataPoint } from "@/lib/types/dashboard";
@@ -201,7 +200,7 @@ export function ScatterPlot({
       {/* Chart */}
       <ResponsiveContainer width="100%" height={450}>
               <ScatterChart
-                margin={{ top: 10, right: 10, bottom: 30, left: 30 }}
+                margin={{ top: 10, right: 10, bottom: 30, left: 5 }}
                 data={chartData}
               >
           {/* Background zones - render before grid so they're behind everything */}
@@ -236,13 +235,14 @@ export function ScatterPlot({
             dataKey="y"
             name={yLabel}
             domain={yDomain}
-            label={{
-              value: yLabel,
-              angle: -90,
-              position: "insideLeft",
-              style: { textAnchor: "middle" },
-            }}
             tick={{ fontSize: 12 }}
+            tickFormatter={(value) => {
+              // Add % for attendance and sessions kept plots, not for quality plot
+              if (plotType === "quality") {
+                return value.toFixed(1);
+              }
+              return `${value}%`;
+            }}
             allowDataOverflow={false}
           />
           {/* Threshold lines at zone boundaries */}
@@ -323,25 +323,6 @@ export function ScatterPlot({
               );
             })}
           </Scatter>
-          {/* Legend */}
-          <Legend
-            content={() => (
-              <div className="flex items-center justify-center gap-4 mt-4">
-                {displayZones.map((zone, index) => (
-                  <div
-                    key={`legend-${index}`}
-                    className="flex items-center gap-2 text-sm"
-                  >
-                    <div
-                      className="w-4 h-4 rounded"
-                      style={{ backgroundColor: zone.fill }}
-                    />
-                    <span className="text-gray-700">{zone.label}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          />
         </ScatterChart>
       </ResponsiveContainer>
     </div>
