@@ -1,5 +1,4 @@
-import { createServerSupabaseClient } from "@/lib/supabase/client";
-import { redirect } from "next/navigation";
+import { createServerSupabaseClient } from "@/lib/supabase/client-server";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -21,7 +20,7 @@ export async function middleware(request: NextRequest) {
     if (!session) {
       const redirectUrl = new URL("/login", request.url);
       redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
-      return redirect(redirectUrl.toString());
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
