@@ -37,7 +37,12 @@ export async function GET(request: Request) {
         // No data in database, fall back to mock data
         console.log("No tutor scores found in database, using mock data");
         const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
-        return NextResponse.json(tutors);
+        return NextResponse.json(tutors, {
+          headers: {
+            "X-Data-Source": "mock",
+            "X-Tutor-Count": tutors.length.toString(),
+          },
+        });
       }
 
       // Transform scores to summaries
@@ -51,18 +56,34 @@ export async function GET(request: Request) {
         })
       );
 
-      return NextResponse.json(tutors);
+      // Add metadata to indicate real data
+      return NextResponse.json(tutors, {
+        headers: {
+          "X-Data-Source": "database",
+          "X-Tutor-Count": tutors.length.toString(),
+        },
+      });
     } catch (dbError) {
       // Database error, fall back to mock data
       console.error("Database error, falling back to mock data:", dbError);
       const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
-      return NextResponse.json(tutors);
+      return NextResponse.json(tutors, {
+        headers: {
+          "X-Data-Source": "mock",
+          "X-Tutor-Count": tutors.length.toString(),
+        },
+      });
     }
   } catch (error) {
     console.error("Error fetching tutors:", error);
     // Final fallback to mock data
     const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
-    return NextResponse.json(tutors);
+    return NextResponse.json(tutors, {
+      headers: {
+        "X-Data-Source": "mock",
+        "X-Tutor-Count": tutors.length.toString(),
+      },
+    });
   }
 }
 

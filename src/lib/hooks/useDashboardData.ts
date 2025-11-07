@@ -48,9 +48,18 @@ export const dashboardKeys = {
 export function useTutorSessions(dateRange: DateRange) {
   return useQuery({
     queryKey: dashboardKeys.tutors(dateRange),
-    queryFn: () => getTutors(dateRange),
+    queryFn: async () => {
+      const response = await fetch(
+        `/api/dashboard/tutors?startDate=${dateRange.start.toISOString().split("T")[0]}&endDate=${dateRange.end.toISOString().split("T")[0]}`
+      );
+      const data = await response.json();
+      // Store data source from response headers
+      const dataSource = response.headers.get("X-Data-Source") || "unknown";
+      return { data, dataSource };
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
+    select: (result) => result.data, // Extract data from result
   });
 }
 

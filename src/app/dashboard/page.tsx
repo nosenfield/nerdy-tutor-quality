@@ -9,7 +9,10 @@ import { TutorDetailCard } from "@/components/dashboard/TutorDetailCard";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import { useTutorSessions } from "@/lib/hooks/useDashboardData";
 import { generateMockTutorSummaries } from "@/lib/mock-data/dashboard";
-import type { ScatterPlotDataPoint } from "@/lib/types/dashboard";
+import type {
+  ScatterPlotDataPoint,
+  TutorSummary,
+} from "@/lib/types/dashboard";
 
 /**
  * Tutor Assessment Dashboard
@@ -19,20 +22,36 @@ import type { ScatterPlotDataPoint } from "@/lib/types/dashboard";
  */
 export default function DashboardPage() {
   const { dateRange, selectedTutorId, setSelectedTutor } = useDashboardStore();
-  const { data: tutors, isLoading } = useTutorSessions(dateRange);
+  const { data: tutorsResponse, isLoading } = useTutorSessions(dateRange);
   const [clickedDotPosition, setClickedDotPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
 
-  // Generate mock data if API data is not available
-  const displayTutors = useMemo(() => {
-    if (tutors && tutors.length > 0) {
-      return tutors;
+  // Extract data and data source from API response
+  const { displayTutors, isMockData } = useMemo(() => {
+    if (tutorsResponse) {
+      // New format: { data, dataSource }
+      if ("data" in tutorsResponse && "dataSource" in tutorsResponse) {
+        return {
+          displayTutors: (tutorsResponse.data as TutorSummary[]) || [],
+          isMockData: tutorsResponse.dataSource === "mock",
+        };
+      }
+      // Fallback: assume it's an array (old format or error)
+      if (Array.isArray(tutorsResponse)) {
+        return {
+          displayTutors: tutorsResponse,
+          isMockData: false, // Assume real data if no metadata
+        };
+      }
     }
-    // Fallback to mock data for testing
-    return generateMockTutorSummaries(150, 42);
-  }, [tutors]);
+    // If API returns empty, use mock data as final fallback
+    return {
+      displayTutors: generateMockTutorSummaries(150, 42),
+      isMockData: true,
+    };
+  }, [tutorsResponse]);
 
   // Transform data for plots
   const attendanceData: ScatterPlotDataPoint[] = useMemo(
@@ -98,9 +117,24 @@ export default function DashboardPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Tutor Assessment Dashboard
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-semibold text-gray-900">
+              Tutor Assessment Dashboard
+            </h1>
+            {/* Data Source Indicator */}
+            {isMockData && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+                <span className="h-2 w-2 rounded-full bg-yellow-400"></span>
+                Mock Data
+              </span>
+            )}
+            {!isMockData && !isLoading && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                <span className="h-2 w-2 rounded-full bg-green-400"></span>
+                Live Data
+              </span>
+            )}
+          </div>
           <LogoutButton />
         </div>
       </header>

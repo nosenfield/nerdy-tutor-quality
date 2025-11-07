@@ -14,10 +14,11 @@ import type {
 
 /**
  * Get aggregated tutor data for scatter plots
+ * Returns data with metadata about data source
  */
 export async function getTutors(
   dateRange: DateRange
-): Promise<TutorSummary[]> {
+): Promise<{ data: TutorSummary[]; dataSource: "database" | "mock" }> {
   const params = new URLSearchParams({
     startDate: dateRange.start.toISOString().split("T")[0],
     endDate: dateRange.end.toISOString().split("T")[0],
@@ -29,7 +30,11 @@ export async function getTutors(
     throw new Error(`Failed to fetch tutors: ${response.statusText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  const dataSource =
+    (response.headers.get("X-Data-Source") as "database" | "mock") || "mock";
+
+  return { data, dataSource };
 }
 
 /**
