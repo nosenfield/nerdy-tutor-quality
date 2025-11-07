@@ -53,8 +53,18 @@ export function ScatterPlot({
     tutorId: point.tutorId,
   }));
 
-  // Use provided zones or default from theme
-  const displayZones = zones || CHART_THEME.zones;
+  // Normalize zones - convert theme zones to match prop format
+  const normalizedZones = zones
+    ? zones.map((z) => ({ ...z, fill: z.color, label: z.color }))
+    : CHART_THEME.zones.map((z) => ({
+        ...z,
+        color: z.fill,
+        min: z.min,
+        max: z.max,
+      }));
+
+  // Use normalized zones
+  const displayZones = normalizedZones;
 
   // Extract threshold values from zones for threshold lines
   const thresholdValues = Array.from(
@@ -117,7 +127,7 @@ export function ScatterPlot({
               key={`zone-${index}`}
               y1={zone.min}
               y2={zone.max}
-              fill={zone.color}
+              fill={"fill" in zone ? zone.fill : zone.color}
               fillOpacity={1}
               stroke="none"
             />
@@ -232,18 +242,22 @@ export function ScatterPlot({
           <Legend
             content={() => (
               <div className="flex items-center justify-center gap-4 mt-4">
-                {displayZones.map((zone, index) => (
-                  <div
-                    key={`legend-${index}`}
-                    className="flex items-center gap-2 text-sm"
-                  >
+                {displayZones.map((zone, index) => {
+                  const fillColor = "fill" in zone ? zone.fill : zone.color;
+                  const label = "label" in zone ? zone.label : "";
+                  return (
                     <div
-                      className="w-4 h-4 rounded"
-                      style={{ backgroundColor: zone.color }}
-                    />
-                    <span className="text-gray-700">{zone.label}</span>
-                  </div>
-                ))}
+                      key={`legend-${index}`}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <div
+                        className="w-4 h-4 rounded"
+                        style={{ backgroundColor: fillColor }}
+                      />
+                      <span className="text-gray-700">{label}</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           />
