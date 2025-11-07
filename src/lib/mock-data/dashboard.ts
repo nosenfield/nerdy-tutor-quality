@@ -10,12 +10,23 @@ import type { TutorSummary, TutorDetail, DateRange } from "@/lib/types/dashboard
 
 /**
  * Generate mock tutor summary for dashboard
+ * 
+ * @param tutorId - Unique tutor identifier
+ * @param index - Index in the list (for distribution patterns)
+ * @param totalTutors - Total number of tutors (for distribution calculations)
+ * @param seed - Optional seed for reproducible data
  */
 function generateMockTutorSummary(
   tutorId: string,
   index: number,
-  totalTutors: number
+  totalTutors: number,
+  seed?: number
 ): TutorSummary {
+  // Use seed if provided for reproducibility
+  if (seed !== undefined) {
+    faker.seed(seed + index);
+  }
+
   // Determine zone based on index (70% safe, 20% warning, 10% risk)
   const zoneThreshold = Math.floor(totalTutors * 0.7);
   const warningThreshold = Math.floor(totalTutors * 0.9);
@@ -105,6 +116,107 @@ export function generateMockTutorSummaries(
     tutors.push(generateMockTutorSummary(tutorId, i, count));
   }
 
+  return tutors;
+}
+
+/**
+ * Generate alternate mock tutor summary with different distribution
+ * This creates visually distinct data for testing mock vs live switching
+ */
+function generateAlternateMockTutorSummary(
+  tutorId: string,
+  index: number,
+  totalTutors: number,
+  seed?: number
+): TutorSummary {
+  // Use seed if provided for reproducibility
+  if (seed !== undefined) {
+    faker.seed(seed + index + 10000); // Offset seed to ensure different data
+  }
+
+  // Different distribution: 50% safe, 30% warning, 20% risk (more risk than default)
+  const zoneThreshold = Math.floor(totalTutors * 0.5);
+  const warningThreshold = Math.floor(totalTutors * 0.8);
+
+  let attendancePercentage: number;
+  let keptSessionsPercentage: number;
+  let avgRating: number;
+  let firstSessionAvgRating: number | undefined;
+  let riskFlags: string[] = [];
+
+  if (index < zoneThreshold) {
+    // Safe zone - slightly lower range than default
+    attendancePercentage = faker.number.float({ min: 85, max: 98, fractionDigits: 1 });
+    keptSessionsPercentage = faker.number.float({ min: 80, max: 95, fractionDigits: 1 });
+    avgRating = faker.number.float({ min: 3.8, max: 4.8, fractionDigits: 1 });
+    firstSessionAvgRating = faker.number.float({ min: 3.2, max: 4.8, fractionDigits: 1 });
+  } else if (index < warningThreshold) {
+    // Warning zone - wider range
+    attendancePercentage = faker.number.float({ min: 65, max: 85, fractionDigits: 1 });
+    keptSessionsPercentage = faker.number.float({ min: 55, max: 80, fractionDigits: 1 });
+    avgRating = faker.number.float({ min: 2.8, max: 4.2, fractionDigits: 1 });
+    firstSessionAvgRating = faker.number.float({ min: 2.2, max: 3.8, fractionDigits: 1 });
+    riskFlags = ["low-attendance"];
+  } else {
+    // Risk zone - more extreme values
+    attendancePercentage = faker.number.float({ min: 20, max: 65, fractionDigits: 1 });
+    keptSessionsPercentage = faker.number.float({ min: 30, max: 65, fractionDigits: 1 });
+    avgRating = faker.number.float({ min: 1.5, max: 3.2, fractionDigits: 1 });
+    firstSessionAvgRating = faker.number.float({ min: 1.0, max: 2.8, fractionDigits: 1 });
+    riskFlags = ["low-attendance", "low-rating"];
+  }
+
+  // Different session count distribution - more new tutors, fewer veterans
+  let totalSessions: number;
+  if (index % 7 === 0) {
+    // More new tutors (5-15 sessions)
+    totalSessions = faker.number.int({ min: 5, max: 15 });
+  } else if (index % 15 === 0) {
+    // Fewer veteran tutors (80-150 sessions)
+    totalSessions = faker.number.int({ min: 80, max: 150 });
+  } else {
+    // Regular tutors (15-80 sessions) - narrower range
+    totalSessions = faker.number.int({ min: 15, max: 80 });
+  }
+
+  // Days on platform - different correlation
+  const daysOnPlatform = Math.max(
+    1,
+    Math.floor(totalSessions * faker.number.float({ min: 0.8, max: 1.5 }))
+  );
+
+  return {
+    tutorId,
+    totalSessions,
+    attendancePercentage,
+    keptSessionsPercentage,
+    avgRating,
+    firstSessionAvgRating: totalSessions > 5 ? firstSessionAvgRating : undefined,
+    daysOnPlatform,
+    riskFlags,
+  };
+}
+
+/**
+ * Generate alternate mock tutor summaries with different distribution
+ * This creates visually distinct data for testing mock vs live switching
+ * 
+ * @param count Number of tutors to generate (default: 150)
+ * @param seed Optional seed for reproducible data
+ * @returns Array of TutorSummary objects with different distribution
+ */
+export function generateAlternateMockTutorSummaries(
+  count: number = 150,
+  seed?: number
+): TutorSummary[] {
+  if (seed !== undefined) {
+    faker.seed(seed + 9999); // Different seed offset
+  }
+  const tutors: TutorSummary[] = [];
+  for (let i = 0; i < count; i++) {
+    const tutorId = `mock_${i.toString().padStart(4, "0")}`; // Different ID prefix
+    tutors.push(generateAlternateMockTutorSummary(tutorId, i, count, seed));
+  }
   return tutors;
 }
 

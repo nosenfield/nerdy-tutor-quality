@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import { ScatterPlot } from "@/components/dashboard/ScatterPlot";
@@ -42,6 +42,7 @@ export default function DashboardPage() {
     x: number;
     y: number;
   } | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Extract data and data source from API response
   const { displayTutors } = useMemo(() => {
@@ -126,20 +127,47 @@ export default function DashboardPage() {
 
   // Handle data source toggle
   const handleDataSourceToggle = (enabled: boolean) => {
+    setIsRefreshing(true);
     setForceMockData(enabled);
     // Invalidate all queries to refresh data
     queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     setLastRefreshAt(new Date());
+    
+    // Ensure animation plays for at least 500ms
+    setTimeout(() => {
+      if (!isLoading) {
+        setIsRefreshing(false);
+      }
+    }, 500);
   };
 
   // Handle refresh
   const handleRefresh = () => {
+    setIsRefreshing(true);
     queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     setLastRefreshAt(new Date());
+    
+    // Ensure animation plays for at least 500ms
+    setTimeout(() => {
+      if (!isLoading) {
+        setIsRefreshing(false);
+      }
+    }, 500);
   };
 
+  // Reset refreshing state when loading completes
+  useEffect(() => {
+    if (!isLoading && isRefreshing) {
+      // Small delay to ensure animation completes
+      const timer = setTimeout(() => {
+        setIsRefreshing(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, isRefreshing]);
+
   // Update lastRefreshAt when data updates
-  useMemo(() => {
+  useEffect(() => {
     if (dataUpdatedAt) {
       setLastRefreshAt(new Date(dataUpdatedAt));
     }
@@ -185,12 +213,12 @@ export default function DashboardPage() {
             {/* Refresh Button */}
             <button
               onClick={handleRefresh}
-              disabled={isLoading}
-              className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isLoading || isRefreshing}
+              className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               title="Refresh data"
             >
               <RefreshCw
-                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+                className={`h-4 w-4 transition-transform ${isLoading || isRefreshing ? "animate-spin" : ""}`}
               />
               Refresh
             </button>

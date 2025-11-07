@@ -7,7 +7,10 @@
  */
 
 import { NextResponse } from "next/server";
-import { generateMockTutorSummaries } from "@/lib/mock-data/dashboard";
+import {
+  generateMockTutorSummaries,
+  generateAlternateMockTutorSummaries,
+} from "@/lib/mock-data/dashboard";
 import type { TutorSummary } from "@/lib/types/dashboard";
 import {
   getLatestTutorScores,
@@ -30,9 +33,10 @@ export async function GET(request: Request) {
       end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
     };
 
-    // If forceMock is true, skip database and return mock data
+    // If forceMock is true, skip database and return alternate mock data
+    // This ensures visual differences when switching between mock and live
     if (forceMock) {
-      const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+      const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
       return NextResponse.json(tutors, {
         headers: {
           "X-Data-Source": "mock",
@@ -46,9 +50,9 @@ export async function GET(request: Request) {
       const scores = await getLatestTutorScores(dateRange);
 
       if (scores.length === 0) {
-        // No data in database, fall back to mock data
+        // No data in database, fall back to alternate mock data
         console.log("No tutor scores found in database, using mock data");
-        const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+        const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
         return NextResponse.json(tutors, {
           headers: {
             "X-Data-Source": "mock",
@@ -76,9 +80,9 @@ export async function GET(request: Request) {
         },
       });
     } catch (dbError) {
-      // Database error, fall back to mock data
+      // Database error, fall back to alternate mock data
       console.error("Database error, falling back to mock data:", dbError);
-      const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+      const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
       return NextResponse.json(tutors, {
         headers: {
           "X-Data-Source": "mock",
@@ -88,8 +92,8 @@ export async function GET(request: Request) {
     }
   } catch (error) {
     console.error("Error fetching tutors:", error);
-    // Final fallback to mock data
-    const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+    // Final fallback to alternate mock data
+    const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
     return NextResponse.json(tutors, {
       headers: {
         "X-Data-Source": "mock",
