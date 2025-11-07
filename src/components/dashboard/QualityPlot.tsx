@@ -16,6 +16,7 @@ export interface QualityPlotProps {
   onDotClick: (tutorId: string) => void;
   selectedTutorId?: string | null;
   zones?: Array<{ min: number; max: number; color: string }>;
+  plotType?: "attendance" | "reschedules" | "quality";
 }
 
 /**
@@ -32,6 +33,7 @@ export function QualityPlot({
   onDotClick,
   selectedTutorId,
   zones,
+  plotType,
 }: QualityPlotProps) {
   const { qualityView, setQualityView } = useDashboardStore();
 
@@ -88,6 +90,7 @@ export function QualityPlot({
         onDotClick={onDotClick}
         selectedTutorId={selectedTutorId}
         zones={zones}
+        plotType={plotType}
       />
     </div>
   );
