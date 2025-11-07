@@ -13,10 +13,11 @@ import {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const tutorId = params.id;
+    const { id } = await params;
+    const tutorId = id;
 
     // Generate mock data and find tutor
     const tutors = generateMockTutorSummaries(150, 42);

@@ -10,10 +10,11 @@ import { faker } from "@faker-js/faker";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const tutorId = params.id;
+    const { id } = await params;
+    const tutorId = id;
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "50");
