@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -15,6 +16,8 @@ import {
 } from "recharts";
 import { CHART_THEME } from "@/lib/chart-theme";
 import type { ScatterPlotDataPoint } from "@/lib/types/dashboard";
+import { Maximize2, RotateCcw } from "lucide-react";
+import { useDashboardStore } from "@/lib/stores/dashboardStore";
 
 /**
  * Scatter Plot Component Props
@@ -28,6 +31,7 @@ export interface ScatterPlotProps {
   onDotClick: (tutorId: string) => void;
   selectedTutorId?: string | null;
   zones?: Array<{ min: number; max: number; color: string }>;
+  plotType?: "attendance" | "reschedules" | "quality";
 }
 
 /**
@@ -45,7 +49,11 @@ export function ScatterPlot({
   onDotClick,
   selectedTutorId,
   zones,
+  plotType,
 }: ScatterPlotProps) {
+  const { setFullscreenPlot } = useDashboardStore();
+  const [xDomain, setXDomain] = useState<[number, number]>([0, 150]);
+  const [yDomain, setYDomain] = useState<[number, number]>([0, 100]);
   // Transform data for Recharts (expects { x, y } format)
   const chartData = data.map((point) => ({
     x: point.x,
@@ -85,20 +93,35 @@ export function ScatterPlot({
     )
   ).sort((a, b) => a - b);
 
+  // Handle reset view
+  const handleResetView = () => {
+    setXDomain([0, 150]);
+    setYDomain([0, 100]);
+  };
+
+  // Handle fullscreen
+  const handleFullscreen = () => {
+    if (plotType) {
+      setFullscreenPlot(plotType);
+    }
+  };
+
   // Custom dot renderer to handle click and selection
   const renderDot = (props: any) => {
     const { cx, cy, payload } = props;
     const isSelected = payload.tutorId === selectedTutorId;
 
     if (isSelected) {
+      // Selected dot: larger size, stroke, full opacity
       return (
         <circle
           cx={cx}
           cy={cy}
-          r={CHART_THEME.dot.selected.r}
+          r={CHART_THEME.dot.selected.r * 1.5} // 1.5x size
           fill={CHART_THEME.colors.neutral}
           stroke={CHART_THEME.dot.selected.stroke}
           strokeWidth={CHART_THEME.dot.selected.strokeWidth}
+          opacity={1}
           style={{ cursor: "pointer" }}
           onClick={() => onDotClick(payload.tutorId)}
           aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${payload.y}%`}
@@ -106,13 +129,14 @@ export function ScatterPlot({
       );
     }
 
+    // Non-selected dots: dimmed
     return (
       <circle
         cx={cx}
         cy={cy}
         r={CHART_THEME.dot.default.r}
         fill={CHART_THEME.dot.default.fill}
-        opacity={CHART_THEME.dot.default.opacity}
+        opacity={selectedTutorId ? 0.6 : CHART_THEME.dot.default.opacity} // Dim if another is selected
         style={{ cursor: "pointer" }}
         onClick={() => onDotClick(payload.tutorId)}
         aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${payload.y}%`}
@@ -125,6 +149,30 @@ export function ScatterPlot({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+        <div className="flex items-center gap-2">
+          {/* Reset View Button */}
+          <button
+            onClick={handleResetView}
+            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            title="Reset view"
+            aria-label="Reset view"
+          >
+            <RotateCcw className="h-4 w-4" />
+            Reset
+          </button>
+          {/* Fullscreen Button */}
+          {plotType && (
+            <button
+              onClick={handleFullscreen}
+              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              title="Fullscreen"
+              aria-label="Fullscreen"
+            >
+              <Maximize2 className="h-4 w-4" />
+              Fullscreen
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Chart */}
@@ -150,7 +198,7 @@ export function ScatterPlot({
             type="number"
             dataKey="x"
             name={xLabel}
-            domain={[0, 150]}
+            domain={xDomain}
             label={{
               value: xLabel,
               position: "insideBottom",
@@ -158,12 +206,13 @@ export function ScatterPlot({
               style: { textAnchor: "middle" },
             }}
             tick={{ fontSize: 12 }}
+            allowDataOverflow={false}
           />
           <YAxis
             type="number"
             dataKey="y"
             name={yLabel}
-            domain={[0, 100]}
+            domain={yDomain}
             label={{
               value: yLabel,
               angle: -90,
@@ -171,6 +220,7 @@ export function ScatterPlot({
               style: { textAnchor: "middle" },
             }}
             tick={{ fontSize: 12 }}
+            allowDataOverflow={false}
           />
           {/* Threshold lines at zone boundaries */}
           {thresholdValues.map((value, index) => (
