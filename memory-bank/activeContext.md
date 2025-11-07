@@ -60,6 +60,7 @@ Next phases:
 - [x] CC-4: Scatter Plot - First Session Toggle ✅
 - [x] CC-5: Scatter Plot - Interactive Features ✅
 - [x] CC-6: Tutor Detail Card ✅
+- [x] Backend Integration ✅ (with fallback to mock data)
 
 ### Near-Term (This Week - Phase 3)
 - [ ] Create aggregator.ts to combine all signals

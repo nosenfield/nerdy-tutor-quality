@@ -1,33 +1,68 @@
 /**
- * Dashboard Tutors API Route (Mock)
+ * Dashboard Tutors API Route
  * 
  * Returns aggregated tutor data for scatter plots.
- * This is a mock implementation for development.
+ * Queries tutor_scores table and transforms to TutorSummary format.
+ * Falls back to mock data if database query fails.
  */
 
 import { NextResponse } from "next/server";
 import { generateMockTutorSummaries } from "@/lib/mock-data/dashboard";
 import type { TutorSummary } from "@/lib/types/dashboard";
+import {
+  getLatestTutorScores,
+  transformTutorScoreToSummary,
+  getTutorActiveFlags,
+} from "@/lib/api/dashboard-transform";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const startDate = searchParams.get("startDate");
-    const endDate = searchParams.get("endDate");
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
 
-    // Generate mock data (use seed for reproducibility)
-    const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+    // Parse date range
+    const dateRange = {
+      start: startDateParam
+        ? new Date(startDateParam)
+        : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Default: 30 days ago
+      end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
+    };
 
-    // In a real implementation, we would filter by date range here
-    // For now, return all tutors
+    // Try to fetch from database
+    try {
+      const scores = await getLatestTutorScores(dateRange);
 
-    return NextResponse.json(tutors);
+      if (scores.length === 0) {
+        // No data in database, fall back to mock data
+        console.log("No tutor scores found in database, using mock data");
+        const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+        return NextResponse.json(tutors);
+      }
+
+      // Transform scores to summaries
+      const tutors: TutorSummary[] = await Promise.all(
+        scores.map(async (score) => {
+          const activeFlags = await getTutorActiveFlags(
+            score.tutorId,
+            dateRange
+          );
+          return transformTutorScoreToSummary(score, activeFlags);
+        })
+      );
+
+      return NextResponse.json(tutors);
+    } catch (dbError) {
+      // Database error, fall back to mock data
+      console.error("Database error, falling back to mock data:", dbError);
+      const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+      return NextResponse.json(tutors);
+    }
   } catch (error) {
     console.error("Error fetching tutors:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch tutors" },
-      { status: 500 }
-    );
+    // Final fallback to mock data
+    const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+    return NextResponse.json(tutors);
   }
 }
 

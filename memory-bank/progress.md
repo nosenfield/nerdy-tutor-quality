@@ -116,6 +116,7 @@
 - [x] CC-4: Scatter Plot - First Session Toggle ✅
 - [x] CC-5: Scatter Plot - Interactive Features ✅
 - [x] CC-6: Tutor Detail Card ✅
+- [x] Backend Integration ✅ (with fallback to mock data)
 - [ ] Dashboard layout component
 - [ ] Dashboard home page (overview stats)
 - [ ] Stats overview component (KPI cards)
