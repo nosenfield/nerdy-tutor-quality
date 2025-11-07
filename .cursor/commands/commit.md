@@ -43,13 +43,7 @@ Deleted:
 Total: X files
 ```
 
-### Step 3: Ask User for Confirmation
-
-Ask: "Would you like to commit all these files, or select specific ones?"
-
-If user wants to select specific files, ask which ones.
-
-### Step 4: Stage Files Individually
+### Step 3: Stage Files Individually
 
 For each file to be committed, run:
 ```bash
@@ -60,7 +54,7 @@ git add path/to/file3.ts
 
 **NEVER run `git add .` or `git add -A`**
 
-### Step 5: Draft Commit Message
+### Step 4: Draft Commit Message
 
 Follow this format:
 
@@ -69,11 +63,7 @@ Follow this format:
 
 <detailed description if needed>
 
-<list of key changes>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
+<succinct list of key changes>
 ```
 
 **Commit Types:**
@@ -96,10 +86,6 @@ Implement Drizzle ORM schema for tracking tutoring sessions:
 - Timestamps for join/leave times
 - Rating and feedback fields
 - Indexing strategy for common queries
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ```
@@ -108,13 +94,9 @@ chore: Update dependencies to latest versions
 - Upgrade Next.js to 16.0.1
 - Update React to 19.2.0
 - Install @supabase/ssr for Next.js 16 compatibility
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
-### Step 6: Create Commit
+### Step 5: Create Commit
 
 Run the commit command using heredoc for proper formatting:
 
@@ -125,7 +107,7 @@ EOF
 )"
 ```
 
-### Step 7: Verify Commit
+### Step 6: Verify Commit
 
 After committing:
 1. Show the commit hash and message
