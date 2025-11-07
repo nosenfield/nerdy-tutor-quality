@@ -54,22 +54,30 @@ export function ScatterPlot({
   const renderDot = (props: any) => {
     const { cx, cy, payload } = props;
     const isSelected = payload.tutorId === selectedTutorId;
-    const dotProps = isSelected
-      ? {
-          ...CHART_THEME.dot.selected,
-          fill: CHART_THEME.colors.neutral,
-        }
-      : CHART_THEME.dot.default;
+
+    if (isSelected) {
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={CHART_THEME.dot.selected.r}
+          fill={CHART_THEME.colors.neutral}
+          stroke={CHART_THEME.dot.selected.stroke}
+          strokeWidth={CHART_THEME.dot.selected.strokeWidth}
+          style={{ cursor: "pointer" }}
+          onClick={() => onDotClick(payload.tutorId)}
+          aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${payload.y}%`}
+        />
+      );
+    }
 
     return (
       <circle
         cx={cx}
         cy={cy}
-        r={dotProps.r}
-        fill={dotProps.fill}
-        opacity={dotProps.opacity}
-        stroke={dotProps.stroke}
-        strokeWidth={dotProps.strokeWidth}
+        r={CHART_THEME.dot.default.r}
+        fill={CHART_THEME.dot.default.fill}
+        opacity={CHART_THEME.dot.default.opacity}
         style={{ cursor: "pointer" }}
         onClick={() => onDotClick(payload.tutorId)}
         aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${payload.y}%`}
