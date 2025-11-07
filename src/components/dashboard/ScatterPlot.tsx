@@ -200,7 +200,7 @@ export function ScatterPlot({
       {/* Chart */}
       <ResponsiveContainer width="100%" height={450}>
               <ScatterChart
-                margin={{ top: 10, right: 10, bottom: 30, left: 5 }}
+                margin={{ top: 10, right: 30, bottom: 30, left: 5 }}
                 data={chartData}
               >
           {/* Background zones - render before grid so they're behind everything */}
@@ -256,6 +256,7 @@ export function ScatterPlot({
               label={{
                 value: plotType === "quality" ? value.toFixed(1) : `${value}%`,
                 position: "right",
+                offset: 5,
                 style: { fontSize: 10, fill: CHART_THEME.thresholdLine.stroke },
               }}
             />
