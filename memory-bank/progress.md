@@ -115,6 +115,7 @@
 - [x] CC-3: Scatter Plot - Threshold Zones ✅
 - [x] CC-4: Scatter Plot - First Session Toggle ✅
 - [x] CC-5: Scatter Plot - Interactive Features ✅
+- [x] CC-6: Tutor Detail Card ✅
 - [ ] Dashboard layout component
 - [ ] Dashboard home page (overview stats)
 - [ ] Stats overview component (KPI cards)

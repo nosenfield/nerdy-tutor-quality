@@ -59,6 +59,7 @@ Next phases:
 - [x] CC-3: Scatter Plot - Threshold Zones ✅
 - [x] CC-4: Scatter Plot - First Session Toggle ✅
 - [x] CC-5: Scatter Plot - Interactive Features ✅
+- [x] CC-6: Tutor Detail Card ✅
 
 ### Near-Term (This Week - Phase 3)
 - [ ] Create aggregator.ts to combine all signals
