@@ -56,6 +56,7 @@ Next phases:
 - [x] DL-3: Mock Data Generator ✅
 - [x] CC-1: Page Layout ✅
 - [x] CC-2: Scatter Plot Component (Base) ✅
+- [x] CC-3: Scatter Plot - Threshold Zones ✅
 
 ### Near-Term (This Week - Phase 3)
 - [ ] Create aggregator.ts to combine all signals

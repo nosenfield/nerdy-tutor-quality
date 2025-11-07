@@ -9,6 +9,9 @@ import {
   CartesianGrid,
   Tooltip,
   Cell,
+  ReferenceArea,
+  ReferenceLine,
+  Legend,
 } from "recharts";
 import { CHART_THEME } from "@/lib/chart-theme";
 import type { ScatterPlotDataPoint } from "@/lib/types/dashboard";
@@ -49,6 +52,16 @@ export function ScatterPlot({
     y: point.y,
     tutorId: point.tutorId,
   }));
+
+  // Use provided zones or default from theme
+  const displayZones = zones || CHART_THEME.zones;
+
+  // Extract threshold values from zones for threshold lines
+  const thresholdValues = Array.from(
+    new Set(
+      displayZones.flatMap((zone) => [zone.min, zone.max]).filter((v) => v > 0 && v < 100)
+    )
+  ).sort((a, b) => a - b);
 
   // Custom dot renderer to handle click and selection
   const renderDot = (props: any) => {
@@ -98,6 +111,18 @@ export function ScatterPlot({
           margin={{ top: 20, right: 20, bottom: 40, left: 40 }}
           data={chartData}
         >
+          {/* Background zones - render before grid so they're behind everything */}
+          {displayZones.map((zone, index) => (
+            <ReferenceArea
+              key={`zone-${index}`}
+              y1={zone.min}
+              y2={zone.max}
+              fill={zone.color}
+              fillOpacity={1}
+              stroke="none"
+            />
+          ))}
+
           <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
           <XAxis
             type="number"
@@ -125,6 +150,36 @@ export function ScatterPlot({
             }}
             tick={{ fontSize: 12 }}
           />
+          {/* Threshold lines at zone boundaries */}
+          {thresholdValues.map((value, index) => (
+            <ReferenceLine
+              key={`threshold-${index}`}
+              y={value}
+              stroke={CHART_THEME.thresholdLine.stroke}
+              strokeWidth={CHART_THEME.thresholdLine.strokeWidth}
+              strokeDasharray={CHART_THEME.thresholdLine.strokeDasharray}
+              label={{
+                value: `${value}%`,
+                position: "right",
+                style: { fontSize: 10, fill: CHART_THEME.thresholdLine.stroke },
+              }}
+            />
+          ))}
+          {/* Custom threshold lines if provided */}
+          {thresholdLines?.map((line, index) => (
+            <ReferenceLine
+              key={`custom-threshold-${index}`}
+              y={line.value}
+              stroke={line.color}
+              strokeWidth={CHART_THEME.thresholdLine.strokeWidth}
+              strokeDasharray={CHART_THEME.thresholdLine.strokeDasharray}
+              label={{
+                value: line.label,
+                position: "right",
+                style: { fontSize: 10, fill: line.color },
+              }}
+            />
+          ))}
           <Tooltip
             cursor={{ strokeDasharray: "3 3" }}
             content={({ active, payload }) => {
@@ -173,6 +228,25 @@ export function ScatterPlot({
               );
             })}
           </Scatter>
+          {/* Legend */}
+          <Legend
+            content={() => (
+              <div className="flex items-center justify-center gap-4 mt-4">
+                {displayZones.map((zone, index) => (
+                  <div
+                    key={`legend-${index}`}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <div
+                      className="w-4 h-4 rounded"
+                      style={{ backgroundColor: zone.color }}
+                    />
+                    <span className="text-gray-700">{zone.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          />
         </ScatterChart>
       </ResponsiveContainer>
     </div>
