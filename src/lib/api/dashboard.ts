@@ -32,7 +32,19 @@ export async function getTutors(
   const response = await fetch(`/api/dashboard/tutors?${params.toString()}`);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch tutors: ${response.statusText}`);
+    // Try to read error message from response body
+    let errorMessage = `Failed to fetch tutors: ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // If response body is not JSON, use default error message
+    }
+    throw new Error(errorMessage);
   }
 
   const data = await response.json();

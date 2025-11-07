@@ -43,10 +43,18 @@ export async function GET(request: Request) {
     }
 
     // Fetch from database - no fallback to mock data
+    console.log("Fetching tutor scores for date range:", {
+      start: dateRange.start.toISOString(),
+      end: dateRange.end.toISOString(),
+    });
+    
     const scores = await getLatestTutorScores(dateRange);
+    
+    console.log(`Found ${scores.length} tutor scores in database`);
 
     if (scores.length === 0) {
       // No data in database - return error
+      console.log("No tutor scores found - returning 404");
       return NextResponse.json(
         { error: "No tutor data available for the selected date range" },
         { status: 404 }

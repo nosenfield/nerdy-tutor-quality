@@ -8,7 +8,7 @@
 import type { TutorScore } from "@/lib/types/tutor";
 import type { TutorSummary, TutorDetail } from "@/lib/types/dashboard";
 import { db, tutorScores, flags, sessions } from "@/lib/db";
-import { eq, and, gte, lte, inArray, asc } from "drizzle-orm";
+import { eq, and, gte, lte, inArray, asc, sql } from "drizzle-orm";
 import { isNoShow } from "@/lib/utils/time";
 
 /**
@@ -241,6 +241,12 @@ export async function getLatestTutorScores(
   dateRange: { start: Date; end: Date }
 ): Promise<TutorScore[]> {
   try {
+    // First, check total count in tutor_scores table
+    const totalCount = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(tutorScores);
+    console.log(`Total tutor_scores in database: ${totalCount[0]?.count || 0}`);
+
     // Get the most recent score for each tutor
     // where the score window overlaps with the requested date range
     const scores = await db
@@ -255,6 +261,8 @@ export async function getLatestTutorScores(
       )
       .orderBy(tutorScores.calculatedAt);
 
+    console.log(`Found ${scores.length} scores matching date range`);
+
     // Group by tutorId and get the most recent score for each
     const latestScores = new Map<string, TutorScore>();
     for (const score of scores) {
@@ -264,6 +272,7 @@ export async function getLatestTutorScores(
       }
     }
 
+    console.log(`Returning ${latestScores.size} unique tutor scores`);
     return Array.from(latestScores.values());
   } catch (error) {
     console.error("Error fetching tutor scores:", error);
