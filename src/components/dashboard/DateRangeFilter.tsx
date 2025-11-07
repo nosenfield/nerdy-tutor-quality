@@ -1,6 +1,6 @@
 "use client";
 
-import { Listbox, Transition } from "@headlessui/react";
+import { Listbox, Transition, RadioGroup } from "@headlessui/react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
   subDays,
@@ -104,7 +104,7 @@ export function DateRangeFilter({
   tutorCount,
   lastRefreshAt,
 }: DateRangeFilterProps) {
-  const { dateRange, setDateRange } = useDashboardStore();
+  const { dateRange, setDateRange, qualityView, setQualityView } = useDashboardStore();
   const currentFilter = getCurrentQuickFilter(dateRange);
   const selectedFilter = QUICK_FILTERS.find((f) => f.id === currentFilter);
 
@@ -117,7 +117,7 @@ export function DateRangeFilter({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <label className="text-sm font-medium text-gray-700">
           Date Range:
         </label>
@@ -173,6 +173,43 @@ export function DateRangeFilter({
           </Transition>
           </div>
         </Listbox>
+        
+        {/* Quality View Toggle */}
+        <div className="flex items-center gap-2 ml-auto">
+          <label className="text-sm font-medium text-gray-700">
+            Quality View:
+          </label>
+          <RadioGroup value={qualityView} onChange={setQualityView}>
+            <div className="flex gap-2 rounded-md bg-gray-100 p-1">
+              <RadioGroup.Option value="all">
+                {({ checked }) => (
+                  <button
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      checked
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    All Sessions
+                  </button>
+                )}
+              </RadioGroup.Option>
+              <RadioGroup.Option value="first">
+                {({ checked }) => (
+                  <button
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      checked
+                        ? "bg-white text-gray-900 shadow-sm"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    First Only
+                  </button>
+                )}
+              </RadioGroup.Option>
+            </div>
+          </RadioGroup>
+        </div>
       </div>
       <div className="flex items-center gap-4 text-sm text-gray-600">
         {tutorCount !== undefined && (

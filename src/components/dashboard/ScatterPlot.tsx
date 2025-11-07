@@ -145,9 +145,9 @@ export function ScatterPlot({
   };
 
   return (
-    <div className="relative p-6 bg-white rounded-lg shadow-sm">
+    <div className="relative p-3 bg-white rounded-lg shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-1">
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
         <div className="flex items-center gap-2">
           {/* Reset View Button */}
@@ -176,7 +176,7 @@ export function ScatterPlot({
       </div>
 
       {/* Chart */}
-            <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={450}>
               <ScatterChart
                 margin={{ top: 10, right: 10, bottom: 30, left: 30 }}
                 data={chartData}

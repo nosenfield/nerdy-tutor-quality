@@ -1,6 +1,5 @@
 "use client";
 
-import { RadioGroup } from "@headlessui/react";
 import { ScatterPlot } from "./ScatterPlot";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import type { ScatterPlotDataPoint } from "@/lib/types/dashboard";
@@ -46,53 +45,16 @@ export function QualityPlot({
       : "Average Rating %";
 
   return (
-    <div className="relative">
-      {/* Toggle Control */}
-      <div className="absolute top-6 right-6 z-10">
-        <RadioGroup value={qualityView} onChange={setQualityView}>
-          <div className="flex gap-2 rounded-md bg-gray-100 p-1">
-            <RadioGroup.Option value="all">
-              {({ checked }) => (
-                <button
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                    checked
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  All Sessions
-                </button>
-              )}
-            </RadioGroup.Option>
-            <RadioGroup.Option value="first">
-              {({ checked }) => (
-                <button
-                  className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                    checked
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                >
-                  First Only
-                </button>
-              )}
-            </RadioGroup.Option>
-          </div>
-        </RadioGroup>
-      </div>
-
-      {/* Scatter Plot */}
-      <ScatterPlot
-        title={title}
-        data={currentData}
-        xLabel={xLabel}
-        yLabel={yLabel}
-        onDotClick={onDotClick}
-        selectedTutorId={selectedTutorId}
-        zones={zones}
-        plotType={plotType}
-      />
-    </div>
+    <ScatterPlot
+      title={title}
+      data={currentData}
+      xLabel={xLabel}
+      yLabel={yLabel}
+      onDotClick={onDotClick}
+      selectedTutorId={selectedTutorId}
+      zones={zones}
+      plotType={plotType}
+    />
   );
 }
 

@@ -50,9 +50,9 @@ export async function GET(request: Request) {
       const scores = await getLatestTutorScores(dateRange);
 
       if (scores.length === 0) {
-        // No data in database, fall back to alternate mock data
-        console.log("No tutor scores found in database, using mock data");
-        const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
+        // No data in database, fall back to default mock data (not alternate)
+        console.log("No tutor scores found in database, using default mock data");
+        const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
         return NextResponse.json(tutors, {
           headers: {
             "X-Data-Source": "mock",
@@ -80,9 +80,9 @@ export async function GET(request: Request) {
         },
       });
     } catch (dbError) {
-      // Database error, fall back to alternate mock data
+      // Database error, fall back to default mock data (not alternate)
       console.error("Database error, falling back to mock data:", dbError);
-      const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
+      const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
       return NextResponse.json(tutors, {
         headers: {
           "X-Data-Source": "mock",
@@ -92,8 +92,8 @@ export async function GET(request: Request) {
     }
   } catch (error) {
     console.error("Error fetching tutors:", error);
-    // Final fallback to alternate mock data
-    const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(150, 42);
+    // Final fallback to default mock data (not alternate)
+    const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
     return NextResponse.json(tutors, {
       headers: {
         "X-Data-Source": "mock",
