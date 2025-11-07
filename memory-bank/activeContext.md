@@ -53,6 +53,7 @@ Next phases:
 - [x] PS-2: TypeScript interfaces for dashboard ✅
 - [x] DL-1: API Integration (TanStack Query hooks) ✅
 - [x] DL-2: State Management (Zustand) ✅
+- [x] DL-3: Mock Data Generator ✅
 
 ### Near-Term (This Week - Phase 3)
 - [ ] Create aggregator.ts to combine all signals
