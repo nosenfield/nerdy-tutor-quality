@@ -2,7 +2,13 @@
 
 import { Listbox, Transition } from "@headlessui/react";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { subDays, subMonths, subQuarters, startOfToday } from "date-fns";
+import {
+  subDays,
+  subMonths,
+  subQuarters,
+  startOfToday,
+  format,
+} from "date-fns";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import type { DateRange } from "@/lib/types/dashboard";
 import { Fragment } from "react";
@@ -89,7 +95,15 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
   return "all-time";
 }
 
-export function DateRangeFilter() {
+interface DateRangeFilterProps {
+  tutorCount?: number;
+  lastRefreshAt?: Date | null;
+}
+
+export function DateRangeFilter({
+  tutorCount,
+  lastRefreshAt,
+}: DateRangeFilterProps) {
   const { dateRange, setDateRange } = useDashboardStore();
   const currentFilter = getCurrentQuickFilter(dateRange);
   const selectedFilter = QUICK_FILTERS.find((f) => f.id === currentFilter);
@@ -102,13 +116,14 @@ export function DateRangeFilter() {
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <label className="text-sm font-medium text-gray-700">
-        Date Range:
-      </label>
-      <Listbox value={currentFilter} onChange={handleFilterChange}>
-        <div className="relative">
-          <Listbox.Button className="relative w-48 cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-sm shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm">
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <label className="text-sm font-medium text-gray-700">
+          Date Range:
+        </label>
+        <Listbox value={currentFilter} onChange={handleFilterChange}>
+          <div className="relative">
+            <Listbox.Button className="relative w-48 cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-sm shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm">
             <span className="block truncate">
               {selectedFilter?.label || "Select range"}
             </span>
@@ -156,8 +171,21 @@ export function DateRangeFilter() {
               ))}
             </Listbox.Options>
           </Transition>
-        </div>
-      </Listbox>
+          </div>
+        </Listbox>
+      </div>
+      <div className="flex items-center gap-4 text-sm text-gray-600">
+        {tutorCount !== undefined && (
+          <span className="font-medium">
+            {tutorCount} {tutorCount === 1 ? "tutor" : "tutors"}
+          </span>
+        )}
+        {lastRefreshAt && (
+          <span className="text-gray-500">
+            Refreshed at {format(lastRefreshAt, "h:mm:ss a")}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

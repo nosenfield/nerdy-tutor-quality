@@ -38,6 +38,14 @@ interface DashboardStore {
   // First session quality toggle (for quality plot)
   qualityView: "all" | "first";
   setQualityView: (view: "all" | "first") => void;
+
+  // Data source preference
+  forceMockData: boolean;
+  setForceMockData: (force: boolean) => void;
+
+  // Last refresh timestamp
+  lastRefreshAt: Date | null;
+  setLastRefreshAt: (date: Date | null) => void;
 }
 
 /**
@@ -94,5 +102,13 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   // First session quality toggle
   qualityView: "all",
   setQualityView: (view) => set({ qualityView: view }),
+
+  // Data source preference
+  forceMockData: false,
+  setForceMockData: (force) => set({ forceMockData: force }),
+
+  // Last refresh timestamp
+  lastRefreshAt: null,
+  setLastRefreshAt: (date) => set({ lastRefreshAt: date }),
 }));
 

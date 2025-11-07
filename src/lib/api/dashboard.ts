@@ -17,12 +17,17 @@ import type {
  * Returns data with metadata about data source
  */
 export async function getTutors(
-  dateRange: DateRange
+  dateRange: DateRange,
+  forceMock: boolean = false
 ): Promise<{ data: TutorSummary[]; dataSource: "database" | "mock" }> {
   const params = new URLSearchParams({
     startDate: dateRange.start.toISOString().split("T")[0],
     endDate: dateRange.end.toISOString().split("T")[0],
   });
+
+  if (forceMock) {
+    params.append("forceMock", "true");
+  }
 
   const response = await fetch(`/api/dashboard/tutors?${params.toString()}`);
 
@@ -31,8 +36,10 @@ export async function getTutors(
   }
 
   const data = await response.json();
-  const dataSource =
-    (response.headers.get("X-Data-Source") as "database" | "mock") || "mock";
+  const dataSource = forceMock
+    ? "mock"
+    : ((response.headers.get("X-Data-Source") as "database" | "mock") ||
+        "mock");
 
   return { data, dataSource };
 }

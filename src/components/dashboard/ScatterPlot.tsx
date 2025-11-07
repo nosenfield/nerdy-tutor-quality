@@ -176,11 +176,11 @@ export function ScatterPlot({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={400}>
-        <ScatterChart
-          margin={{ top: 20, right: 20, bottom: 40, left: 40 }}
-          data={chartData}
-        >
+            <ResponsiveContainer width="100%" height={400}>
+              <ScatterChart
+                margin={{ top: 10, right: 10, bottom: 30, left: 30 }}
+                data={chartData}
+              >
           {/* Background zones - render before grid so they're behind everything */}
           {displayZones.map((zone, index) => (
             <ReferenceArea

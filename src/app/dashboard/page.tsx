@@ -13,6 +13,9 @@ import type {
   ScatterPlotDataPoint,
   TutorSummary,
 } from "@/lib/types/dashboard";
+import { Switch } from "@headlessui/react";
+import { RefreshCw } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 /**
  * Tutor Assessment Dashboard
@@ -21,35 +24,44 @@ import type {
  * This is the primary view after login.
  */
 export default function DashboardPage() {
-  const { dateRange, selectedTutorId, setSelectedTutor } = useDashboardStore();
-  const { data: tutorsResponse, isLoading } = useTutorSessions(dateRange);
+  const {
+    dateRange,
+    selectedTutorId,
+    setSelectedTutor,
+    forceMockData,
+    setForceMockData,
+    lastRefreshAt,
+    setLastRefreshAt,
+  } = useDashboardStore();
+  const queryClient = useQueryClient();
+  const { data: tutorsResponse, isLoading, dataUpdatedAt } = useTutorSessions(
+    dateRange,
+    forceMockData
+  );
   const [clickedDotPosition, setClickedDotPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
 
   // Extract data and data source from API response
-  const { displayTutors, isMockData } = useMemo(() => {
+  const { displayTutors } = useMemo(() => {
     if (tutorsResponse) {
       // New format: { data, dataSource }
       if ("data" in tutorsResponse && "dataSource" in tutorsResponse) {
         return {
           displayTutors: (tutorsResponse.data as TutorSummary[]) || [],
-          isMockData: tutorsResponse.dataSource === "mock",
         };
       }
       // Fallback: assume it's an array (old format or error)
       if (Array.isArray(tutorsResponse)) {
         return {
           displayTutors: tutorsResponse,
-          isMockData: false, // Assume real data if no metadata
         };
       }
     }
     // If API returns empty, use mock data as final fallback
     return {
       displayTutors: generateMockTutorSummaries(150, 42),
-      isMockData: true,
     };
   }, [tutorsResponse]);
 
@@ -112,6 +124,36 @@ export default function DashboardPage() {
     setClickedDotPosition(null);
   };
 
+  // Handle data source toggle
+  const handleDataSourceToggle = (enabled: boolean) => {
+    setForceMockData(enabled);
+    // Invalidate all queries to refresh data
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    setLastRefreshAt(new Date());
+  };
+
+  // Handle refresh
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    setLastRefreshAt(new Date());
+  };
+
+  // Update lastRefreshAt when data updates
+  useMemo(() => {
+    if (dataUpdatedAt) {
+      setLastRefreshAt(new Date(dataUpdatedAt));
+    }
+  }, [dataUpdatedAt, setLastRefreshAt]);
+
+  // Determine if using mock data
+  const isMockData = useMemo(() => {
+    if (forceMockData) return true;
+    if (tutorsResponse && "dataSource" in tutorsResponse) {
+      return tutorsResponse.dataSource === "mock";
+    }
+    return false;
+  }, [forceMockData, tutorsResponse]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -121,19 +163,37 @@ export default function DashboardPage() {
             <h1 className="text-2xl font-semibold text-gray-900">
               Tutor Assessment Dashboard
             </h1>
-            {/* Data Source Indicator */}
-            {isMockData && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                <span className="h-2 w-2 rounded-full bg-yellow-400"></span>
-                Mock Data
+            {/* Data Source Toggle */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-700">
+                {forceMockData ? "Mock" : "Live"}
               </span>
-            )}
-            {!isMockData && !isLoading && (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                <span className="h-2 w-2 rounded-full bg-green-400"></span>
-                Live Data
-              </span>
-            )}
+              <Switch
+                checked={forceMockData}
+                onChange={handleDataSourceToggle}
+                className={`${
+                  forceMockData ? "bg-yellow-500" : "bg-green-500"
+                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+              >
+                <span
+                  className={`${
+                    forceMockData ? "translate-x-6" : "translate-x-1"
+                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                />
+              </Switch>
+            </div>
+            {/* Refresh Button */}
+            <button
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Refresh data"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Refresh
+            </button>
           </div>
           <LogoutButton />
         </div>
@@ -144,7 +204,10 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Date Range Filter */}
           <div className="bg-white rounded-lg shadow-sm p-6">
-            <DateRangeFilter />
+            <DateRangeFilter
+              tutorCount={displayTutors.length}
+              lastRefreshAt={lastRefreshAt}
+            />
           </div>
 
           {/* Plots Grid - Responsive Layout */}

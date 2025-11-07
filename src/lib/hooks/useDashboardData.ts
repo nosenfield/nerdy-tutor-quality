@@ -45,10 +45,13 @@ export const dashboardKeys = {
 /**
  * Hook to fetch tutor sessions data for scatter plots
  */
-export function useTutorSessions(dateRange: DateRange) {
+export function useTutorSessions(
+  dateRange: DateRange,
+  forceMock: boolean = false
+) {
   return useQuery({
-    queryKey: dashboardKeys.tutors(dateRange),
-    queryFn: () => getTutors(dateRange),
+    queryKey: [...dashboardKeys.tutors(dateRange), forceMock],
+    queryFn: () => getTutors(dateRange, forceMock),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });

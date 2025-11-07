@@ -20,6 +20,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const startDateParam = searchParams.get("startDate");
     const endDateParam = searchParams.get("endDate");
+    const forceMock = searchParams.get("forceMock") === "true";
 
     // Parse date range
     const dateRange = {
@@ -28,6 +29,17 @@ export async function GET(request: Request) {
         : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Default: 30 days ago
       end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
     };
+
+    // If forceMock is true, skip database and return mock data
+    if (forceMock) {
+      const tutors: TutorSummary[] = generateMockTutorSummaries(150, 42);
+      return NextResponse.json(tutors, {
+        headers: {
+          "X-Data-Source": "mock",
+          "X-Tutor-Count": tutors.length.toString(),
+        },
+      });
+    }
 
     // Try to fetch from database
     try {
