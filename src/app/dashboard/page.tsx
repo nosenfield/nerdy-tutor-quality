@@ -299,14 +299,69 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Fixed Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="text-2xl font-semibold text-gray-900">
-              Tooter Assessment Dashboard
-            </h1>
-            
+      {/* Header */}
+      <header className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Tooter Assessment Dashboard
+          </h1>
+          <LogoutButton />
+        </div>
+      </header>
+
+      {/* Filter Bar - Sticky Below Header */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-6 py-3">
+        <div className="flex items-center justify-between gap-6 flex-wrap">
+          {/* Left Side - Data Health and Refresh */}
+          <div className="flex items-center gap-6">
+            {/* Data Health Toggle */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium text-gray-700">
+                Data Health:
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">
+                  {isMockData ? "Mock" : "Live"}
+                </span>
+                <Switch
+                  checked={!forceMockData} // Toggle ON = Live (forceMockData = false)
+                  onChange={handleDataSourceToggle}
+                  className={`${
+                    !forceMockData ? "bg-green-500" : "bg-yellow-500"
+                  } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+                >
+                  <span
+                    className={`${
+                      !forceMockData ? "translate-x-6" : "translate-x-1"
+                    } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                  />
+                </Switch>
+              </div>
+            </div>
+
+            {/* Refresh Button */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={isLoading || isRefreshing}
+                className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                title="Refresh data"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 transition-transform ${isLoading || isRefreshing ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </button>
+              {lastRefreshAt && (
+                <span className="text-sm text-gray-500">
+                  {format(lastRefreshAt, "h:mm:ss a")}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Right Side - Date Range, Sessions, and Tutor Count */}
+          <div className="flex items-center gap-6 flex-wrap">
             {/* Date Range Filter */}
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">
@@ -403,52 +458,18 @@ export default function DashboardPage() {
               </RadioGroup>
             </div>
 
-            {/* Data Source Toggle */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-700">
-                {isMockData ? "Mock" : "Live"}
+            {/* Tutor Count */}
+            <div className="flex items-center">
+              <span className="text-lg font-semibold text-gray-900">
+                {displayTutors.length} {displayTutors.length === 1 ? "tutor" : "tutors"}
               </span>
-              <Switch
-                checked={!forceMockData} // Toggle ON = Live (forceMockData = false)
-                onChange={handleDataSourceToggle}
-                className={`${
-                  !forceMockData ? "bg-green-500" : "bg-yellow-500"
-                } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
-              >
-                <span
-                  className={`${
-                    !forceMockData ? "translate-x-6" : "translate-x-1"
-                  } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                />
-              </Switch>
-            </div>
-
-            {/* Refresh Button */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleRefresh}
-                disabled={isLoading || isRefreshing}
-                className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                title="Refresh data"
-              >
-                <RefreshCw
-                  className={`h-4 w-4 transition-transform ${isLoading || isRefreshing ? "animate-spin" : ""}`}
-                />
-                Refresh
-              </button>
-              {lastRefreshAt && (
-                <span className="text-sm text-gray-500">
-                  {format(lastRefreshAt, "h:mm:ss a")}
-                </span>
-              )}
             </div>
           </div>
-          <LogoutButton />
         </div>
-      </header>
+      </div>
 
-      {/* Main Content - Add padding-top to account for fixed header */}
-      <main className="pt-24 p-6">
+      {/* Main Content */}
+      <main className="p-6">
         <div className="w-full space-y-6">
           {/* Error Message */}
           {error && (
@@ -480,13 +501,6 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
-
-          {/* Tutor Count */}
-          <div className="bg-white rounded-lg shadow-sm p-4">
-            <span className="text-sm font-medium text-gray-600">
-              {displayTutors.length} {displayTutors.length === 1 ? "tutor" : "tutors"}
-            </span>
-          </div>
 
           {/* Plots Grid - Responsive Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
