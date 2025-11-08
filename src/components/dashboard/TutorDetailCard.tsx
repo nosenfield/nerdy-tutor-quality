@@ -109,21 +109,22 @@ export function TutorDetailCard({
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
-      // Adjust position if card would overflow viewport
-      let left = position.x + 20; // Offset from dot
-      let top = position.y - 20; // Offset from dot
+      // Position card directly below the clicked dot (centered horizontally)
+      let left = position.x - rect.width / 2; // Center horizontally on dot
+      let top = position.y + 20; // Position below dot with 20px offset
 
+      // Adjust if card would overflow viewport
       if (left + rect.width > viewportWidth) {
-        left = position.x - rect.width - 20; // Show on left side
-      }
-      if (top + rect.height > viewportHeight) {
-        top = viewportHeight - rect.height - 20; // Move up
-      }
-      if (top < 0) {
-        top = 20; // Move down
+        left = viewportWidth - rect.width - 20; // Move left to fit
       }
       if (left < 0) {
-        left = 20; // Move right
+        left = 20; // Move right to fit
+      }
+      if (top + rect.height > viewportHeight) {
+        top = position.y - rect.height - 20; // Show above dot if no room below
+      }
+      if (top < 0) {
+        top = 20; // Move down if no room above
       }
 
       setCardPosition({ x: left, y: top });
@@ -140,11 +141,11 @@ export function TutorDetailCard({
     return (
       <div
         ref={cardRef}
-        className="absolute z-50 w-80 rounded-lg bg-white shadow-xl border border-gray-200 p-6 animate-in fade-in slide-in-from-bottom-2"
+        className="absolute z-50 w-64 rounded-lg bg-white shadow-xl border border-gray-200 p-3 animate-in fade-in slide-in-from-bottom-2"
         style={{ left: cardPosition.x, top: cardPosition.y }}
       >
-        <div className="flex items-center justify-center py-8">
-          <div className="text-sm text-gray-500">Loading...</div>
+        <div className="flex items-center justify-center py-4">
+          <div className="text-xs text-gray-500">Loading...</div>
         </div>
       </div>
     );
@@ -154,11 +155,11 @@ export function TutorDetailCard({
     return (
       <div
         ref={cardRef}
-        className="absolute z-50 w-80 rounded-lg bg-white shadow-xl border border-gray-200 p-6 animate-in fade-in slide-in-from-bottom-2"
+        className="absolute z-50 w-64 rounded-lg bg-white shadow-xl border border-gray-200 p-3 animate-in fade-in slide-in-from-bottom-2"
         style={{ left: cardPosition.x, top: cardPosition.y }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-gray-900">
             Tutor Details
           </h3>
           <button
@@ -166,10 +167,10 @@ export function TutorDetailCard({
             className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
             aria-label="Close"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="text-sm text-red-600">
+        <div className="text-xs text-red-600">
           {error ? "Error loading tutor details" : "Tutor not found"}
         </div>
       </div>
@@ -179,17 +180,17 @@ export function TutorDetailCard({
   return (
     <div
       ref={cardRef}
-      className="absolute z-50 w-80 rounded-lg bg-white shadow-xl border border-gray-200 p-6 animate-in fade-in slide-in-from-bottom-2"
+      className="absolute z-50 w-64 rounded-lg bg-white shadow-xl border border-gray-200 p-3 animate-in fade-in slide-in-from-bottom-2"
       style={{ left: cardPosition.x, top: cardPosition.y }}
     >
       {/* Header - Draggable area */}
       <div
-        className="flex items-center justify-between mb-4 cursor-move select-none"
+        className="flex items-center justify-between mb-2 cursor-move select-none"
         onMouseDown={handleMouseDown}
       >
-        <div className="flex items-center gap-2">
-          <GripVertical className="h-4 w-4 text-gray-400" />
-          <h3 className="text-lg font-semibold text-gray-900">
+        <div className="flex items-center gap-1.5">
+          <GripVertical className="h-3 w-3 text-gray-400" />
+          <h3 className="text-sm font-semibold text-gray-900">
             Tutor {tutorDetail.tutorId}
           </h3>
         </div>
@@ -198,65 +199,65 @@ export function TutorDetailCard({
           className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
           aria-label="Close"
         >
-          <X className="h-5 w-5" />
+          <X className="h-4 w-4" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="space-y-4">
+      <div className="space-y-2">
         {/* Metrics */}
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Calendar className="h-4 w-4" />
-              <span>Total Sessions</span>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <Calendar className="h-3 w-3" />
+              <span>Sessions</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-xs font-medium text-gray-900">
               {tutorDetail.totalSessions}
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <TrendingUp className="h-4 w-4" />
-              <span>Days on Platform</span>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <TrendingUp className="h-3 w-3" />
+              <span>Days</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-xs font-medium text-gray-900">
               {tutorDetail.daysOnPlatform}
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              <span>Avg Rating</span>
+            <div className="flex items-center gap-1.5 text-xs text-gray-600">
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              <span>Rating</span>
             </div>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-xs font-medium text-gray-900">
               {tutorDetail.avgRating.toFixed(1)}/5.0
             </span>
           </div>
 
           {tutorDetail.firstSessionAvgRating && (
-            <div className="flex items-center justify-between pl-6">
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <span>First Session</span>
+            <div className="flex items-center justify-between pl-4">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span>First</span>
               </div>
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-xs font-medium text-gray-700">
                 {tutorDetail.firstSessionAvgRating.toFixed(1)}/5.0
               </span>
             </div>
           )}
 
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Attendance</span>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-xs text-gray-600">Attendance</span>
+            <span className="text-xs font-medium text-gray-900">
               {tutorDetail.attendancePercentage.toFixed(1)}%
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Sessions Kept</span>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-xs text-gray-600">Kept</span>
+            <span className="text-xs font-medium text-gray-900">
               {tutorDetail.keptSessionsPercentage.toFixed(1)}%
             </span>
           </div>
@@ -264,18 +265,18 @@ export function TutorDetailCard({
 
         {/* Risk Flags */}
         {tutorDetail.riskFlags.length > 0 && (
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-orange-500" />
-              <h4 className="text-sm font-semibold text-gray-900">
+          <div className="border-t border-gray-200 pt-2">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <AlertTriangle className="h-3 w-3 text-orange-500" />
+              <h4 className="text-xs font-semibold text-gray-900">
                 Risk Flags
               </h4>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {tutorDetail.riskFlags.map((flag, index) => (
                 <div
                   key={index}
-                  className={`text-xs px-2 py-1 rounded ${
+                  className={`text-xs px-1.5 py-0.5 rounded ${
                     flag.severity === "critical"
                       ? "bg-red-100 text-red-800"
                       : flag.severity === "high"
@@ -285,8 +286,8 @@ export function TutorDetailCard({
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  <div className="font-medium">{flag.type}</div>
-                  <div className="text-xs opacity-75">{flag.message}</div>
+                  <div className="font-medium text-xs">{flag.type}</div>
+                  <div className="text-xs opacity-75 leading-tight">{flag.message}</div>
                 </div>
               ))}
             </div>
@@ -294,12 +295,12 @@ export function TutorDetailCard({
         )}
 
         {/* Actions */}
-        <div className="border-t border-gray-200 pt-4">
+        <div className="border-t border-gray-200 pt-2">
           <button
             onClick={handleViewHistory}
-            className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
           >
-            View Session History
+            View History
           </button>
         </div>
       </div>

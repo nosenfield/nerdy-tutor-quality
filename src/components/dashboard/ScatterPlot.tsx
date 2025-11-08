@@ -27,7 +27,7 @@ export interface ScatterPlotProps {
   xLabel: string;
   yLabel: string;
   thresholdLines?: Array<{ value: number; color: string; label: string }>;
-  onDotClick: (tutorId: string) => void;
+  onDotClick: (tutorId: string, position: { x: number; y: number }) => void;
   selectedTutorId?: string | null;
   zones?: Array<{ min: number; max: number; color: string }>;
   plotType?: "attendance" | "reschedules" | "quality";
@@ -134,36 +134,47 @@ export function ScatterPlot({
     const { cx, cy, payload } = props;
     const isSelected = payload.tutorId === selectedTutorId;
 
+    // All dots are 1.5x size, no size change on select
+    const dotRadius = (CHART_THEME.dot.default.r / 2) * 1.5; // 1.5x size for all dots
+
+    // Handle click with position
+    const handleClick = (e: React.MouseEvent<SVGCircleElement>) => {
+      e.stopPropagation();
+      // Use the actual click position (clientX, clientY) which is the screen position
+      // This ensures the card appears directly below where the user clicked
+      onDotClick(payload.tutorId, { x: e.clientX, y: e.clientY });
+    };
+
     if (isSelected) {
-      // Selected dot: larger size, blue border, blue fill
+      // Selected dot: blue fill, same size as non-selected
       return (
         <circle
           cx={cx}
           cy={cy}
-          r={(CHART_THEME.dot.selected.r * 1.5) / 2} // Half of 1.5x size
+          r={dotRadius}
           fill="#3B82F6"
           stroke="#3B82F6"
-          strokeWidth={2}
+          strokeWidth={1}
           opacity={1}
           style={{ cursor: "pointer" }}
-          onClick={() => onDotClick(payload.tutorId)}
+          onClick={handleClick}
           aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${plotType === "quality" ? payload.y : `${payload.y}%`}`}
         />
       );
     }
 
-    // Non-selected dots: transparent fill with blue border
+    // Non-selected dots: transparent fill with blue border, same size
     return (
       <circle
         cx={cx}
         cy={cy}
-        r={CHART_THEME.dot.default.r / 2} // Half size
+        r={dotRadius}
         fill="transparent"
         stroke="#3B82F6"
-        strokeWidth={2}
+        strokeWidth={1}
         opacity={selectedTutorId ? 0.6 : 1} // Dim if another is selected
         style={{ cursor: "pointer" }}
-        onClick={() => onDotClick(payload.tutorId)}
+        onClick={handleClick}
           aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${plotType === "quality" ? payload.y : `${payload.y}%`}`}
       />
     );
@@ -291,15 +302,12 @@ export function ScatterPlot({
                   tutorId: string;
                 };
                 return (
-                  <div className="bg-white p-2 border border-gray-200 rounded shadow-sm">
-                    <p className="text-sm font-medium">
-                      Tutor: {data.tutorId}
+                  <div className="bg-white p-1.5 border border-gray-200 rounded shadow-sm">
+                    <p className="text-xs font-medium">
+                      {data.tutorId}
                     </p>
-                    <p className="text-sm text-gray-600">
-                      {xLabel}: {data.x}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {yLabel}: {plotType === "quality" ? data.y.toFixed(1) : `${data.y.toFixed(1)}%`}
+                    <p className="text-xs text-gray-600">
+                      {xLabel}: {data.x} • {yLabel}: {plotType === "quality" ? data.y.toFixed(1) : `${data.y.toFixed(1)}%`}
                     </p>
                   </div>
                 );

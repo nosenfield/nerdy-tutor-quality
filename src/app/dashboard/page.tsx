@@ -126,13 +126,10 @@ export default function DashboardPage() {
   );
 
   // Handle dot click
-  const handleDotClick = (tutorId: string) => {
+  const handleDotClick = (tutorId: string, position: { x: number; y: number }) => {
     setSelectedTutor(tutorId);
-    // Get click position for detail card (use center of viewport as fallback)
-    setClickedDotPosition({
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
-    });
+    // Use the actual dot position
+    setClickedDotPosition(position);
   };
 
   // Handle close detail card
