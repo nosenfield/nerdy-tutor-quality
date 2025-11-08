@@ -307,7 +307,10 @@ export function ScatterPlot({
                       {data.tutorId}
                     </p>
                     <p className="text-xs text-gray-600">
-                      {xLabel}: {data.x} • {yLabel}: {plotType === "quality" ? data.y.toFixed(1) : `${data.y.toFixed(1)}%`}
+                      {xLabel}: {data.x}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {yLabel}: {plotType === "quality" ? data.y.toFixed(1) : `${data.y.toFixed(1)}%`}
                     </p>
                   </div>
                 );
