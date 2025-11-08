@@ -5,6 +5,7 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ScatterPlot } from "@/components/dashboard/ScatterPlot";
 import { TutorDetailCard } from "@/components/dashboard/TutorDetailCard";
 import { FlaggedTutorsTable } from "@/components/dashboard/FlaggedTutorsTable";
+import { FullscreenPlotModal } from "@/components/dashboard/FullscreenPlotModal";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import { useTutorSessions } from "@/lib/hooks/useDashboardData";
 import type {
@@ -122,6 +123,7 @@ export default function DashboardPage() {
     setLastRefreshAt,
     qualityView,
     setQualityView,
+    fullscreenPlot,
   } = useDashboardStore();
   const queryClient = useQueryClient();
   const { data: tutorsResponse, isLoading, error, dataUpdatedAt } = useTutorSessions(
@@ -618,6 +620,50 @@ export default function DashboardPage() {
           onTutorChange={setSelectedTutor}
         />
       )}
+
+      {/* Fullscreen Plot Modals */}
+      <FullscreenPlotModal
+        plotType="attendance"
+        plotProps={{
+          title: "Tutor Attendance",
+          data: attendanceData,
+          xLabel: "Total Sessions",
+          yLabel:
+            qualityView === "first"
+              ? "New Student Attendance %"
+              : "Attendance %",
+          onDotClick: handleDotClick,
+          selectedTutorId: selectedTutorId,
+        }}
+      />
+      <FullscreenPlotModal
+        plotType="reschedules"
+        plotProps={{
+          title: "Sessions Kept",
+          data: reschedulesData,
+          xLabel: "Total Sessions",
+          yLabel:
+            qualityView === "first"
+              ? "New Student Kept %"
+              : "Sessions Kept %",
+          onDotClick: handleDotClick,
+          selectedTutorId: selectedTutorId,
+        }}
+      />
+      <FullscreenPlotModal
+        plotType="quality"
+        plotProps={{
+          title: "Tutor Quality",
+          data: qualityData,
+          xLabel: "Total Sessions",
+          yLabel:
+            qualityView === "first"
+              ? "New Student Rating"
+              : "Average Rating",
+          onDotClick: handleDotClick,
+          selectedTutorId: selectedTutorId,
+        }}
+      />
     </div>
   );
 }
