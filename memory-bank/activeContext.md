@@ -5,7 +5,7 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 4 Dashboard UI - Starting!** - PS-0 complete: Cleaned up empty analytics directory and verified all dashboard dependencies are installed. Ready to begin PS-1: Initialize Dashboard Module.
+**Phase 4 Dashboard UI - CC-7 Complete!** - Flagged Tutors Table component implemented with mini visualizations, row highlighting, and integration with scatter plots. Ready to begin CC-8: Table Sorting & Pagination.
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -39,9 +39,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **PS-0 Complete - Dashboard codebase cleanup** - Removed empty `/src/app/dashboard/analytics/` directory and verified all dashboard dependencies are installed (recharts, @tanstack/react-query, zustand, @headlessui/react, date-fns, lucide-react). Codebase ready for dashboard implementation - 2025-11-07
-2. **Phase 3 Complete - Rules engine fully implemented** - Completed all rules (no-show, lateness, early-end, poor first session, reschedule rate, chronic lateness, declining ratings), scoring algorithm (attendance, ratings, completion, reliability), and comprehensive unit tests. All tests passing - 2025-11-06
-3. **Task 3.1 Complete - Rules engine foundation created** - Created `src/lib/scoring/rules-engine.ts` with TypeScript interfaces (RuleResult, RuleContext, RuleFunction, RulesEngineConfig, TutorStats). Includes helper functions and default configuration. Foundation ready for rule implementations - 2025-11-06
+1. **CC-7 Complete - Flagged Tutors Table** - Created `FlaggedTutorsTable` component with 6 columns (Tutor ID, Total Sessions, Attendance %, Sessions Kept %, Avg Rating, Days on Platform), mini visualizations (progress bars for percentages, star ratings), row highlighting based on risk flags (warning/critical), and click-to-highlight integration with scatter plots. Component integrated into dashboard page - 2025-11-07
+2. **PS-0 Complete - Dashboard codebase cleanup** - Removed empty `/src/app/dashboard/analytics/` directory and verified all dashboard dependencies are installed (recharts, @tanstack/react-query, zustand, @headlessui/react, date-fns, lucide-react). Codebase ready for dashboard implementation - 2025-11-07
+3. **Phase 3 Complete - Rules engine fully implemented** - Completed all rules (no-show, lateness, early-end, poor first session, reschedule rate, chronic lateness, declining ratings), scoring algorithm (attendance, ratings, completion, reliability), and comprehensive unit tests. All tests passing - 2025-11-06
 
 ---
 
@@ -60,6 +60,7 @@ Next phases:
 - [x] CC-4: Scatter Plot - First Session Toggle ✅
 - [x] CC-5: Scatter Plot - Interactive Features ✅
 - [x] CC-6: Tutor Detail Card ✅
+- [x] CC-7: Flagged Tutors Table ✅
 - [x] Backend Integration ✅ (with fallback to mock data)
 
 ### Near-Term (This Week - Phase 3)
@@ -98,11 +99,13 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Recently Modified
 
-- `src/lib/scoring/rules-engine.ts` - Complete rules engine with all detection rules (Tasks 3.2-3.10) ← UPDATED
-- `src/lib/scoring/aggregator.ts` - Scoring algorithm with all component scores (Tasks 3.11-3.17) ← NEW
-- `src/lib/scoring/thresholds.ts` - Configurable thresholds and quality tiers (Task 3.18) ← NEW
-- `src/lib/scoring/rules-engine.test.ts` - Comprehensive unit tests for rules (Tasks 3.19-3.20) ← NEW
-- `src/lib/scoring/aggregator.test.ts` - Comprehensive unit tests for aggregator (Tasks 3.21-3.22) ← NEW
+- `src/components/dashboard/FlaggedTutorsTable.tsx` - Flagged tutors table with mini visualizations and row highlighting (CC-7) ← NEW
+- `src/app/dashboard/page.tsx` - Updated to include FlaggedTutorsTable component ← UPDATED
+- `src/lib/scoring/rules-engine.ts` - Complete rules engine with all detection rules (Tasks 3.2-3.10)
+- `src/lib/scoring/aggregator.ts` - Scoring algorithm with all component scores (Tasks 3.11-3.17)
+- `src/lib/scoring/thresholds.ts` - Configurable thresholds and quality tiers (Task 3.18)
+- `src/lib/scoring/rules-engine.test.ts` - Comprehensive unit tests for rules (Tasks 3.19-3.20)
+- `src/lib/scoring/aggregator.test.ts` - Comprehensive unit tests for aggregator (Tasks 3.21-3.22)
 - `src/lib/db/schema.ts` - Database schema definition (all 4 core tables created)
 - `src/lib/mock-data/scenarios.ts` - Scenario configurations for problem tutors
 - `src/lib/mock-data/generators.ts` - Mock data generation with all overrides

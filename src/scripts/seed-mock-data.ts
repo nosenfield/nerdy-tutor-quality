@@ -22,6 +22,7 @@ import {
 } from "../lib/mock-data/scenarios";
 import { validateMockData, printValidationReport } from "../lib/mock-data/validation";
 import { differenceInMinutes } from "../lib/utils/time";
+import { sessions } from "../lib/db/schema";
 
 /**
  * Seed Script for Mock Data

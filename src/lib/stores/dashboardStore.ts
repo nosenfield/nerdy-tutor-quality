@@ -103,8 +103,8 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
   qualityView: "all",
   setQualityView: (view) => set({ qualityView: view }),
 
-  // Data source preference
-  forceMockData: false,
+  // Data source preference (default to mock data on first load)
+  forceMockData: true,
   setForceMockData: (force) => set({ forceMockData: force }),
 
   // Last refresh timestamp

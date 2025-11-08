@@ -5,6 +5,7 @@ import { LogoutButton } from "@/components/auth/LogoutButton";
 import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import { ScatterPlot } from "@/components/dashboard/ScatterPlot";
 import { TutorDetailCard } from "@/components/dashboard/TutorDetailCard";
+import { FlaggedTutorsTable } from "@/components/dashboard/FlaggedTutorsTable";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import { useTutorSessions } from "@/lib/hooks/useDashboardData";
 import type {
@@ -364,12 +365,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Table Section - Placeholder */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <p className="text-gray-500 text-sm text-center">
-              Flagged Tutors Table (CC-7)
-            </p>
-          </div>
+          {/* Flagged Tutors Table */}
+          <FlaggedTutorsTable />
         </div>
       </main>
 

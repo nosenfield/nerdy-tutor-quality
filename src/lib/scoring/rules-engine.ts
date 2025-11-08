@@ -612,7 +612,7 @@ export function detectPoorFirstSession(context: RuleContext): RuleResult {
         metrics: {
           studentRating,
           threshold: config.poorFirstSessionRatingThreshold,
-          isFirstSession: true,
+          isFirstSession: "true",
           studentId: session.studentId,
         },
       },
@@ -856,7 +856,7 @@ export function detectHighRescheduleRate(context: RuleContext): RuleResult {
           threshold: config.highRescheduleRateThreshold,
           windowDays: config.aggregateWindowDays,
         },
-        trend: tutorStats.ratingTrend,
+        trend: tutorStats.ratingTrend ?? undefined,
       },
       confidence: 0.9, // High confidence - reschedule rate is measurable
     }
@@ -936,12 +936,12 @@ export function detectChronicLateness(context: RuleContext): RuleResult {
           lateRate: tutorStats.lateRate,
           lateCount: tutorStats.lateCount,
           totalSessions: tutorStats.totalSessions,
-          avgLatenessMinutes: tutorStats.avgLatenessMinutes,
+          avgLatenessMinutes: tutorStats.avgLatenessMinutes ?? 0,
           threshold: config.chronicLatenessRateThreshold,
           latenessThresholdMinutes: config.latenessThresholdMinutes,
           windowDays: config.aggregateWindowDays,
         },
-        trend: tutorStats.ratingTrend,
+        trend: tutorStats.ratingTrend ?? undefined,
       },
       confidence: 0.9, // High confidence - lateness rate is measurable
     }

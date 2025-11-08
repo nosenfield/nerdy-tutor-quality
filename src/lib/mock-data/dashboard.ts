@@ -158,35 +158,7 @@ export function generateMockTutorSummaries(
         riskFlags: [],
       });
     } else if (i === 2) {
-      // Tutor 2: 10 total sessions (normal profile)
-      tutors.push({
-        tutorId,
-        totalSessions: 10,
-        attendancePercentage: faker.number.float({ min: 80, max: 95, fractionDigits: 1 }),
-        keptSessionsPercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
-        avgRating: faker.number.float({ min: 3.5, max: 4.5, fractionDigits: 1 }),
-        firstSessionAvgRating: faker.number.float({ min: 3.0, max: 4.5, fractionDigits: 1 }),
-        firstSessionAttendancePercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
-        firstSessionKeptSessionsPercentage: faker.number.float({ min: 70, max: 85, fractionDigits: 1 }),
-        daysOnPlatform: Math.max(1, Math.floor(10 * faker.number.float({ min: 0.5, max: 2.0 }))),
-        riskFlags: [],
-      });
-    } else if (i === 3) {
-      // Tutor 3: 0% attendance, 0% sessions kept, 1/5 rating, multiple sessions (5)
-      tutors.push({
-        tutorId,
-        totalSessions: 5,
-        attendancePercentage: 0,
-        keptSessionsPercentage: 0,
-        avgRating: 1.0,
-        firstSessionAvgRating: 1.0,
-        firstSessionAttendancePercentage: 0,
-        firstSessionKeptSessionsPercentage: 0,
-        daysOnPlatform: Math.max(1, Math.floor(5 * 1.0)),
-        riskFlags: ["low-attendance", "low-rating"],
-      });
-    } else if (i === 4) {
-      // Tutor 4: 0% attendance, 0% sessions kept, 1/5 rating, 1 session
+      // Tutor 2: 1 total session, 0% attendance, 0% sessions kept, 1/5 rating
       tutors.push({
         tutorId,
         totalSessions: 1,
@@ -198,6 +170,20 @@ export function generateMockTutorSummaries(
         firstSessionKeptSessionsPercentage: 0,
         daysOnPlatform: 1,
         riskFlags: ["low-attendance", "low-rating"],
+      });
+    } else if (i === 3) {
+      // Tutor 3: 10 total sessions, mixed attendance, mixed sessions kept, mixed rating
+      tutors.push({
+        tutorId,
+        totalSessions: 10,
+        attendancePercentage: faker.number.float({ min: 80, max: 95, fractionDigits: 1 }),
+        keptSessionsPercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
+        avgRating: faker.number.float({ min: 3.5, max: 4.5, fractionDigits: 1 }),
+        firstSessionAvgRating: faker.number.float({ min: 3.0, max: 4.5, fractionDigits: 1 }),
+        firstSessionAttendancePercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
+        firstSessionKeptSessionsPercentage: faker.number.float({ min: 70, max: 85, fractionDigits: 1 }),
+        daysOnPlatform: Math.max(1, Math.floor(10 * faker.number.float({ min: 0.5, max: 2.0 }))),
+        riskFlags: [],
       });
     } else {
       // Tutors 5-9: Fill with varied profiles (max 10 sessions each)
