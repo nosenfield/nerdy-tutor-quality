@@ -143,9 +143,12 @@
 - [x] Flag creation logic ✅
 - [x] Backfill script ✅
 - [x] Worker startup script ✅
+- [x] Test job queuing (Task 5.18) ✅
+- [ ] Test job processing (Task 5.19)
+- [ ] Test retry logic (Task 5.20)
+- [ ] Test priority queuing (Task 5.21)
+- [ ] Load testing (100 concurrent jobs) (Task 5.22)
 - [ ] Upstash Redis account setup (can use local Redis for dev)
-- [ ] Integration tests for queue
-- [ ] Load testing (100 concurrent jobs)
 
 **Target Completion**: Week 5, Day 1-3 (3-4 days)
 
