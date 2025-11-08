@@ -233,14 +233,16 @@ export default function DashboardPage() {
 
   // Handle dot click
   const handleDotClick = (tutorId: string, position: { x: number; y: number }, allTutorIds?: string[]) => {
-    setSelectedTutor(tutorId);
     // Use the actual dot position
     setClickedDotPosition(position);
     // Store all tutor IDs for overlapping points
     if (allTutorIds && allTutorIds.length > 0) {
       setOverlappingTutorIds(allTutorIds);
+      // Show the first tutor in the list when there are multiple tutors
+      setSelectedTutor(allTutorIds[0]);
     } else {
       setOverlappingTutorIds([tutorId]);
+      setSelectedTutor(tutorId);
     }
   };
 
@@ -384,7 +386,17 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right Side - Date Range, Sessions, and Tutor Count */}
+          {/* Center - Tutor Count */}
+          <div className="flex items-center gap-2 absolute left-1/2 transform -translate-x-1/2">
+            <span className="text-xl font-bold text-gray-900">
+              Tutors in Data Set:
+            </span>
+            <span className="text-xl font-bold text-gray-900">
+              {filteredTutors.length}
+            </span>
+          </div>
+
+          {/* Right Side - Date Range and Students Toggle */}
           <div className="flex items-center gap-6 flex-wrap">
             {/* Date Range Filter */}
             <div className="flex items-center gap-2">
@@ -480,13 +492,6 @@ export default function DashboardPage() {
                   </RadioGroup.Option>
                 </div>
               </RadioGroup>
-            </div>
-
-            {/* Tutor Count */}
-            <div className="flex items-center">
-              <span className="text-lg font-semibold text-gray-900">
-                {filteredTutors.length} {filteredTutors.length === 1 ? "tutor" : "tutors"}
-              </span>
             </div>
           </div>
         </div>

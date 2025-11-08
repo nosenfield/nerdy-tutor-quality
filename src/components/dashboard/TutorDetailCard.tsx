@@ -305,7 +305,7 @@ export function TutorDetailCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs text-gray-600">
               <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              <span>Rating</span>
+              <span>Student Rating</span>
             </div>
             <span className="text-xs font-medium text-gray-900">
               {tutorDetail.avgRating.toFixed(1)}/5.0
@@ -315,7 +315,7 @@ export function TutorDetailCard({
           {tutorDetail.firstSessionAvgRating && (
             <div className="flex items-center justify-between pl-4">
               <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                <span>First</span>
+                <span>New Student Rating</span>
               </div>
               <span className="text-xs font-medium text-gray-700">
                 {tutorDetail.firstSessionAvgRating.toFixed(1)}/5.0
