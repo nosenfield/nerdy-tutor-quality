@@ -204,7 +204,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-2xl font-semibold text-gray-900">
-              Tutor Assessment Dashboard
+              Tooter Assessment Dashboard
             </h1>
             {/* Data Source Toggle */}
             <div className="flex items-center gap-3">

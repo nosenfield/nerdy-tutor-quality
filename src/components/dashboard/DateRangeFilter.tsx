@@ -20,7 +20,7 @@ import { Fragment } from "react";
  * Uses Headless UI Listbox for accessibility.
  */
 
-type QuickFilter = "last-week" | "last-month" | "last-quarter" | "all-time";
+type QuickFilter = "today" | "last-week" | "last-month" | "last-quarter" | "all-time";
 
 interface QuickFilterOption {
   id: QuickFilter;
@@ -29,6 +29,14 @@ interface QuickFilterOption {
 }
 
 const QUICK_FILTERS: QuickFilterOption[] = [
+  {
+    id: "today",
+    label: "Today",
+    getDateRange: () => ({
+      start: startOfToday(),
+      end: endOfToday(), // Include full day
+    }),
+  },
   {
     id: "last-week",
     label: "Last Week",
@@ -75,6 +83,12 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
 
   // Check if date range matches a quick filter
   // Compare end date with endOfToday() since all filters now use endOfToday()
+  if (
+    dateRange.start.getTime() === today.getTime() &&
+    dateRange.end.getTime() === endOfDay.getTime()
+  ) {
+    return "today";
+  }
   if (
     dateRange.start.getTime() === lastWeek.getTime() &&
     dateRange.end.getTime() === endOfDay.getTime()
