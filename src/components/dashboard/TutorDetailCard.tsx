@@ -26,8 +26,8 @@ export function TutorDetailCard({
   onClose,
 }: TutorDetailCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const { data: tutorDetail, isLoading, error } = useTutorDetail(tutorId);
-  const { setSessionHistoryModal } = useDashboardStore();
+  const { dateRange, setSessionHistoryModal } = useDashboardStore();
+  const { data: tutorDetail, isLoading, error } = useTutorDetail(tutorId, dateRange);
   
   // Drag state
   const [isDragging, setIsDragging] = useState(false);

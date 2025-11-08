@@ -82,12 +82,12 @@ export function useFlaggedTutors(dateRange: DateRange) {
 /**
  * Hook to fetch detailed tutor information
  */
-export function useTutorDetail(tutorId: string) {
+export function useTutorDetail(tutorId: string, dateRange: DateRange) {
   const forceMockData = useDashboardStore((state) => state.forceMockData);
   
   return useQuery({
-    queryKey: [...dashboardKeys.tutorDetail(tutorId), forceMockData],
-    queryFn: () => getTutorDetail(tutorId, forceMockData),
+    queryKey: [...dashboardKeys.tutorDetail(tutorId), dateRange, forceMockData],
+    queryFn: () => getTutorDetail(tutorId, dateRange, forceMockData),
     enabled: !!tutorId, // Only fetch if tutorId is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes

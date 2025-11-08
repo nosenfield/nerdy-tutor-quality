@@ -61,14 +61,19 @@ export async function getTutors(
  */
 export async function getTutorDetail(
   tutorId: string,
+  dateRange: DateRange,
   forceMock: boolean = false
 ): Promise<TutorDetail> {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams({
+    startDate: dateRange.start.toISOString().split("T")[0],
+    endDate: dateRange.end.toISOString().split("T")[0],
+  });
+  
   if (forceMock) {
     params.append("forceMock", "true");
   }
 
-  const url = `/api/dashboard/tutors/${tutorId}${params.toString() ? `?${params.toString()}` : ""}`;
+  const url = `/api/dashboard/tutors/${tutorId}?${params.toString()}`;
   const response = await fetch(url);
 
   if (!response.ok) {

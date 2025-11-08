@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { LogoutButton } from "@/components/auth/LogoutButton";
-import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import { ScatterPlot } from "@/components/dashboard/ScatterPlot";
 import { TutorDetailCard } from "@/components/dashboard/TutorDetailCard";
 import { FlaggedTutorsTable } from "@/components/dashboard/FlaggedTutorsTable";
@@ -12,10 +11,98 @@ import type {
   ScatterPlotDataPoint,
   TutorSummary,
 } from "@/lib/types/dashboard";
-import { Switch } from "@headlessui/react";
-import { RefreshCw } from "lucide-react";
+import { Switch, Listbox, Transition, RadioGroup } from "@headlessui/react";
+import { RefreshCw, Check, ChevronsUpDown } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { format, subDays, subMonths, subQuarters, startOfToday, endOfToday } from "date-fns";
+import { Fragment } from "react";
+import type { DateRange } from "@/lib/types/dashboard";
+
+/**
+ * Quick filter options for date range
+ */
+type QuickFilter = "today" | "last-week" | "last-month" | "last-quarter" | "all-time";
+
+const QUICK_FILTERS = [
+  {
+    id: "today" as QuickFilter,
+    label: "Today",
+    getDateRange: () => ({
+      start: startOfToday(),
+      end: endOfToday(),
+    }),
+  },
+  {
+    id: "last-week" as QuickFilter,
+    label: "Last Week",
+    getDateRange: () => ({
+      start: subDays(startOfToday(), 7),
+      end: endOfToday(),
+    }),
+  },
+  {
+    id: "last-month" as QuickFilter,
+    label: "Last Month",
+    getDateRange: () => ({
+      start: subMonths(startOfToday(), 1),
+      end: endOfToday(),
+    }),
+  },
+  {
+    id: "last-quarter" as QuickFilter,
+    label: "Last Quarter",
+    getDateRange: () => ({
+      start: subQuarters(startOfToday(), 1),
+      end: endOfToday(),
+    }),
+  },
+  {
+    id: "all-time" as QuickFilter,
+    label: "All Time",
+    getDateRange: () => ({
+      start: new Date(2020, 0, 1),
+      end: endOfToday(),
+    }),
+  },
+];
+
+/**
+ * Get current quick filter based on date range
+ */
+function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
+  const today = startOfToday();
+  const endOfDay = endOfToday();
+  const lastWeek = subDays(today, 7);
+  const lastMonth = subMonths(today, 1);
+  const lastQuarter = subQuarters(today, 1);
+
+  if (
+    dateRange.start.getTime() === today.getTime() &&
+    dateRange.end.getTime() === endOfDay.getTime()
+  ) {
+    return "today";
+  }
+  if (
+    dateRange.start.getTime() === lastWeek.getTime() &&
+    dateRange.end.getTime() === endOfDay.getTime()
+  ) {
+    return "last-week";
+  }
+  if (
+    dateRange.start.getTime() === lastMonth.getTime() &&
+    dateRange.end.getTime() === endOfDay.getTime()
+  ) {
+    return "last-month";
+  }
+  if (
+    dateRange.start.getTime() === lastQuarter.getTime() &&
+    dateRange.end.getTime() === endOfDay.getTime()
+  ) {
+    return "last-quarter";
+  }
+
+  return "all-time";
+}
 
 /**
  * Tutor Assessment Dashboard
@@ -26,6 +113,7 @@ import { format } from "date-fns";
 export default function DashboardPage() {
   const {
     dateRange,
+    setDateRange,
     selectedTutorId,
     setSelectedTutor,
     forceMockData,
@@ -33,6 +121,7 @@ export default function DashboardPage() {
     lastRefreshAt,
     setLastRefreshAt,
     qualityView,
+    setQualityView,
   } = useDashboardStore();
   const queryClient = useQueryClient();
   const { data: tutorsResponse, isLoading, error, dataUpdatedAt } = useTutorSessions(
@@ -197,15 +286,123 @@ export default function DashboardPage() {
     return false;
   }, [forceMockData, tutorsResponse]);
 
+  // Date range filter logic
+  const currentFilter = getCurrentQuickFilter(dateRange);
+  const selectedFilter = QUICK_FILTERS.find((f) => f.id === currentFilter);
+
+  const handleFilterChange = (filterId: QuickFilter) => {
+    const filter = QUICK_FILTERS.find((f) => f.id === filterId);
+    if (filter) {
+      setDateRange(filter.getDateRange());
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      {/* Fixed Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 px-6 py-4">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-4 flex-wrap">
             <h1 className="text-2xl font-semibold text-gray-900">
               Tooter Assessment Dashboard
             </h1>
+            
+            {/* Date Range Filter */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Date Range:
+              </label>
+              <Listbox value={currentFilter} onChange={handleFilterChange}>
+                <div className="relative">
+                  <Listbox.Button className="relative w-48 cursor-default rounded-md bg-white py-2 pl-3 pr-10 text-left text-sm shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm">
+                    <span className="block truncate">
+                      {selectedFilter?.label || "Select range"}
+                    </span>
+                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                      <ChevronsUpDown
+                        className="h-5 w-5 text-gray-400"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </Listbox.Button>
+                  <Transition
+                    as={Fragment}
+                    leave="transition ease-in duration-100"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <Listbox.Options className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                      {QUICK_FILTERS.map((filter) => (
+                        <Listbox.Option
+                          key={filter.id}
+                          className={({ active }) =>
+                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                              active ? "bg-indigo-100 text-indigo-900" : "text-gray-900"
+                            }`
+                          }
+                          value={filter.id}
+                        >
+                          {({ selected }) => (
+                            <>
+                              <span
+                                className={`block truncate ${
+                                  selected ? "font-medium" : "font-normal"
+                                }`}
+                              >
+                                {filter.label}
+                              </span>
+                              {selected ? (
+                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-indigo-600">
+                                  <Check className="h-5 w-5" aria-hidden="true" />
+                                </span>
+                              ) : null}
+                            </>
+                          )}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </Transition>
+                </div>
+              </Listbox>
+            </div>
+
+            {/* Sessions Toggle */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-700">
+                Sessions:
+              </label>
+              <RadioGroup value={qualityView} onChange={setQualityView}>
+                <div className="flex gap-2 rounded-md bg-gray-100 p-1">
+                  <RadioGroup.Option value="all">
+                    {({ checked }) => (
+                      <button
+                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                          checked
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                      >
+                        All
+                      </button>
+                    )}
+                  </RadioGroup.Option>
+                  <RadioGroup.Option value="first">
+                    {({ checked }) => (
+                      <button
+                        className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                          checked
+                            ? "bg-white text-gray-900 shadow-sm"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                      >
+                        First
+                      </button>
+                    )}
+                  </RadioGroup.Option>
+                </div>
+              </RadioGroup>
+            </div>
+
             {/* Data Source Toggle */}
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-700">
@@ -225,32 +422,33 @@ export default function DashboardPage() {
                 />
               </Switch>
             </div>
-                   {/* Refresh Button */}
-                   <div className="flex items-center gap-2">
-                     <button
-                       onClick={handleRefresh}
-                       disabled={isLoading || isRefreshing}
-                       className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
-                       title="Refresh data"
-                     >
-                       <RefreshCw
-                         className={`h-4 w-4 transition-transform ${isLoading || isRefreshing ? "animate-spin" : ""}`}
-                       />
-                       Refresh
-                     </button>
-                     {lastRefreshAt && (
-                       <span className="text-sm text-gray-500">
-                         {format(lastRefreshAt, "h:mm:ss a")}
-                       </span>
-                     )}
-                   </div>
+
+            {/* Refresh Button */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={isLoading || isRefreshing}
+                className="flex items-center gap-2 rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
+                title="Refresh data"
+              >
+                <RefreshCw
+                  className={`h-4 w-4 transition-transform ${isLoading || isRefreshing ? "animate-spin" : ""}`}
+                />
+                Refresh
+              </button>
+              {lastRefreshAt && (
+                <span className="text-sm text-gray-500">
+                  {format(lastRefreshAt, "h:mm:ss a")}
+                </span>
+              )}
+            </div>
           </div>
           <LogoutButton />
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="p-6">
+      {/* Main Content - Add padding-top to account for fixed header */}
+      <main className="pt-24 p-6">
         <div className="w-full space-y-6">
           {/* Error Message */}
           {error && (
@@ -283,12 +481,12 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Date Range Filter */}
-                 <div className="bg-white rounded-lg shadow-sm p-6">
-                   <DateRangeFilter
-                     tutorCount={displayTutors.length}
-                   />
-                 </div>
+          {/* Tutor Count */}
+          <div className="bg-white rounded-lg shadow-sm p-4">
+            <span className="text-sm font-medium text-gray-600">
+              {displayTutors.length} {displayTutors.length === 1 ? "tutor" : "tutors"}
+            </span>
+          </div>
 
           {/* Plots Grid - Responsive Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

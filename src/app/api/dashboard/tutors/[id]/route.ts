@@ -26,6 +26,24 @@ export async function GET(
     const tutorId = id;
     const { searchParams } = new URL(request.url);
     const forceMock = searchParams.get("forceMock") === "true";
+    
+    // Get date range from query params, or default to 1 year if not provided
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
+    
+    let dateRange: { start: Date; end: Date };
+    if (startDateParam && endDateParam) {
+      dateRange = {
+        start: new Date(startDateParam),
+        end: new Date(endDateParam),
+      };
+    } else {
+      // Default to 1 year if not provided (for backward compatibility)
+      dateRange = {
+        start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
+        end: new Date(), // today
+      };
+    }
 
     // If forceMock is true, skip database and return mock data
     if (forceMock) {
@@ -49,12 +67,6 @@ export async function GET(
 
     // Try to fetch from database using real-time aggregation
     try {
-      // Use a wide date range to get all sessions
-      const dateRange = {
-        start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
-        end: new Date(), // today
-      };
-
       const tutorSummary = await getTutorSummaryFromSessions(tutorId, dateRange);
 
       if (!tutorSummary) {
