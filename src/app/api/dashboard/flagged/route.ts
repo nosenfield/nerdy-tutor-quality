@@ -23,6 +23,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const startDateParam = searchParams.get("startDate");
     const endDateParam = searchParams.get("endDate");
+    const forceMock = searchParams.get("forceMock") === "true";
 
     // Parse date range
     const dateRange = {
@@ -32,16 +33,31 @@ export async function GET(request: Request) {
       end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
     };
 
+    // If forceMock is true, skip database and return mock data
+    if (forceMock) {
+      const mockTutors = generateMockTutorSummaries(10, 42);
+      const flaggedTutors = getFlaggedTutors(mockTutors);
+      return NextResponse.json(flaggedTutors, {
+        headers: {
+          "X-Data-Source": "mock",
+          "X-Flagged-Count": flaggedTutors.length.toString(),
+        },
+      });
+    }
+
     // Try to fetch from database using real-time aggregation
     try {
       const allTutors = await getTutorSummariesFromSessions(dateRange);
 
       if (allTutors.length === 0) {
-        // No tutors in database, fall back to mock data
-        console.log("No tutors found in database, using mock data");
-        const mockTutors = generateMockTutorSummaries(10, 42);
-        const flaggedTutors = getFlaggedTutors(mockTutors);
-        return NextResponse.json(flaggedTutors);
+        // No tutors in database, return empty array
+        console.log("No tutors found in database");
+        return NextResponse.json([], {
+          headers: {
+            "X-Data-Source": "sessions-realtime",
+            "X-Flagged-Count": "0",
+          },
+        });
       }
 
       // Filter to only tutors with flags
@@ -49,25 +65,32 @@ export async function GET(request: Request) {
         (tutor) => tutor.riskFlags.length > 0
       );
 
-      if (flaggedTutors.length === 0) {
-        // No flagged tutors, return empty array
-        return NextResponse.json([]);
-      }
-
-      return NextResponse.json(flaggedTutors);
+      return NextResponse.json(flaggedTutors, {
+        headers: {
+          "X-Data-Source": "sessions-realtime",
+          "X-Flagged-Count": flaggedTutors.length.toString(),
+        },
+      });
     } catch (dbError) {
-      // Database error, fall back to mock data
-      console.error("Database error, falling back to mock data:", dbError);
-      const allTutors = generateMockTutorSummaries(10, 42);
-      const flaggedTutors = getFlaggedTutors(allTutors);
-      return NextResponse.json(flaggedTutors);
+      // Database error, return empty array (don't fall back to mock)
+      console.error("Database error:", dbError);
+      return NextResponse.json(
+        { 
+          error: "Failed to fetch flagged tutors",
+          message: dbError instanceof Error ? dbError.message : "Unknown error"
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("Error fetching flagged tutors:", error);
-    // Final fallback to mock data
-    const allTutors = generateMockTutorSummaries(10, 42);
-    const flaggedTutors = getFlaggedTutors(allTutors);
-    return NextResponse.json(flaggedTutors);
+    return NextResponse.json(
+      { 
+        error: "Failed to fetch flagged tutors",
+        message: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 }
+    );
   }
 }
 

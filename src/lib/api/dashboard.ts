@@ -126,17 +126,34 @@ export async function getTutorSessions(
  * Get list of flagged tutors
  */
 export async function getFlaggedTutors(
-  dateRange: DateRange
+  dateRange: DateRange,
+  forceMock: boolean = false
 ): Promise<TutorSummary[]> {
   const params = new URLSearchParams({
     startDate: dateRange.start.toISOString().split("T")[0],
     endDate: dateRange.end.toISOString().split("T")[0],
   });
 
+  if (forceMock) {
+    params.append("forceMock", "true");
+  }
+
   const response = await fetch(`/api/dashboard/flagged?${params.toString()}`);
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch flagged tutors: ${response.statusText}`);
+    // Try to read error message from response body
+    let errorMessage = `Failed to fetch flagged tutors: ${response.statusText}`;
+    try {
+      const errorData = await response.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      }
+    } catch {
+      // If response body is not JSON, use default error message
+    }
+    throw new Error(errorMessage);
   }
 
   return response.json();

@@ -69,9 +69,11 @@ export function useTutorScores(dateRange: DateRange) {
  * Hook to fetch flagged tutors
  */
 export function useFlaggedTutors(dateRange: DateRange) {
+  const forceMockData = useDashboardStore((state) => state.forceMockData);
+  
   return useQuery({
-    queryKey: dashboardKeys.flagged(dateRange),
-    queryFn: () => getFlaggedTutors(dateRange),
+    queryKey: [...dashboardKeys.flagged(dateRange), forceMockData],
+    queryFn: () => getFlaggedTutors(dateRange, forceMockData),
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
   });
