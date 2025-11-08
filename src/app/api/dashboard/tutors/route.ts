@@ -7,7 +7,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { generateAlternateMockTutorSummaries } from "@/lib/mock-data/dashboard";
+import { generateMockTutorSummaries } from "@/lib/mock-data/dashboard";
 import type { TutorSummary } from "@/lib/types/dashboard";
 import {
   getLatestTutorScores,
@@ -30,10 +30,9 @@ export async function GET(request: Request) {
       end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
     };
 
-    // If forceMock is true, skip database and return alternate mock data
-    // This ensures visual differences when switching between mock and live
+    // If forceMock is true, skip database and return mock data
     if (forceMock) {
-      const tutors: TutorSummary[] = generateAlternateMockTutorSummaries(10, 42);
+      const tutors: TutorSummary[] = generateMockTutorSummaries(10, 42);
       return NextResponse.json(tutors, {
         headers: {
           "X-Data-Source": "mock",
