@@ -2,7 +2,7 @@
  * Dashboard Tutors API Route
  * 
  * Returns aggregated tutor data for scatter plots.
- * Queries tutor_scores table and transforms to TutorSummary format.
+ * Aggregates sessions in real-time for accurate, up-to-date metrics.
  * Returns error if database query fails or no data available.
  */
 
@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { generateMockTutorSummaries } from "@/lib/mock-data/dashboard";
 import type { TutorSummary } from "@/lib/types/dashboard";
 import {
+  getTutorSummariesFromSessions,
   getLatestTutorScores,
   transformTutorScoreToSummary,
   getTutorActiveFlags,
@@ -41,40 +42,29 @@ export async function GET(request: Request) {
       });
     }
 
-    // Fetch from database - no fallback to mock data
-    console.log("Fetching tutor scores for date range:", {
+    // Fetch from database using real-time session aggregation
+    console.log("Aggregating sessions for date range:", {
       start: dateRange.start.toISOString(),
       end: dateRange.end.toISOString(),
     });
     
-    const scores = await getLatestTutorScores(dateRange);
+    const tutors = await getTutorSummariesFromSessions(dateRange);
     
-    console.log(`Found ${scores.length} tutor scores in database`);
+    console.log(`Found ${tutors.length} tutors with sessions`);
 
-    if (scores.length === 0) {
+    if (tutors.length === 0) {
       // No data in database - return error
-      console.log("No tutor scores found - returning 404");
+      console.log("No tutors found - returning 404");
       return NextResponse.json(
         { error: "No tutor data available for the selected date range" },
         { status: 404 }
       );
     }
 
-    // Transform scores to summaries
-    const tutors: TutorSummary[] = await Promise.all(
-      scores.map(async (score) => {
-        const activeFlags = await getTutorActiveFlags(
-          score.tutorId,
-          dateRange
-        );
-        return transformTutorScoreToSummary(score, activeFlags);
-      })
-    );
-
-    // Add metadata to indicate real data
+    // Add metadata to indicate real-time data
     return NextResponse.json(tutors, {
       headers: {
-        "X-Data-Source": "database",
+        "X-Data-Source": "sessions-realtime",
         "X-Tutor-Count": tutors.length.toString(),
       },
     });

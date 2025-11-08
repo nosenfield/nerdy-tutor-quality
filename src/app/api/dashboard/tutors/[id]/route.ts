@@ -2,7 +2,7 @@
  * Dashboard Tutor Detail API Route
  * 
  * Returns detailed tutor information.
- * Queries tutor_scores and flags tables, transforms to TutorDetail format.
+ * Aggregates sessions in real-time for accurate, up-to-date metrics.
  * Falls back to mock data if database query fails.
  */
 
@@ -11,12 +11,11 @@ import {
   generateMockTutorSummaries,
   generateMockTutorDetail,
 } from "@/lib/mock-data/dashboard";
-import { db, tutorScores } from "@/lib/db";
-import { eq, desc } from "drizzle-orm";
 import {
-  transformTutorScoreToDetail,
+  getTutorSummaryFromSessions,
   getTutorActiveFlags,
 } from "@/lib/api/dashboard-transform";
+import type { TutorDetail } from "@/lib/types/dashboard";
 
 export async function GET(
   request: Request,
@@ -48,20 +47,20 @@ export async function GET(
       });
     }
 
-    // Try to fetch from database
+    // Try to fetch from database using real-time aggregation
     try {
-      // Get the most recent score for this tutor
-      const scores = await db
-        .select()
-        .from(tutorScores)
-        .where(eq(tutorScores.tutorId, tutorId))
-        .orderBy(desc(tutorScores.calculatedAt))
-        .limit(1);
+      // Use a wide date range to get all sessions
+      const dateRange = {
+        start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
+        end: new Date(), // today
+      };
 
-      if (scores.length === 0) {
+      const tutorSummary = await getTutorSummaryFromSessions(tutorId, dateRange);
+
+      if (!tutorSummary) {
         // No data in database, fall back to mock data
         console.log(
-          `No tutor score found for ${tutorId}, using mock data`
+          `No sessions found for ${tutorId}, using mock data`
         );
         const tutors = generateMockTutorSummaries(10, 42);
         const tutor = tutors.find((t) => t.tutorId === tutorId);
@@ -77,18 +76,18 @@ export async function GET(
         return NextResponse.json(tutorDetail);
       }
 
-      const score = scores[0];
-
       // Get active flags for this tutor
-      // Use a wide date range to get all active flags
-      const dateRange = {
-        start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
-        end: new Date(), // today
-      };
       const activeFlags = await getTutorActiveFlags(tutorId, dateRange);
 
-      // Transform to detail format
-      const tutorDetail = transformTutorScoreToDetail(score, activeFlags);
+      // Transform summary to detail format
+      const tutorDetail: TutorDetail = {
+        ...tutorSummary,
+        riskFlags: activeFlags.map((flag) => ({
+          type: flag.type,
+          severity: flag.severity as "critical" | "high" | "medium" | "low",
+          message: flag.message,
+        })),
+      };
 
       return NextResponse.json(tutorDetail);
     } catch (dbError) {

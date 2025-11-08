@@ -43,8 +43,8 @@ function generateMockTutorSummary(
     // Safe zone (>90% attendance)
     attendancePercentage = faker.number.float({ min: 90, max: 100, fractionDigits: 1 });
     keptSessionsPercentage = faker.number.float({ min: 85, max: 100, fractionDigits: 1 });
-    avgRating = faker.number.float({ min: 4.0, max: 5.0, fractionDigits: 1 });
-    firstSessionAvgRating = faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 });
+    avgRating = faker.number.int({ min: 4, max: 5 });
+    firstSessionAvgRating = faker.number.int({ min: 3, max: 5 });
     // First sessions typically have slightly lower attendance/kept rates
     firstSessionAttendancePercentage = faker.number.float({ min: 85, max: 98, fractionDigits: 1 });
     firstSessionKeptSessionsPercentage = faker.number.float({ min: 80, max: 95, fractionDigits: 1 });
@@ -52,8 +52,8 @@ function generateMockTutorSummary(
     // Warning zone (70-90% attendance)
     attendancePercentage = faker.number.float({ min: 70, max: 90, fractionDigits: 1 });
     keptSessionsPercentage = faker.number.float({ min: 60, max: 85, fractionDigits: 1 });
-    avgRating = faker.number.float({ min: 3.0, max: 4.5, fractionDigits: 1 });
-    firstSessionAvgRating = faker.number.float({ min: 2.5, max: 4.0, fractionDigits: 1 });
+    avgRating = faker.number.int({ min: 3, max: 4 });
+    firstSessionAvgRating = faker.number.int({ min: 2, max: 4 });
     // First sessions may have more issues
     firstSessionAttendancePercentage = faker.number.float({ min: 60, max: 85, fractionDigits: 1 });
     firstSessionKeptSessionsPercentage = faker.number.float({ min: 50, max: 80, fractionDigits: 1 });
@@ -62,8 +62,8 @@ function generateMockTutorSummary(
     // Risk zone (<70% attendance)
     attendancePercentage = faker.number.float({ min: 30, max: 70, fractionDigits: 1 });
     keptSessionsPercentage = faker.number.float({ min: 40, max: 70, fractionDigits: 1 });
-    avgRating = faker.number.float({ min: 2.0, max: 3.5, fractionDigits: 1 });
-    firstSessionAvgRating = faker.number.float({ min: 1.5, max: 3.0, fractionDigits: 1 });
+    avgRating = faker.number.int({ min: 1, max: 3 });
+    firstSessionAvgRating = faker.number.int({ min: 1, max: 3 });
     // First sessions often have worse metrics
     firstSessionAttendancePercentage = faker.number.float({ min: 20, max: 65, fractionDigits: 1 });
     firstSessionKeptSessionsPercentage = faker.number.float({ min: 30, max: 65, fractionDigits: 1 });
@@ -90,7 +90,7 @@ function generateMockTutorSummary(
   );
 
   // Only include firstSessionAvgRating if different from avgRating
-  if (Math.abs(firstSessionAvgRating - avgRating) < 0.3) {
+  if (firstSessionAvgRating === avgRating) {
     firstSessionAvgRating = undefined;
   }
 
@@ -136,8 +136,8 @@ export function generateMockTutorSummaries(
         totalSessions: 8,
         attendancePercentage: 100,
         keptSessionsPercentage: 100,
-        avgRating: 5.0,
-        firstSessionAvgRating: 5.0,
+        avgRating: 5,
+        firstSessionAvgRating: 5,
         firstSessionAttendancePercentage: 100,
         firstSessionKeptSessionsPercentage: 100,
         daysOnPlatform: Math.max(1, Math.floor(8 * 1.5)),
@@ -150,8 +150,8 @@ export function generateMockTutorSummaries(
         totalSessions: 1,
         attendancePercentage: 100,
         keptSessionsPercentage: 100,
-        avgRating: 5.0,
-        firstSessionAvgRating: 5.0,
+        avgRating: 5,
+        firstSessionAvgRating: 5,
         firstSessionAttendancePercentage: 100,
         firstSessionKeptSessionsPercentage: 100,
         daysOnPlatform: 1,
@@ -164,8 +164,8 @@ export function generateMockTutorSummaries(
         totalSessions: 1,
         attendancePercentage: 0,
         keptSessionsPercentage: 0,
-        avgRating: 1.0,
-        firstSessionAvgRating: 1.0,
+        avgRating: 1,
+        firstSessionAvgRating: 1,
         firstSessionAttendancePercentage: 0,
         firstSessionKeptSessionsPercentage: 0,
         daysOnPlatform: 1,
@@ -178,8 +178,8 @@ export function generateMockTutorSummaries(
         totalSessions: 10,
         attendancePercentage: faker.number.float({ min: 80, max: 95, fractionDigits: 1 }),
         keptSessionsPercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
-        avgRating: faker.number.float({ min: 3.5, max: 4.5, fractionDigits: 1 }),
-        firstSessionAvgRating: faker.number.float({ min: 3.0, max: 4.5, fractionDigits: 1 }),
+        avgRating: faker.number.int({ min: 3, max: 5 }),
+        firstSessionAvgRating: faker.number.int({ min: 3, max: 5 }),
         firstSessionAttendancePercentage: faker.number.float({ min: 75, max: 90, fractionDigits: 1 }),
         firstSessionKeptSessionsPercentage: faker.number.float({ min: 70, max: 85, fractionDigits: 1 }),
         daysOnPlatform: Math.max(1, Math.floor(10 * faker.number.float({ min: 0.5, max: 2.0 }))),
@@ -201,23 +201,23 @@ export function generateMockTutorSummaries(
       if (zone === "safe") {
         attendancePercentage = faker.number.float({ min: 85, max: 100, fractionDigits: 1 });
         keptSessionsPercentage = faker.number.float({ min: 80, max: 100, fractionDigits: 1 });
-        avgRating = faker.number.float({ min: 4.0, max: 5.0, fractionDigits: 1 });
-        firstSessionAvgRating = faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 });
+        avgRating = faker.number.int({ min: 4, max: 5 });
+        firstSessionAvgRating = faker.number.int({ min: 3, max: 5 });
         firstSessionAttendancePercentage = faker.number.float({ min: 80, max: 100, fractionDigits: 1 });
         firstSessionKeptSessionsPercentage = faker.number.float({ min: 75, max: 100, fractionDigits: 1 });
       } else if (zone === "warning") {
         attendancePercentage = faker.number.float({ min: 60, max: 85, fractionDigits: 1 });
         keptSessionsPercentage = faker.number.float({ min: 55, max: 80, fractionDigits: 1 });
-        avgRating = faker.number.float({ min: 2.5, max: 4.0, fractionDigits: 1 });
-        firstSessionAvgRating = faker.number.float({ min: 2.0, max: 3.5, fractionDigits: 1 });
+        avgRating = faker.number.int({ min: 2, max: 4 });
+        firstSessionAvgRating = faker.number.int({ min: 2, max: 4 });
         firstSessionAttendancePercentage = faker.number.float({ min: 55, max: 80, fractionDigits: 1 });
         firstSessionKeptSessionsPercentage = faker.number.float({ min: 50, max: 75, fractionDigits: 1 });
         riskFlags = ["low-attendance"];
       } else {
         attendancePercentage = faker.number.float({ min: 20, max: 60, fractionDigits: 1 });
         keptSessionsPercentage = faker.number.float({ min: 25, max: 60, fractionDigits: 1 });
-        avgRating = faker.number.float({ min: 1.5, max: 2.5, fractionDigits: 1 });
-        firstSessionAvgRating = faker.number.float({ min: 1.0, max: 2.0, fractionDigits: 1 });
+        avgRating = faker.number.int({ min: 1, max: 3 });
+        firstSessionAvgRating = faker.number.int({ min: 1, max: 3 });
         firstSessionAttendancePercentage = faker.number.float({ min: 15, max: 55, fractionDigits: 1 });
         firstSessionKeptSessionsPercentage = faker.number.float({ min: 20, max: 55, fractionDigits: 1 });
         riskFlags = ["low-attendance", "low-rating"];

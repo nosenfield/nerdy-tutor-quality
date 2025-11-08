@@ -12,6 +12,7 @@ import {
   getFlaggedTutors,
 } from "@/lib/mock-data/dashboard";
 import {
+  getTutorSummariesFromSessions,
   getFlaggedTutorScores,
   transformTutorScoreToSummary,
   getTutorActiveFlags,
@@ -31,30 +32,29 @@ export async function GET(request: Request) {
       end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
     };
 
-    // Try to fetch from database
+    // Try to fetch from database using real-time aggregation
     try {
-      const scores = await getFlaggedTutorScores(dateRange);
+      const allTutors = await getTutorSummariesFromSessions(dateRange);
 
-      if (scores.length === 0) {
-        // No flagged tutors in database, fall back to mock data
-        console.log("No flagged tutors found in database, using mock data");
-        const allTutors = generateMockTutorSummaries(10, 42);
-        const flaggedTutors = getFlaggedTutors(allTutors);
+      if (allTutors.length === 0) {
+        // No tutors in database, fall back to mock data
+        console.log("No tutors found in database, using mock data");
+        const mockTutors = generateMockTutorSummaries(10, 42);
+        const flaggedTutors = getFlaggedTutors(mockTutors);
         return NextResponse.json(flaggedTutors);
       }
 
-      // Transform scores to summaries
-      const tutors = await Promise.all(
-        scores.map(async (score) => {
-          const activeFlags = await getTutorActiveFlags(
-            score.tutorId,
-            dateRange
-          );
-          return transformTutorScoreToSummary(score, activeFlags);
-        })
+      // Filter to only tutors with flags
+      const flaggedTutors = allTutors.filter(
+        (tutor) => tutor.riskFlags.length > 0
       );
 
-      return NextResponse.json(tutors);
+      if (flaggedTutors.length === 0) {
+        // No flagged tutors, return empty array
+        return NextResponse.json([]);
+      }
+
+      return NextResponse.json(flaggedTutors);
     } catch (dbError) {
       // Database error, fall back to mock data
       console.error("Database error, falling back to mock data:", dbError);

@@ -98,6 +98,12 @@ export function generateMockSession(
     avgFirstSessionRating?: number; // Override average first session rating
     rescheduleRate?: number; // Override reschedule rate
     avgEarlyEndMinutes?: number; // Override average early end minutes
+    // Force options (override all probability-based logic)
+    forceNoShow?: boolean; // Force this session to be a no-show
+    forceAttendance?: boolean; // Force this session to have attendance (not a no-show)
+    forceRescheduled?: boolean; // Force this session to be rescheduled
+    forceNotRescheduled?: boolean; // Force this session to not be rescheduled
+    forceRating?: number; // Force a specific student rating (1-5)
   } = {}
 ): SessionInsert {
   const persona = getPersona(tutor.personaType);
@@ -106,14 +112,21 @@ export function generateMockSession(
   const scheduledStartTime = options.scheduledStartTime ?? faker.date.recent({ days: 30 });
 
   // Determine if this session should be rescheduled
-  const rescheduleRateOverride = options.rescheduleRate !== undefined ? options.rescheduleRate : null;
-  const rescheduleRate = rescheduleRateOverride !== null
-    ? rescheduleRateOverride
-    : faker.number.float({
-        min: persona.rescheduleRate.min,
-        max: persona.rescheduleRate.max,
-      });
-  const wasRescheduled = faker.datatype.boolean({ probability: rescheduleRate });
+  let wasRescheduled: boolean;
+  if (options.forceRescheduled !== undefined) {
+    wasRescheduled = options.forceRescheduled;
+  } else if (options.forceNotRescheduled !== undefined) {
+    wasRescheduled = !options.forceNotRescheduled;
+  } else {
+    const rescheduleRateOverride = options.rescheduleRate !== undefined ? options.rescheduleRate : null;
+    const rescheduleRate = rescheduleRateOverride !== null
+      ? rescheduleRateOverride
+      : faker.number.float({
+          min: persona.rescheduleRate.min,
+          max: persona.rescheduleRate.max,
+        });
+    wasRescheduled = faker.datatype.boolean({ probability: rescheduleRate });
+  }
   const rescheduledBy = wasRescheduled
     ? faker.datatype.boolean({ probability: persona.tutorInitiatedRescheduleRate })
       ? "tutor"
@@ -121,8 +134,15 @@ export function generateMockSession(
     : null;
 
   // Determine if this is a no-show (use override if provided, otherwise use persona default)
-  const noShowRate = options.noShowRate !== undefined ? options.noShowRate : persona.noShowRate;
-  const isNoShow = faker.datatype.boolean({ probability: noShowRate });
+  let isNoShow: boolean;
+  if (options.forceNoShow !== undefined) {
+    isNoShow = options.forceNoShow;
+  } else if (options.forceAttendance !== undefined) {
+    isNoShow = !options.forceAttendance;
+  } else {
+    const noShowRate = options.noShowRate !== undefined ? options.noShowRate : persona.noShowRate;
+    isNoShow = faker.datatype.boolean({ probability: noShowRate });
+  }
 
   // Determine lateness
   // If avgLatenessMinutes override is provided, tutor is always late with that average
@@ -209,8 +229,10 @@ export function generateMockSession(
   // Modulate rating based on persona average rating or override
   let studentRating = baseRating;
   
-  // If avgFirstSessionRating override is provided and this is a first session, use it
-  if (isFirstSession && options.avgFirstSessionRating !== undefined) {
+  // If forceRating is provided, use it directly
+  if (options.forceRating !== undefined) {
+    studentRating = Math.max(1, Math.min(5, Math.round(options.forceRating)));
+  } else if (isFirstSession && options.avgFirstSessionRating !== undefined) {
     // Generate rating around the target average (±0.3 variance)
     const targetRating = options.avgFirstSessionRating;
     studentRating = faker.number.float({
