@@ -25,6 +25,28 @@ export async function GET(
   try {
     const { id } = await params;
     const tutorId = id;
+    const { searchParams } = new URL(request.url);
+    const forceMock = searchParams.get("forceMock") === "true";
+
+    // If forceMock is true, skip database and return mock data
+    if (forceMock) {
+      const tutors = generateMockTutorSummaries(10, 42);
+      const tutor = tutors.find((t) => t.tutorId === tutorId);
+
+      if (!tutor) {
+        return NextResponse.json(
+          { error: "Tutor not found" },
+          { status: 404 }
+        );
+      }
+
+      const tutorDetail = generateMockTutorDetail(tutor);
+      return NextResponse.json(tutorDetail, {
+        headers: {
+          "X-Data-Source": "mock",
+        },
+      });
+    }
 
     // Try to fetch from database
     try {

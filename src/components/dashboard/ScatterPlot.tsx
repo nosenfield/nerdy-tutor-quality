@@ -170,7 +170,7 @@ export function ScatterPlot({
   };
 
   return (
-    <div className="relative p-3 bg-white rounded-lg shadow-sm">
+    <div className="relative p-3 bg-white rounded-lg shadow-sm" style={{ outline: "none" }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
@@ -201,7 +201,7 @@ export function ScatterPlot({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={450}>
+      <ResponsiveContainer width="100%" height={450} className="[&_svg]:outline-none [&_svg]:focus:outline-none">
               <ScatterChart
                 margin={{ top: 10, right: 30, bottom: 30, left: 5 }}
                 data={chartData}
@@ -282,7 +282,7 @@ export function ScatterPlot({
             />
           ))}
           <Tooltip
-            cursor={{ strokeDasharray: "3 3" }}
+            cursor={false}
             content={({ active, payload }) => {
               if (active && payload && payload[0]) {
                 const data = payload[0].payload as {

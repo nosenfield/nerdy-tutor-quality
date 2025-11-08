@@ -13,6 +13,7 @@ import {
   getTutorSessions,
   getFlaggedTutors,
 } from "@/lib/api/dashboard";
+import { useDashboardStore } from "@/lib/stores/dashboardStore";
 
 /**
  * Query key factory for dashboard queries
@@ -80,9 +81,11 @@ export function useFlaggedTutors(dateRange: DateRange) {
  * Hook to fetch detailed tutor information
  */
 export function useTutorDetail(tutorId: string) {
+  const forceMockData = useDashboardStore((state) => state.forceMockData);
+  
   return useQuery({
-    queryKey: dashboardKeys.tutorDetail(tutorId),
-    queryFn: () => getTutorDetail(tutorId),
+    queryKey: [...dashboardKeys.tutorDetail(tutorId), forceMockData],
+    queryFn: () => getTutorDetail(tutorId, forceMockData),
     enabled: !!tutorId, // Only fetch if tutorId is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes

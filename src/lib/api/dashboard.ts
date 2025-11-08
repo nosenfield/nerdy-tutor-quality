@@ -59,8 +59,17 @@ export async function getTutors(
 /**
  * Get detailed tutor information
  */
-export async function getTutorDetail(tutorId: string): Promise<TutorDetail> {
-  const response = await fetch(`/api/dashboard/tutors/${tutorId}`);
+export async function getTutorDetail(
+  tutorId: string,
+  forceMock: boolean = false
+): Promise<TutorDetail> {
+  const params = new URLSearchParams();
+  if (forceMock) {
+    params.append("forceMock", "true");
+  }
+
+  const url = `/api/dashboard/tutors/${tutorId}${params.toString() ? `?${params.toString()}` : ""}`;
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch tutor detail: ${response.statusText}`);

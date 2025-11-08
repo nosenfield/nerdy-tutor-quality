@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { X, Star, Calendar, TrendingUp, AlertTriangle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { X, Star, Calendar, TrendingUp, AlertTriangle, GripVertical } from "lucide-react";
 import { useTutorDetail } from "@/lib/hooks/useDashboardData";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 
@@ -28,9 +28,64 @@ export function TutorDetailCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const { data: tutorDetail, isLoading, error } = useTutorDetail(tutorId);
   const { setSessionHistoryModal } = useDashboardStore();
+  
+  // Drag state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [cardPosition, setCardPosition] = useState({ x: position.x + 20, y: position.y - 20 });
 
-  // Handle click outside to close
+  // Handle drag functionality
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+      setIsDragging(true);
+    }
+  };
+
   useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (cardRef.current) {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const rect = cardRef.current.getBoundingClientRect();
+        const cardWidth = rect.width;
+        const cardHeight = rect.height;
+
+        // Calculate new position
+        let newX = e.clientX - dragOffset.x;
+        let newY = e.clientY - dragOffset.y;
+
+        // Constrain to viewport bounds
+        newX = Math.max(0, Math.min(newX, viewportWidth - cardWidth));
+        newY = Math.max(0, Math.min(newY, viewportHeight - cardHeight));
+
+        setCardPosition({ x: newX, y: newY });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  // Handle click outside to close (but not when dragging)
+  useEffect(() => {
+    if (isDragging) return;
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         cardRef.current &&
@@ -44,11 +99,11 @@ export function TutorDetailCard({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [onClose]);
+  }, [onClose, isDragging]);
 
-  // Ensure card stays within viewport bounds
+  // Initialize card position when position prop changes (only if not dragging)
   useEffect(() => {
-    if (cardRef.current) {
+    if (!isDragging && cardRef.current) {
       const card = cardRef.current;
       const rect = card.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
@@ -71,10 +126,9 @@ export function TutorDetailCard({
         left = 20; // Move right
       }
 
-      card.style.left = `${left}px`;
-      card.style.top = `${top}px`;
+      setCardPosition({ x: left, y: top });
     }
-  }, [position]);
+  }, [position, isDragging]);
 
   // Handle view session history
   const handleViewHistory = () => {
@@ -87,6 +141,7 @@ export function TutorDetailCard({
       <div
         ref={cardRef}
         className="absolute z-50 w-80 rounded-lg bg-white shadow-xl border border-gray-200 p-6 animate-in fade-in slide-in-from-bottom-2"
+        style={{ left: cardPosition.x, top: cardPosition.y }}
       >
         <div className="flex items-center justify-center py-8">
           <div className="text-sm text-gray-500">Loading...</div>
@@ -100,6 +155,7 @@ export function TutorDetailCard({
       <div
         ref={cardRef}
         className="absolute z-50 w-80 rounded-lg bg-white shadow-xl border border-gray-200 p-6 animate-in fade-in slide-in-from-bottom-2"
+        style={{ left: cardPosition.x, top: cardPosition.y }}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -124,13 +180,19 @@ export function TutorDetailCard({
     <div
       ref={cardRef}
       className="absolute z-50 w-80 rounded-lg bg-white shadow-xl border border-gray-200 p-6 animate-in fade-in slide-in-from-bottom-2"
-      style={{ left: position.x + 20, top: position.y - 20 }}
+      style={{ left: cardPosition.x, top: cardPosition.y }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Tutor {tutorDetail.tutorId}
-        </h3>
+      {/* Header - Draggable area */}
+      <div
+        className="flex items-center justify-between mb-4 cursor-move select-none"
+        onMouseDown={handleMouseDown}
+      >
+        <div className="flex items-center gap-2">
+          <GripVertical className="h-4 w-4 text-gray-400" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Tutor {tutorDetail.tutorId}
+          </h3>
+        </div>
         <button
           onClick={onClose}
           className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
