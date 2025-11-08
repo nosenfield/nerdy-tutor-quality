@@ -242,7 +242,9 @@ export function ScatterPlot({
               style: { textAnchor: "middle" },
             }}
             tick={{ fontSize: 12 }}
+            tickFormatter={(value) => Math.round(value).toString()}
             allowDataOverflow={false}
+            allowDecimals={false}
           />
           <YAxis
             type="number"
