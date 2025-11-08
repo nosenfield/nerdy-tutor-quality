@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Star, Calendar, TrendingUp, AlertTriangle, GripVertical } from "lucide-react";
+import { X, Star, Calendar, TrendingUp, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTutorDetail } from "@/lib/hooks/useDashboardData";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 
@@ -10,8 +10,10 @@ import { useDashboardStore } from "@/lib/stores/dashboardStore";
  */
 export interface TutorDetailCardProps {
   tutorId: string;
+  tutorIds: string[]; // All tutor IDs at this datapoint (for pagination)
   position: { x: number; y: number }; // Dot coordinates in pixels
   onClose: () => void;
+  onTutorChange: (tutorId: string) => void; // Callback to change the current tutor
 }
 
 /**
@@ -22,12 +24,20 @@ export interface TutorDetailCardProps {
  */
 export function TutorDetailCard({
   tutorId,
+  tutorIds,
   position,
   onClose,
+  onTutorChange,
 }: TutorDetailCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const { dateRange, setSessionHistoryModal } = useDashboardStore();
   const { data: tutorDetail, isLoading, error } = useTutorDetail(tutorId, dateRange);
+  
+  // Find current index in tutorIds array
+  const currentIndex = tutorIds.findIndex((id) => id === tutorId);
+  const hasMultipleTutors = tutorIds.length > 1;
+  const canGoPrevious = currentIndex > 0;
+  const canGoNext = currentIndex < tutorIds.length - 1;
   
   // Drag state
   const [isDragging, setIsDragging] = useState(false);
@@ -144,6 +154,17 @@ export function TutorDetailCard({
       setIsInitialized(true);
     }
   }, [position, isDragging, hasBeenDragged, lastPositionProp, isInitialized]);
+  
+  // Reset hasBeenDragged when position prop changes (new click, not just tutor navigation)
+  useEffect(() => {
+    const positionChanged = 
+      position.x !== lastPositionProp.x || 
+      position.y !== lastPositionProp.y;
+    
+    if (positionChanged) {
+      setHasBeenDragged(false);
+    }
+  }, [position, lastPositionProp]);
 
   // Handle view session history
   const handleViewHistory = () => {
@@ -200,11 +221,49 @@ export function TutorDetailCard({
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-2 select-none">
-        <div className="flex items-center gap-1.5">
-          <GripVertical className="h-3 w-3 text-gray-400" />
+        <div className="flex items-center gap-2">
+          {/* Previous Button */}
+          {hasMultipleTutors && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (canGoPrevious) {
+                  onTutorChange(tutorIds[currentIndex - 1]);
+                }
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              disabled={!canGoPrevious}
+              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Previous tutor"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          )}
           <h3 className="text-sm font-semibold text-gray-900">
             Tutor {tutorDetail.tutorId}
+            {hasMultipleTutors && (
+              <span className="text-xs font-normal text-gray-500 ml-1">
+                ({currentIndex + 1} of {tutorIds.length})
+              </span>
+            )}
           </h3>
+          {/* Next Button */}
+          {hasMultipleTutors && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (canGoNext) {
+                  onTutorChange(tutorIds[currentIndex + 1]);
+                }
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+              disabled={!canGoNext}
+              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              aria-label="Next tutor"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          )}
         </div>
         <button
           onClick={(e) => {

@@ -27,7 +27,7 @@ export interface ScatterPlotProps {
   xLabel: string;
   yLabel: string;
   thresholdLines?: Array<{ value: number; color: string; label: string }>;
-  onDotClick: (tutorId: string, position: { x: number; y: number }) => void;
+  onDotClick: (tutorId: string, position: { x: number; y: number }, allTutorIds?: string[]) => void;
   selectedTutorId?: string | null;
   zones?: Array<{ min: number; max: number; color: string }>;
   plotType?: "attendance" | "reschedules" | "quality";
@@ -140,9 +140,18 @@ export function ScatterPlot({
     // Handle click with position
     const handleClick = (e: React.MouseEvent<SVGCircleElement>) => {
       e.stopPropagation();
+      // Find all datapoints with the same coordinates (overlapping points)
+      const tolerance = 0.001;
+      const overlappingPoints = chartData.filter(
+        (point) =>
+          Math.abs(point.x - payload.x) < tolerance &&
+          Math.abs(point.y - payload.y) < tolerance
+      );
+      const allTutorIds = overlappingPoints.map((point) => point.tutorId);
+      
       // Use the actual click position (clientX, clientY) which is the screen position
       // This ensures the card appears directly below where the user clicked
-      onDotClick(payload.tutorId, { x: e.clientX, y: e.clientY });
+      onDotClick(payload.tutorId, { x: e.clientX, y: e.clientY }, allTutorIds);
     };
 
     if (isSelected) {
@@ -296,6 +305,7 @@ export function ScatterPlot({
           ))}
           <Tooltip
             cursor={false}
+            animationDuration={0}
             content={({ active, payload }) => {
               if (active && payload && payload[0]) {
                 const hoveredData = payload[0].payload as {

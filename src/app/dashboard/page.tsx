@@ -132,6 +132,7 @@ export default function DashboardPage() {
     x: number;
     y: number;
   } | null>(null);
+  const [overlappingTutorIds, setOverlappingTutorIds] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Extract data and data source from API response
@@ -156,10 +157,26 @@ export default function DashboardPage() {
     };
   }, [tutorsResponse]);
 
+  // Filter tutors based on qualityView toggle for count and plots
+  const filteredTutors = useMemo(() => {
+    if (qualityView === "first") {
+      // When "First" is selected, only show tutors that have first session data
+      // A tutor has first session data if they have at least one first session metric
+      return displayTutors.filter(
+        (tutor) =>
+          tutor.firstSessionAttendancePercentage !== undefined ||
+          tutor.firstSessionKeptSessionsPercentage !== undefined ||
+          tutor.firstSessionAvgRating !== undefined
+      );
+    }
+    // When "All" is selected, show all tutors
+    return displayTutors;
+  }, [displayTutors, qualityView]);
+
   // Transform data for plots - respect qualityView toggle
   const attendanceData: ScatterPlotDataPoint[] = useMemo(
     () =>
-      displayTutors
+      filteredTutors
         .filter((tutor) =>
           qualityView === "first"
             ? tutor.firstSessionAttendancePercentage !== undefined
@@ -173,12 +190,12 @@ export default function DashboardPage() {
               : tutor.attendancePercentage,
           tutorId: tutor.tutorId,
         })),
-    [displayTutors, qualityView]
+    [filteredTutors, qualityView]
   );
 
   const reschedulesData: ScatterPlotDataPoint[] = useMemo(
     () =>
-      displayTutors
+      filteredTutors
         .filter((tutor) =>
           qualityView === "first"
             ? tutor.firstSessionKeptSessionsPercentage !== undefined
@@ -192,12 +209,12 @@ export default function DashboardPage() {
               : tutor.keptSessionsPercentage,
           tutorId: tutor.tutorId,
         })),
-    [displayTutors, qualityView]
+    [filteredTutors, qualityView]
   );
 
   const qualityData: ScatterPlotDataPoint[] = useMemo(
     () =>
-      displayTutors
+      filteredTutors
         .filter((tutor) =>
           qualityView === "first"
             ? tutor.firstSessionAvgRating !== undefined
@@ -211,20 +228,27 @@ export default function DashboardPage() {
               : tutor.avgRating, // Use 1-5 rating scale directly
           tutorId: tutor.tutorId,
         })),
-    [displayTutors, qualityView]
+    [filteredTutors, qualityView]
   );
 
   // Handle dot click
-  const handleDotClick = (tutorId: string, position: { x: number; y: number }) => {
+  const handleDotClick = (tutorId: string, position: { x: number; y: number }, allTutorIds?: string[]) => {
     setSelectedTutor(tutorId);
     // Use the actual dot position
     setClickedDotPosition(position);
+    // Store all tutor IDs for overlapping points
+    if (allTutorIds && allTutorIds.length > 0) {
+      setOverlappingTutorIds(allTutorIds);
+    } else {
+      setOverlappingTutorIds([tutorId]);
+    }
   };
 
   // Handle close detail card
   const handleCloseDetail = () => {
     setSelectedTutor(null);
     setClickedDotPosition(null);
+    setOverlappingTutorIds([]);
   };
 
   // Handle data source toggle
@@ -421,10 +445,10 @@ export default function DashboardPage() {
               </Listbox>
             </div>
 
-            {/* Sessions Toggle */}
+            {/* Students Toggle */}
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-gray-700">
-                Sessions:
+                Students:
               </label>
               <RadioGroup value={qualityView} onChange={setQualityView}>
                 <div className="flex gap-2 rounded-md bg-gray-100 p-1">
@@ -450,7 +474,7 @@ export default function DashboardPage() {
                             : "text-gray-600 hover:text-gray-900"
                         }`}
                       >
-                        First
+                        New
                       </button>
                     )}
                   </RadioGroup.Option>
@@ -461,7 +485,7 @@ export default function DashboardPage() {
             {/* Tutor Count */}
             <div className="flex items-center">
               <span className="text-lg font-semibold text-gray-900">
-                {displayTutors.length} {displayTutors.length === 1 ? "tutor" : "tutors"}
+                {filteredTutors.length} {filteredTutors.length === 1 ? "tutor" : "tutors"}
               </span>
             </div>
           </div>
@@ -517,7 +541,7 @@ export default function DashboardPage() {
                   xLabel="Total Sessions"
                   yLabel={
                     qualityView === "first"
-                      ? "First Session Attendance %"
+                      ? "New Student Attendance %"
                       : "Attendance %"
                   }
                   onDotClick={handleDotClick}
@@ -540,7 +564,7 @@ export default function DashboardPage() {
                         xLabel="Total Sessions"
                         yLabel={
                           qualityView === "first"
-                            ? "First Session Kept %"
+                            ? "New Student Kept %"
                             : "Sessions Kept %"
                         }
                         onDotClick={handleDotClick}
@@ -563,7 +587,7 @@ export default function DashboardPage() {
                         xLabel="Total Sessions"
                         yLabel={
                           qualityView === "first"
-                            ? "First Session Rating"
+                            ? "New Student Rating"
                             : "Average Rating"
                         }
                         onDotClick={handleDotClick}
@@ -583,8 +607,10 @@ export default function DashboardPage() {
       {selectedTutorId && clickedDotPosition && (
         <TutorDetailCard
           tutorId={selectedTutorId}
+          tutorIds={overlappingTutorIds.length > 0 ? overlappingTutorIds : [selectedTutorId]}
           position={clickedDotPosition}
           onClose={handleCloseDetail}
+          onTutorChange={setSelectedTutor}
         />
       )}
     </div>
