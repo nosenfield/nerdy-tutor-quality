@@ -32,7 +32,10 @@ export function TutorDetailCard({
   // Drag state
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [cardPosition, setCardPosition] = useState({ x: position.x + 20, y: position.y - 20 });
+  const [cardPosition, setCardPosition] = useState({ x: 0, y: 0 });
+  const [hasBeenDragged, setHasBeenDragged] = useState(false);
+  const [lastPositionProp, setLastPositionProp] = useState(position);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Handle drag functionality
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -71,6 +74,7 @@ export function TutorDetailCard({
 
     const handleMouseUp = () => {
       setIsDragging(false);
+      setHasBeenDragged(true);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -101,9 +105,17 @@ export function TutorDetailCard({
     };
   }, [onClose, isDragging]);
 
-  // Initialize card position when position prop changes (only if not dragging)
+  // Initialize card position when position prop changes (only on initial mount or when position prop actually changes)
   useEffect(() => {
-    if (!isDragging && cardRef.current) {
+    // Only reset position if:
+    // 1. Not currently dragging
+    // 2. Card hasn't been manually dragged
+    // 3. Position prop has actually changed (new click) OR it's the initial mount
+    const positionChanged = 
+      position.x !== lastPositionProp.x || 
+      position.y !== lastPositionProp.y;
+    
+    if (!isDragging && !hasBeenDragged && (positionChanged || !isInitialized) && cardRef.current) {
       const card = cardRef.current;
       const rect = card.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
@@ -128,8 +140,10 @@ export function TutorDetailCard({
       }
 
       setCardPosition({ x: left, y: top });
+      setLastPositionProp(position);
+      setIsInitialized(true);
     }
-  }, [position, isDragging]);
+  }, [position, isDragging, hasBeenDragged, lastPositionProp, isInitialized]);
 
   // Handle view session history
   const handleViewHistory = () => {
@@ -180,14 +194,12 @@ export function TutorDetailCard({
   return (
     <div
       ref={cardRef}
-      className="absolute z-50 w-64 rounded-lg bg-white shadow-xl border border-gray-200 p-3 animate-in fade-in slide-in-from-bottom-2"
+      className="absolute z-50 w-64 rounded-lg bg-white shadow-xl border border-gray-200 p-3 animate-in fade-in slide-in-from-bottom-2 cursor-move"
       style={{ left: cardPosition.x, top: cardPosition.y }}
+      onMouseDown={handleMouseDown}
     >
-      {/* Header - Draggable area */}
-      <div
-        className="flex items-center justify-between mb-2 cursor-move select-none"
-        onMouseDown={handleMouseDown}
-      >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2 select-none">
         <div className="flex items-center gap-1.5">
           <GripVertical className="h-3 w-3 text-gray-400" />
           <h3 className="text-sm font-semibold text-gray-900">
@@ -195,8 +207,12 @@ export function TutorDetailCard({
           </h3>
         </div>
         <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          onMouseDown={(e) => e.stopPropagation()}
+          className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded cursor-pointer"
           aria-label="Close"
         >
           <X className="h-4 w-4" />
@@ -297,8 +313,12 @@ export function TutorDetailCard({
         {/* Actions */}
         <div className="border-t border-gray-200 pt-2">
           <button
-            onClick={handleViewHistory}
-            className="w-full rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewHistory();
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            className="w-full rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 cursor-pointer"
           >
             View History
           </button>

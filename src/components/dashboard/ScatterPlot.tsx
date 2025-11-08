@@ -298,22 +298,41 @@ export function ScatterPlot({
             cursor={false}
             content={({ active, payload }) => {
               if (active && payload && payload[0]) {
-                const data = payload[0].payload as {
+                const hoveredData = payload[0].payload as {
                   x: number;
                   y: number;
                   tutorId: string;
                 };
+                
+                // Find all datapoints with the same coordinates (overlapping points)
+                // Use a small tolerance for floating point comparison
+                const tolerance = 0.001;
+                const overlappingPoints = chartData.filter(
+                  (point) =>
+                    Math.abs(point.x - hoveredData.x) < tolerance &&
+                    Math.abs(point.y - hoveredData.y) < tolerance
+                );
+                
                 return (
-                  <div className="bg-white p-1.5 border border-gray-200 rounded shadow-sm">
-                    <p className="text-xs font-medium">
-                      {data.tutorId}
+                  <div className="bg-white p-2 border border-gray-200 rounded shadow-sm max-w-xs">
+                    <p className="text-xs text-gray-600 mb-1">
+                      {xLabel}: {hoveredData.x}
                     </p>
-                    <p className="text-xs text-gray-600">
-                      {xLabel}: {data.x}
+                    <p className="text-xs text-gray-600 mb-2">
+                      {yLabel}: {plotType === "quality" ? hoveredData.y.toFixed(1) : `${hoveredData.y.toFixed(1)}%`}
                     </p>
-                    <p className="text-xs text-gray-600">
-                      {yLabel}: {plotType === "quality" ? data.y.toFixed(1) : `${data.y.toFixed(1)}%`}
-                    </p>
+                    {overlappingPoints.length > 1 && (
+                      <p className="text-xs text-gray-500 mb-1.5">
+                        {overlappingPoints.length} tutors at this point:
+                      </p>
+                    )}
+                    <div className="space-y-1">
+                      {overlappingPoints.map((point, index) => (
+                        <p key={index} className="text-xs font-medium">
+                          {point.tutorId}
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 );
               }
