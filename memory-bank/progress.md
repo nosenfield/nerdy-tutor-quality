@@ -118,7 +118,7 @@
 - [x] CC-6: Tutor Detail Card ✅
 - [x] CC-7: Flagged Tutors Table ✅
 - [x] Backend Integration ✅ (with fallback to mock data)
-- [ ] CC-8: Table Sorting & Pagination
+- [x] CC-8: Table Sorting & Pagination ✅
 - [ ] Dashboard layout component
 - [ ] Dashboard home page (overview stats)
 - [ ] Stats overview component (KPI cards)

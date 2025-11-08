@@ -1,6 +1,6 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-07
+**Last Updated**: 2025-11-07 (CC-8 complete)
 
 ## Current Focus
 
@@ -16,7 +16,7 @@
 
 **Phase 3 - Rules Engine (Tier 1)** (Estimated: 3-4 days) - ✅ COMPLETE
 
-**Phase 4 - Dashboard UI** (Estimated: 5-6 days) - ✅ MOSTLY COMPLETE (CC-7 done, CC-8+ pending)
+**Phase 4 - Dashboard UI** (Estimated: 5-6 days) - ✅ IN PROGRESS (CC-7, CC-8 done, CC-9+ pending)
 
 Next phases:
 - Phase 5: Job Queue & Workers ← IN PROGRESS
@@ -40,9 +40,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Phase 5 Started - Job Queue & Workers** - Implemented Bull queue infrastructure with Redis connection, job definitions (process-session, calculate-tutor-score, send-alert), workers for processing jobs, session processing logic that integrates with rules engine, flag creation logic with duplicate prevention, backfill script for processing existing sessions, and worker startup script. All core infrastructure complete - 2025-11-07
+1. **CC-8 Complete - Table Sorting & Pagination** - Implemented column header click sorting with 3-state cycle (null → asc → desc → null), sort indicator arrows (ChevronUp/ChevronDown), pagination controls with rows per page dropdown (10, 25, 50, 100), page navigation with Previous/Next buttons and page number buttons (showing up to 5 at a time with ellipsis), summary row above table showing pagination state, and sticky table header on scroll. All state persisted in Zustand store. Full keyboard accessibility with ARIA labels - 2025-11-07
 2. **CC-7 Complete - Flagged Tutors Table** - Created `FlaggedTutorsTable` component with 6 columns (Tutor ID, Total Sessions, Attendance %, Sessions Kept %, Avg Rating, Days on Platform), mini visualizations (progress bars for percentages, star ratings), row highlighting based on risk flags (warning/critical), and click-to-highlight integration with scatter plots. Component integrated into dashboard page - 2025-11-07
-3. **Real-time Session Aggregation** - Switched dashboard to use real-time aggregation from sessions table instead of pre-aggregated tutor_scores. Changed default to live data (forceMockData: false). Updated flagged tutors API to respect mock data toggle. Tooltip updated to show one data point per line - 2025-11-07
+3. **Phase 5 Started - Job Queue & Workers** - Implemented Bull queue infrastructure with Redis connection, job definitions (process-session, calculate-tutor-score, send-alert), workers for processing jobs, session processing logic that integrates with rules engine, flag creation logic with duplicate prevention, backfill script for processing existing sessions, and worker startup script. All core infrastructure complete - 2025-11-07
 
 ---
 
@@ -111,7 +111,7 @@ None - Project is greenfield, no blockers.
 - `tests/integration/queue/job-retry.test.ts` - Integration tests for retry logic (Task 5.20) ← NEW
 - `tests/integration/queue/job-priority.test.ts` - Integration tests for priority queuing (Task 5.21) ← NEW
 - `tests/integration/queue/job-load.test.ts` - Load tests for 100 concurrent jobs (Task 5.22) ← NEW
-- `src/components/dashboard/FlaggedTutorsTable.tsx` - Flagged tutors table with mini visualizations and row highlighting (CC-7)
+- `src/components/dashboard/FlaggedTutorsTable.tsx` - Flagged tutors table with sorting, pagination, mini visualizations, and row highlighting (CC-7, CC-8)
 - `src/app/dashboard/page.tsx` - Updated to include FlaggedTutorsTable component
 - `src/lib/scoring/rules-engine.ts` - Complete rules engine with all detection rules (Tasks 3.2-3.10)
 - `src/lib/scoring/aggregator.ts` - Scoring algorithm with all component scores (Tasks 3.11-3.17)
