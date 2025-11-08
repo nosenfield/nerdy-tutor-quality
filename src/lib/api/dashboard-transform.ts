@@ -274,6 +274,7 @@ export async function getTutorSummariesFromSessions(
     console.log(`Found ${sessionsByTutor.size} unique tutors`);
 
     // Batch fetch all active flags for all tutors in one query
+    // Filter flags by createdAt date to respect date range filter
     const tutorIds = Array.from(sessionsByTutor.keys());
     const allActiveFlags = tutorIds.length > 0
       ? await db

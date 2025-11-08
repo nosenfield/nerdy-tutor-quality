@@ -7,6 +7,7 @@ import {
   subMonths,
   subQuarters,
   startOfToday,
+  endOfToday,
 } from "date-fns";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import type { DateRange } from "@/lib/types/dashboard";
@@ -33,7 +34,7 @@ const QUICK_FILTERS: QuickFilterOption[] = [
     label: "Last Week",
     getDateRange: () => ({
       start: subDays(startOfToday(), 7),
-      end: startOfToday(),
+      end: endOfToday(), // Include full day
     }),
   },
   {
@@ -41,7 +42,7 @@ const QUICK_FILTERS: QuickFilterOption[] = [
     label: "Last Month",
     getDateRange: () => ({
       start: subMonths(startOfToday(), 1),
-      end: startOfToday(),
+      end: endOfToday(), // Include full day
     }),
   },
   {
@@ -49,7 +50,7 @@ const QUICK_FILTERS: QuickFilterOption[] = [
     label: "Last Quarter",
     getDateRange: () => ({
       start: subQuarters(startOfToday(), 1),
-      end: startOfToday(),
+      end: endOfToday(), // Include full day
     }),
   },
   {
@@ -57,7 +58,7 @@ const QUICK_FILTERS: QuickFilterOption[] = [
     label: "All Time",
     getDateRange: () => ({
       start: new Date(2020, 0, 1), // Arbitrary start date
-      end: startOfToday(),
+      end: endOfToday(), // Include full day (23:59:59.999)
     }),
   },
 ];
@@ -67,26 +68,28 @@ const QUICK_FILTERS: QuickFilterOption[] = [
  */
 function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
   const today = startOfToday();
+  const endOfDay = endOfToday();
   const lastWeek = subDays(today, 7);
   const lastMonth = subMonths(today, 1);
   const lastQuarter = subQuarters(today, 1);
 
   // Check if date range matches a quick filter
+  // Compare end date with endOfToday() since all filters now use endOfToday()
   if (
     dateRange.start.getTime() === lastWeek.getTime() &&
-    dateRange.end.getTime() === today.getTime()
+    dateRange.end.getTime() === endOfDay.getTime()
   ) {
     return "last-week";
   }
   if (
     dateRange.start.getTime() === lastMonth.getTime() &&
-    dateRange.end.getTime() === today.getTime()
+    dateRange.end.getTime() === endOfDay.getTime()
   ) {
     return "last-month";
   }
   if (
     dateRange.start.getTime() === lastQuarter.getTime() &&
-    dateRange.end.getTime() === today.getTime()
+    dateRange.end.getTime() === endOfDay.getTime()
   ) {
     return "last-quarter";
   }

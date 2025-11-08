@@ -24,11 +24,19 @@ export async function GET(request: Request) {
     const forceMock = searchParams.get("forceMock") === "true";
 
     // Parse date range
+    // For end date, if only date is provided (YYYY-MM-DD), set to end of day (23:59:59.999)
+    // This ensures flags/sessions created on that day are included
+    const endDate = endDateParam ? new Date(endDateParam) : new Date();
+    if (endDateParam && !endDateParam.includes("T")) {
+      // Date only format (YYYY-MM-DD), set to end of day
+      endDate.setHours(23, 59, 59, 999);
+    }
+    
     const dateRange = {
       start: startDateParam
         ? new Date(startDateParam)
         : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Default: 30 days ago
-      end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
+      end: endDate,
     };
 
     // If forceMock is true, skip database and return mock data

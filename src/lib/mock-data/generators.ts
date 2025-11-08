@@ -118,13 +118,13 @@ export function generateMockSession(
   } else if (options.forceNotRescheduled !== undefined) {
     wasRescheduled = !options.forceNotRescheduled;
   } else {
-    const rescheduleRateOverride = options.rescheduleRate !== undefined ? options.rescheduleRate : null;
-    const rescheduleRate = rescheduleRateOverride !== null
-      ? rescheduleRateOverride
-      : faker.number.float({
-          min: persona.rescheduleRate.min,
-          max: persona.rescheduleRate.max,
-        });
+  const rescheduleRateOverride = options.rescheduleRate !== undefined ? options.rescheduleRate : null;
+  const rescheduleRate = rescheduleRateOverride !== null
+    ? rescheduleRateOverride
+    : faker.number.float({
+        min: persona.rescheduleRate.min,
+        max: persona.rescheduleRate.max,
+      });
     wasRescheduled = faker.datatype.boolean({ probability: rescheduleRate });
   }
   const rescheduledBy = wasRescheduled
@@ -140,7 +140,7 @@ export function generateMockSession(
   } else if (options.forceAttendance !== undefined) {
     isNoShow = !options.forceAttendance;
   } else {
-    const noShowRate = options.noShowRate !== undefined ? options.noShowRate : persona.noShowRate;
+  const noShowRate = options.noShowRate !== undefined ? options.noShowRate : persona.noShowRate;
     isNoShow = faker.datatype.boolean({ probability: noShowRate });
   }
 

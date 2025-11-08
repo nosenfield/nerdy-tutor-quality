@@ -26,11 +26,19 @@ export async function GET(request: Request) {
     const forceMock = searchParams.get("forceMock") === "true";
 
     // Parse date range
+    // For end date, if only date is provided (YYYY-MM-DD), set to end of day (23:59:59.999)
+    // This ensures flags/sessions created on that day are included
+    const endDate = endDateParam ? new Date(endDateParam) : new Date();
+    if (endDateParam && !endDateParam.includes("T")) {
+      // Date only format (YYYY-MM-DD), set to end of day
+      endDate.setHours(23, 59, 59, 999);
+    }
+    
     const dateRange = {
       start: startDateParam
         ? new Date(startDateParam)
         : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Default: 30 days ago
-      end: endDateParam ? new Date(endDateParam) : new Date(), // Default: today
+      end: endDate,
     };
 
     // If forceMock is true, skip database and return mock data
@@ -43,15 +51,28 @@ export async function GET(request: Request) {
           "X-Flagged-Count": flaggedTutors.length.toString(),
         },
       });
-    }
+      }
 
     // Try to fetch from database using real-time aggregation
     try {
-      const allTutors = await getTutorSummariesFromSessions(dateRange);
+      // First, get all tutors with open flags created within the date range
+      // This respects the date range filter for flags
+      const { db, flags } = await import("@/lib/db");
+      const { eq, and, gte, lte } = await import("drizzle-orm");
 
-      if (allTutors.length === 0) {
-        // No tutors in database, return empty array
-        console.log("No tutors found in database");
+      const tutorsWithFlags = await db
+        .selectDistinct({ tutorId: flags.tutorId })
+        .from(flags)
+        .where(
+          and(
+            eq(flags.status, "open"),
+            gte(flags.createdAt, dateRange.start),
+            lte(flags.createdAt, dateRange.end)
+          )
+        );
+
+      if (tutorsWithFlags.length === 0) {
+        console.log("No tutors with open flags found");
         return NextResponse.json([], {
           headers: {
             "X-Data-Source": "sessions-realtime",
@@ -60,10 +81,20 @@ export async function GET(request: Request) {
         });
       }
 
+      const flaggedTutorIds = tutorsWithFlags.map((f) => f.tutorId);
+      console.log(`Found ${flaggedTutorIds.length} tutors with open flags`);
+
+      // Get tutor summaries for flagged tutors (this will include their sessions in date range)
+      const allTutors = await getTutorSummariesFromSessions(dateRange);
+
       // Filter to only tutors with flags
+      // Note: getTutorSummariesFromSessions only includes tutors with sessions in date range,
+      // so we need to also check if flagged tutors have sessions in range
       const flaggedTutors = allTutors.filter(
-        (tutor) => tutor.riskFlags.length > 0
+        (tutor) => tutor.riskFlags.length > 0 && flaggedTutorIds.includes(tutor.tutorId)
       );
+
+      console.log(`Found ${flaggedTutors.length} flagged tutors with sessions in date range`);
 
       return NextResponse.json(flaggedTutors, {
         headers: {
