@@ -23,7 +23,7 @@ export const CHART_THEME = {
   qualityZones: [
     { min: 4.0, max: 5.0, fill: "rgba(16, 185, 129, 0.1)", label: "Safe" },
     { min: 3.0, max: 4.0, fill: "rgba(245, 158, 11, 0.1)", label: "Warning" },
-    { min: 0, max: 3.0, fill: "rgba(239, 68, 68, 0.1)", label: "Risk" },
+    { min: 1.0, max: 3.0, fill: "rgba(239, 68, 68, 0.1)", label: "Risk" },
   ],
 
   dot: {

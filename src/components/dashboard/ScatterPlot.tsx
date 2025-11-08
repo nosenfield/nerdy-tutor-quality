@@ -62,9 +62,9 @@ export function ScatterPlot({
   
   const [xDomain, setXDomain] = useState<[number, number]>([0, maxTotalSessions]);
   // Quality plot uses 1-5 rating scale, others use 0-100 percentage
-  // For quality plot, use [0.5, 5.5] to ensure 1.0 and 5.0 are visible with padding
+  // For quality plot, use [1, 5] to show only valid rating range
   const [yDomain, setYDomain] = useState<[number, number]>(
-    plotType === "quality" ? [0.5, 5.5] : [0, 100]
+    plotType === "quality" ? [1, 5] : [0, 100]
   );
   
   // Update xDomain when maxTotalSessions changes
@@ -119,7 +119,7 @@ export function ScatterPlot({
   // Handle reset view
   const handleResetView = () => {
     setXDomain([0, maxTotalSessions]);
-    setYDomain(plotType === "quality" ? [0.5, 5.5] : [0, 100]);
+    setYDomain(plotType === "quality" ? [1, 5] : [0, 100]);
   };
 
   // Handle fullscreen
