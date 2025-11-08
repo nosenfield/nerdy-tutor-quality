@@ -5,15 +5,21 @@
  * Processes all sessions or sessions within a date range.
  */
 
-import "dotenv/config";
-import { db, sessions } from "@/lib/db";
-import { processSession, processSessions } from "@/lib/queue/process-session";
+// Load environment variables first
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import { gte, lte, asc, and } from "drizzle-orm";
 
 /**
  * Process all sessions in the database
  */
 async function processAllSessions(): Promise<void> {
+  // Dynamic import to ensure env vars are loaded before db module initialization
+  const { db } = await import("../lib/db");
+  const { sessions } = await import("../lib/db/schema");
+  const { processSessions } = await import("../lib/queue/process-session");
+
   console.log("Fetching all sessions from database...");
 
   const allSessions = await db
@@ -53,6 +59,11 @@ async function processSessionsInRange(
   startDate: Date,
   endDate: Date
 ): Promise<void> {
+  // Dynamic import to ensure env vars are loaded before db module initialization
+  const { db } = await import("../lib/db");
+  const { sessions } = await import("../lib/db/schema");
+  const { processSessions } = await import("../lib/queue/process-session");
+
   console.log(
     `Fetching sessions from ${startDate.toISOString()} to ${endDate.toISOString()}...`
   );

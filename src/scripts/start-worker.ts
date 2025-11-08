@@ -5,14 +5,14 @@
  * Processes jobs from the queue.
  */
 
-import "dotenv/config";
-import { startWorkers } from "@/lib/queue/workers";
-import { sessionQueue, closeQueues } from "@/lib/queue/index";
+// Load environment variables first
+import { config } from "dotenv";
+config({ path: ".env.local" });
 
 /**
  * Handle graceful shutdown
  */
-function setupGracefulShutdown(): void {
+function setupGracefulShutdown(closeQueues: () => Promise<void>): void {
   const shutdown = async (signal: string) => {
     console.log(`\nReceived ${signal}, shutting down gracefully...`);
     
@@ -32,13 +32,17 @@ function setupGracefulShutdown(): void {
  */
 async function main() {
   try {
+    // Dynamic import to ensure env vars are loaded before queue module initialization
+    const { startWorkers } = await import("../lib/queue/workers");
+    const { sessionQueue, closeQueues } = await import("../lib/queue/index");
+
     console.log("Starting worker process...");
 
     // Start workers
     startWorkers();
 
     // Set up graceful shutdown
-    setupGracefulShutdown();
+    setupGracefulShutdown(closeQueues);
 
     // Log queue status
     sessionQueue.on("completed", (job) => {
