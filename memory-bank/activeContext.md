@@ -61,7 +61,7 @@ Next phases:
 - [x] Write tests for job processing (Task 5.19) ✅
 - [x] Write tests for retry logic (Task 5.20) ✅
 - [x] Write tests for priority queuing (Task 5.21) ✅
-- [ ] Load test with 100 concurrent jobs (Task 5.22)
+- [x] Write load tests for 100 concurrent jobs (Task 5.22) ✅
 
 ### Near-Term (This Week - Phase 3)
 - [ ] Create aggregator.ts to combine all signals
@@ -110,6 +110,7 @@ None - Project is greenfield, no blockers.
 - `tests/integration/queue/job-processing.test.ts` - Integration tests for job processing (Task 5.19) ← NEW
 - `tests/integration/queue/job-retry.test.ts` - Integration tests for retry logic (Task 5.20) ← NEW
 - `tests/integration/queue/job-priority.test.ts` - Integration tests for priority queuing (Task 5.21) ← NEW
+- `tests/integration/queue/job-load.test.ts` - Load tests for 100 concurrent jobs (Task 5.22) ← NEW
 - `src/components/dashboard/FlaggedTutorsTable.tsx` - Flagged tutors table with mini visualizations and row highlighting (CC-7)
 - `src/app/dashboard/page.tsx` - Updated to include FlaggedTutorsTable component
 - `src/lib/scoring/rules-engine.ts` - Complete rules engine with all detection rules (Tasks 3.2-3.10)
