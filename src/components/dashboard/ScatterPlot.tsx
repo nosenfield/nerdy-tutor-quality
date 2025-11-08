@@ -135,15 +135,15 @@ export function ScatterPlot({
     const isSelected = payload.tutorId === selectedTutorId;
 
     if (isSelected) {
-      // Selected dot: larger size, stroke, full opacity
+      // Selected dot: larger size, blue border, blue fill
       return (
         <circle
           cx={cx}
           cy={cy}
-          r={CHART_THEME.dot.selected.r * 1.5} // 1.5x size
-          fill={CHART_THEME.colors.neutral}
-          stroke={CHART_THEME.dot.selected.stroke}
-          strokeWidth={CHART_THEME.dot.selected.strokeWidth}
+          r={(CHART_THEME.dot.selected.r * 1.5) / 2} // Half of 1.5x size
+          fill="#3B82F6"
+          stroke="#3B82F6"
+          strokeWidth={2}
           opacity={1}
           style={{ cursor: "pointer" }}
           onClick={() => onDotClick(payload.tutorId)}
@@ -152,14 +152,16 @@ export function ScatterPlot({
       );
     }
 
-    // Non-selected dots: dimmed
+    // Non-selected dots: transparent fill with blue border
     return (
       <circle
         cx={cx}
         cy={cy}
-        r={CHART_THEME.dot.default.r}
-        fill={CHART_THEME.dot.default.fill}
-        opacity={selectedTutorId ? 0.6 : CHART_THEME.dot.default.opacity} // Dim if another is selected
+        r={CHART_THEME.dot.default.r / 2} // Half size
+        fill="transparent"
+        stroke="#3B82F6"
+        strokeWidth={2}
+        opacity={selectedTutorId ? 0.6 : 1} // Dim if another is selected
         style={{ cursor: "pointer" }}
         onClick={() => onDotClick(payload.tutorId)}
           aria-label={`Tutor ${payload.tutorId}: ${xLabel} ${payload.x}, ${yLabel} ${plotType === "quality" ? payload.y : `${payload.y}%`}`}
@@ -317,12 +319,8 @@ export function ScatterPlot({
               return (
                 <Cell
                   key={`cell-${index}`}
-                  fill={
-                    isSelected
-                      ? CHART_THEME.colors.neutral
-                      : CHART_THEME.dot.default.fill
-                  }
-                  opacity={isSelected ? 1 : CHART_THEME.dot.default.opacity}
+                  fill={isSelected ? "#3B82F6" : "transparent"}
+                  opacity={1}
                 />
               );
             })}
