@@ -58,7 +58,7 @@ Next phases:
 - [x] Create backfill script ✅
 - [x] Create worker startup script ✅
 - [x] Write tests for job queuing (Task 5.18) ✅
-- [ ] Test job processing (Task 5.19)
+- [x] Write tests for job processing (Task 5.19) ✅
 - [ ] Test retry logic (Task 5.20)
 - [ ] Test priority queuing (Task 5.21)
 - [ ] Load test with 100 concurrent jobs (Task 5.22)
@@ -107,6 +107,7 @@ None - Project is greenfield, no blockers.
 - `src/scripts/process-sessions.ts` - Backfill script for processing existing sessions ← NEW
 - `src/scripts/start-worker.ts` - Worker startup script ← NEW
 - `tests/integration/queue/job-queuing.test.ts` - Integration tests for job queuing (Task 5.18) ← NEW
+- `tests/integration/queue/job-processing.test.ts` - Integration tests for job processing (Task 5.19) ← NEW
 - `src/components/dashboard/FlaggedTutorsTable.tsx` - Flagged tutors table with mini visualizations and row highlighting (CC-7)
 - `src/app/dashboard/page.tsx` - Updated to include FlaggedTutorsTable component
 - `src/lib/scoring/rules-engine.ts` - Complete rules engine with all detection rules (Tasks 3.2-3.10)
