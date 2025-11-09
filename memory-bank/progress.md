@@ -158,16 +158,16 @@
 
 ---
 
-### Phase 6: API Routes - NOT STARTED
-- [ ] Webhook endpoint (session-completed)
-- [ ] Payload validation (Zod)
-- [ ] Signature verification (HMAC)
-- [ ] Session endpoints (list, get detail)
-- [ ] Tutor endpoints (list, get detail, get score)
-- [ ] Flag endpoints (list, get detail, resolve)
-- [ ] Analytics endpoints (overview, trends)
-- [ ] Rate limiting
-- [ ] Integration tests for all endpoints
+### Phase 6: API Routes - IN PROGRESS
+- [x] Webhook endpoint (session-completed) ✅ (Task 6.1)
+- [x] Payload validation (Zod) ✅ (Task 6.2) - Comprehensive unit tests added
+- [ ] Signature verification (HMAC) (Task 6.3)
+- [ ] Session endpoints (list, get detail) (Tasks 6.9-6.12)
+- [ ] Tutor endpoints (list, get detail, get score) (Tasks 6.13-6.18)
+- [ ] Flag endpoints (list, get detail, resolve) (Tasks 6.19-6.23)
+- [ ] Analytics endpoints (overview, trends) (Tasks 6.24-6.25)
+- [ ] Rate limiting (Task 6.7)
+- [ ] Integration tests for all endpoints (Tasks 6.26-6.30)
 
 **Target Completion**: Week 5, Day 4-5 + Week 6, Day 1 (3-4 days)
 

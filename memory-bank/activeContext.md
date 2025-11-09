@@ -1,11 +1,11 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-07 (Phase 5 complete)
+**Last Updated**: 2025-11-09 (Task 6.2 complete)
 
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 6 API Routes - NEXT** - Ready to begin API route development for webhook endpoints and dashboard API. Phase 5 (Job Queue & Workers) is complete with Bull Board monitoring setup.
+**Phase 6 API Routes - IN PROGRESS** - Task 6.2 (Payload validation) complete. Comprehensive unit tests added for webhook payload validation schema. Validation verified and tested for all scenarios. Next: Task 6.3 (HMAC signature verification).
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -41,7 +41,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Phase 5 Complete - Job Queue & Workers** - Completed Phase 5 with Bull Board monitoring setup: installed Bull Board dependencies (@bull-board/api, @bull-board/express), created queue monitoring setup (monitoring.ts) with Bull Board configuration for all queues (session, high-priority, normal-priority, low-priority), created API route for queue status (`/api/admin/queue/status`) returning JSON status with queue metrics (waiting, active, completed, failed, delayed), created queue setup documentation (_docs/queue-setup.md) with Upstash Redis setup instructions, and documented environment variables. All queue infrastructure is complete and ready for production use - 2025-11-07
+1. **Task 6.2 Complete - Payload Validation** - Verified and enhanced webhook payload validation: created comprehensive unit tests for validation schema (28 tests covering valid payloads, invalid payloads, field types, enum values, feedback ratings, URL fields, and edge cases), verified validation schema is complete and correct, verified integration in webhook endpoint, and all tests passing. Validation schema properly validates all required fields, handles optional fields, and provides clear error messages - 2025-11-09
+2. **Task 6.1 Complete - Webhook Endpoint** - Created webhook endpoint for session-completed events (`/api/webhooks/session-completed/route.ts`): implemented POST handler with Zod payload validation, transforms webhook payload (snake_case) to database format (camelCase), stores session in database with duplicate handling (409 Conflict), queues processing job with priority (high for first sessions, normal otherwise), returns 200 OK quickly (< 2 seconds) without awaiting job completion, includes structured logging and error handling, and created integration tests. This enables automatic flag generation when sessions arrive from Nerdy platform - 2025-11-09
+2. **Phase 5 Complete - Job Queue & Workers** - Completed Phase 5 with Bull Board monitoring setup: installed Bull Board dependencies (@bull-board/api, @bull-board/express), created queue monitoring setup (monitoring.ts) with Bull Board configuration for all queues (session, high-priority, normal-priority, low-priority), created API route for queue status (`/api/admin/queue/status`) returning JSON status with queue metrics (waiting, active, completed, failed, delayed), created queue setup documentation (_docs/queue-setup.md) with Upstash Redis setup instructions, and documented environment variables. All queue infrastructure is complete and ready for production use - 2025-11-07
 2. **IF-2, IF-3 Complete - Date Range Filtering & Responsive Plot Interactions** - Implemented URL param sync for date range filtering (IF-2): date range now syncs with URL params (startDate, endDate), making filters shareable via URL. Date range loads from URL on mount, updates URL when changed. Enhanced ScatterPlot with responsive interactions (IF-3): added touch support for mobile (pinch to zoom, two-finger pan), enhanced tooltip for desktop (shows tutor ID prominently, follows cursor, disabled on touch devices), optimized for different screen sizes (larger dots on mobile/tablet, responsive chart height), and tap to select works on mobile. All components update together when date range changes - 2025-11-07
 3. **CC-10 Complete - Session History Modal** - Created `SessionHistoryModal` component using Headless UI Dialog for displaying detailed session history for a selected tutor. Modal opens on "View Session History" button click from TutorDetailCard, displays tutor header with ID and total sessions, shows session list table with all columns (Date/Time, Subject, Rating, Attendance Status, Rescheduled, First Session), includes filters (subject, session type), sorting (date, rating, status), pagination controls (rows per page, page navigation), and export functionality (CSV download). Full keyboard accessibility with ARIA labels and focus trap - 2025-11-07
 
@@ -50,14 +52,14 @@ Next phases:
 ## Next Steps
 
 ### Immediate (Next Session - Phase 6)
-- [ ] Create webhook endpoint for session-completed events
-- [ ] Implement payload validation with Zod
-- [ ] Implement signature verification (HMAC)
-- [ ] Store session in database
-- [ ] Queue processing job
-- [ ] Create session endpoints (list, get detail)
-- [ ] Create tutor endpoints (list, get detail, get score)
-- [ ] Create flag endpoints (list, get detail, resolve)
+- [x] Create webhook endpoint for session-completed events ✅ (Task 6.1)
+- [x] Implement payload validation with Zod ✅ (Task 6.2)
+- [ ] Implement signature verification (HMAC) - Task 6.3
+- [x] Store session in database ✅ (Task 6.4)
+- [x] Queue processing job ✅ (Task 6.5)
+- [ ] Create session endpoints (list, get detail) - Tasks 6.9-6.12
+- [ ] Create tutor endpoints (list, get detail, get score) - Tasks 6.13-6.18
+- [ ] Create flag endpoints (list, get detail, resolve) - Tasks 6.19-6.23
 
 ### Near-Term (This Week - Phase 6)
 - [ ] Create aggregator.ts to combine all signals
@@ -95,10 +97,13 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Recently Modified
 
-- `src/lib/queue/monitoring.ts` - Bull Board monitoring setup with queue status API ← NEW
-- `src/app/api/admin/queue/route.ts` - Queue monitoring API route ← NEW
-- `src/app/api/admin/queue/status/route.ts` - Queue status JSON API endpoint ← NEW
-- `_docs/queue-setup.md` - Queue setup guide with Upstash Redis instructions ← NEW
+- `tests/unit/utils/validation.test.ts` - Comprehensive unit tests for validation schema (Task 6.2) ← NEW
+- `src/app/api/webhooks/session-completed/route.ts` - Webhook endpoint for session-completed events (Task 6.1)
+- `tests/integration/webhooks/session-completed.test.ts` - Integration tests for webhook endpoint
+- `src/lib/queue/monitoring.ts` - Bull Board monitoring setup with queue status API
+- `src/app/api/admin/queue/route.ts` - Queue monitoring API route
+- `src/app/api/admin/queue/status/route.ts` - Queue status JSON API endpoint
+- `_docs/queue-setup.md` - Queue setup guide with Upstash Redis instructions
 - `src/lib/queue/index.ts` - Bull queue configuration and initialization
 - `src/lib/queue/jobs.ts` - Job type definitions
 - `src/lib/queue/workers.ts` - Worker implementations
