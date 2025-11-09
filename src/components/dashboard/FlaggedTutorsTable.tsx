@@ -27,6 +27,7 @@ interface TableColumn {
 export function FlaggedTutorsTable() {
   const { 
     dateRange, 
+    selectedTutorId,
     setSelectedTutor,
     tableSort,
     setTableSort,
@@ -330,15 +331,23 @@ export function FlaggedTutorsTable() {
     return pages;
   };
 
-  // Determine row background color based on risk flags
+  // Determine row background color based on risk flags and selection
   const getRowClassName = (tutor: TutorSummary): string => {
     const flagCount = tutor.riskFlags.length;
+    const isSelected = tutor.tutorId === selectedTutorId;
+    
     if (flagCount >= 2) {
-      return "bg-red-50 hover:bg-red-100 border-l-4 border-red-500";
+      return isSelected 
+        ? "bg-red-100 hover:bg-red-100 border-l-4 border-red-500"
+        : "bg-red-50 hover:bg-red-100 border-l-4 border-red-500";
     } else if (flagCount === 1) {
-      return "bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500";
+      return isSelected
+        ? "bg-amber-100 hover:bg-amber-100 border-l-4 border-amber-500"
+        : "bg-amber-50 hover:bg-amber-100 border-l-4 border-amber-500";
     }
-    return "bg-white hover:bg-gray-50";
+    return isSelected
+      ? "bg-gray-50 hover:bg-gray-50"
+      : "bg-white hover:bg-gray-50";
   };
 
   // Loading state

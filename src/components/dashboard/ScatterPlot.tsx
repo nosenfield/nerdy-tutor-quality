@@ -303,24 +303,26 @@ export function ScatterPlot({
 
   return (
     <div className={`relative ${isFullscreen ? 'h-full flex flex-col' : 'p-3 bg-white rounded-lg shadow-sm'}`} style={{ outline: "none" }}>
-      {/* Header */}
-      <div className={`flex items-center justify-between ${isFullscreen ? 'mb-2 flex-shrink-0' : 'mb-1'}`}>
-        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
-        <div className="flex items-center gap-2">
-          {/* Fullscreen Button - only show when not already in fullscreen */}
-          {plotType && !isFullscreen && (
-            <button
-              onClick={handleFullscreen}
-              className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              title="Fullscreen"
-              aria-label="Fullscreen"
-            >
-              <Maximize2 className="h-4 w-4" />
-              Fullscreen
-            </button>
-          )}
+      {/* Header - hide when in fullscreen */}
+      {!isFullscreen && (
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+          <div className="flex items-center gap-2">
+            {/* Fullscreen Button - only show when not already in fullscreen */}
+            {plotType && (
+              <button
+                onClick={handleFullscreen}
+                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                title="Fullscreen"
+                aria-label="Fullscreen"
+              >
+                <Maximize2 className="h-4 w-4" />
+                Fullscreen
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Chart */}
       <div
