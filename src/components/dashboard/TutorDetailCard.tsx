@@ -14,6 +14,7 @@ export interface TutorDetailCardProps {
   position: { x: number; y: number }; // Dot coordinates in pixels
   onClose: () => void;
   onTutorChange: (tutorId: string) => void; // Callback to change the current tutor
+  isInModal?: boolean; // Whether the card is inside a modal (uses fixed positioning)
 }
 
 /**
@@ -28,6 +29,7 @@ export function TutorDetailCard({
   position,
   onClose,
   onTutorChange,
+  isInModal = false,
 }: TutorDetailCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const { dateRange, setSessionHistoryModal } = useDashboardStore();
@@ -212,12 +214,34 @@ export function TutorDetailCard({
     );
   }
 
+  // Use fixed positioning and higher z-index when in modal (modal uses z-50)
+  const zIndexClass = isInModal ? "z-[60]" : "z-50";
+  
+  // Prevent clicks on the card from closing the modal
+  const handleCardClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+  };
+  
+  // Prevent mousedown from propagating to Dialog
+  const handleCardMouseDown = (e: React.MouseEvent) => {
+    // Only prevent if we're in a modal
+    if (isInModal) {
+      e.stopPropagation();
+      // Don't prevent default for drag functionality
+    }
+    handleMouseDown(e);
+  };
+  
   return (
     <div
       ref={cardRef}
-      className="absolute z-50 w-64 rounded-lg bg-white shadow-xl border border-gray-200 p-3 animate-in fade-in slide-in-from-bottom-2 cursor-move"
+      data-tutor-detail-card
+      className={`fixed ${zIndexClass} w-64 rounded-lg bg-white shadow-xl border border-gray-200 p-3 animate-in fade-in slide-in-from-bottom-2 cursor-move`}
       style={{ left: cardPosition.x, top: cardPosition.y }}
-      onMouseDown={handleMouseDown}
+      onMouseDown={handleCardMouseDown}
+      onClick={handleCardClick}
+      onMouseUp={handleCardClick}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-2 select-none">

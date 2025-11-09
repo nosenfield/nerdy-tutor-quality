@@ -670,7 +670,7 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Tutor Detail Card */}
+      {/* Tutor Detail Card - rendered at page level with higher z-index to appear above modal */}
       {selectedTutorId && clickedDotPosition && (
         <TutorDetailCard
           tutorId={selectedTutorId}
@@ -678,6 +678,7 @@ export default function DashboardPage() {
           position={clickedDotPosition}
           onClose={handleCloseDetail}
           onTutorChange={setSelectedTutor}
+          isInModal={!!fullscreenPlot}
         />
       )}
 

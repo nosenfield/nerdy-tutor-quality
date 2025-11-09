@@ -447,7 +447,7 @@ export function FlaggedTutorsTable() {
                   }
                 >
                   <div className="flex items-center">
-                    {column.label}
+                  {column.label}
                     {column.sortable && getSortIndicator(column.id)}
                   </div>
                 </th>

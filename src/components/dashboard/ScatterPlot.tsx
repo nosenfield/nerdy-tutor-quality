@@ -50,7 +50,10 @@ export function ScatterPlot({
   zones,
   plotType,
 }: ScatterPlotProps) {
-  const { setFullscreenPlot } = useDashboardStore();
+  const { fullscreenPlot, setFullscreenPlot } = useDashboardStore();
+  
+  // Check if plot is in fullscreen mode
+  const isFullscreen = fullscreenPlot === plotType;
   
   // Calculate maximum total sessions from data (with 10% padding)
   const maxTotalSessions = useMemo(() => {
@@ -299,13 +302,13 @@ export function ScatterPlot({
   };
 
   return (
-    <div className="relative p-3 bg-white rounded-lg shadow-sm" style={{ outline: "none" }}>
+    <div className={`relative ${isFullscreen ? 'h-full flex flex-col' : 'p-3 bg-white rounded-lg shadow-sm'}`} style={{ outline: "none" }}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-1">
+      <div className={`flex items-center justify-between ${isFullscreen ? 'mb-2 flex-shrink-0' : 'mb-1'}`}>
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
         <div className="flex items-center gap-2">
-          {/* Fullscreen Button */}
-          {plotType && (
+          {/* Fullscreen Button - only show when not already in fullscreen */}
+          {plotType && !isFullscreen && (
             <button
               onClick={handleFullscreen}
               className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -322,14 +325,14 @@ export function ScatterPlot({
       {/* Chart */}
       <div
         ref={containerRef}
-        className="relative"
+        className={`relative ${isFullscreen ? 'flex-1 min-h-0' : ''}`}
         onTouchStart={isTouchDevice ? handleTouchStart : undefined}
         onTouchMove={isTouchDevice ? handleTouchMove : undefined}
         onTouchEnd={isTouchDevice ? handleTouchEnd : undefined}
       >
         <ResponsiveContainer 
           width="100%" 
-          height={isTouchDevice ? 400 : 450} 
+          height={isFullscreen ? "100%" : (isTouchDevice ? 400 : 450)} 
           className="[&_svg]:outline-none [&_svg]:focus:outline-none"
         >
               <ScatterChart
