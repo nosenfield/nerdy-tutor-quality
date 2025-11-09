@@ -1,11 +1,13 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ScatterPlot } from "@/components/dashboard/ScatterPlot";
 import { TutorDetailCard } from "@/components/dashboard/TutorDetailCard";
 import { FlaggedTutorsTable } from "@/components/dashboard/FlaggedTutorsTable";
 import { FullscreenPlotModal } from "@/components/dashboard/FullscreenPlotModal";
+import { SessionHistoryModal } from "@/components/dashboard/SessionHistoryModal";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import { useTutorSessions } from "@/lib/hooks/useDashboardData";
 import type {
@@ -112,6 +114,8 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
  * This is the primary view after login.
  */
 export default function DashboardPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const {
     dateRange,
     setDateRange,
@@ -136,6 +140,62 @@ export default function DashboardPage() {
   } | null>(null);
   const [overlappingTutorIds, setOverlappingTutorIds] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Sync URL params with dateRange on mount
+  useEffect(() => {
+    if (isInitialized) return;
+
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
+
+    if (startDateParam && endDateParam) {
+      try {
+        const startDate = new Date(startDateParam);
+        const endDate = new Date(endDateParam);
+        if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+          setDateRange({ start: startDate, end: endDate });
+        }
+      } catch (e) {
+        // Invalid date params, use default
+        console.warn("Invalid date params in URL, using default date range");
+      }
+    }
+    setIsInitialized(true);
+  }, [searchParams, setDateRange, isInitialized]);
+
+  // Update URL params when dateRange changes (but not if URL already matches)
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const startDateParam = searchParams.get("startDate");
+    const endDateParam = searchParams.get("endDate");
+
+    // Check if URL params already match current dateRange
+    if (startDateParam && endDateParam) {
+      try {
+        const urlStartDate = new Date(startDateParam);
+        const urlEndDate = new Date(endDateParam);
+        // Only update URL if dates don't match (within 1 second tolerance)
+        const startDiff = Math.abs(urlStartDate.getTime() - dateRange.start.getTime());
+        const endDiff = Math.abs(urlEndDate.getTime() - dateRange.end.getTime());
+        if (startDiff < 1000 && endDiff < 1000) {
+          // URL already matches, don't update
+          return;
+        }
+      } catch (e) {
+        // Invalid URL params, continue to update
+      }
+    }
+
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("startDate", dateRange.start.toISOString());
+    params.set("endDate", dateRange.end.toISOString());
+    
+    // Use replace to avoid adding to history
+    router.replace(`/dashboard?${params.toString()}`, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dateRange, router, isInitialized]);
 
   // Extract data and data source from API response
   const { displayTutors } = useMemo(() => {
@@ -664,6 +724,9 @@ export default function DashboardPage() {
           selectedTutorId: selectedTutorId,
         }}
       />
+
+      {/* Session History Modal */}
+      <SessionHistoryModal />
     </div>
   );
 }

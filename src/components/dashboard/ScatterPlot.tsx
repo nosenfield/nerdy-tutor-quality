@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -67,6 +67,28 @@ export function ScatterPlot({
     plotType === "quality" ? [1, 5] : [0, 100]
   );
   
+  // Touch support state
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [touchStartDistance, setTouchStartDistance] = useState<number | null>(null);
+  const [touchStartCenter, setTouchStartCenter] = useState<{ x: number; y: number } | null>(null);
+  const [touchStartDomains, setTouchStartDomains] = useState<{ x: [number, number]; y: [number, number] } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Detect touch device
+  useEffect(() => {
+    const checkTouchDevice = () => {
+      setIsTouchDevice(
+        "ontouchstart" in window ||
+        navigator.maxTouchPoints > 0 ||
+        // @ts-ignore
+        navigator.msMaxTouchPoints > 0
+      );
+    };
+    checkTouchDevice();
+    window.addEventListener("resize", checkTouchDevice);
+    return () => window.removeEventListener("resize", checkTouchDevice);
+  }, []);
+  
   // Update xDomain when maxTotalSessions changes
   useEffect(() => {
     setXDomain([0, maxTotalSessions]);
@@ -129,13 +151,106 @@ export function ScatterPlot({
     }
   };
 
+  // Calculate distance between two touches
+  const getTouchDistance = (touch1: Touch, touch2: Touch): number => {
+    const dx = touch2.clientX - touch1.clientX;
+    const dy = touch2.clientY - touch1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Calculate center point between two touches
+  const getTouchCenter = (touch1: Touch, touch2: Touch): { x: number; y: number } => {
+    return {
+      x: (touch1.clientX + touch2.clientX) / 2,
+      y: (touch1.clientY + touch2.clientY) / 2,
+    };
+  };
+
+  // Handle touch start (for pinch to zoom and two-finger pan)
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && containerRef.current) {
+      e.preventDefault();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const distance = getTouchDistance(touch1, touch2);
+      const center = getTouchCenter(touch1, touch2);
+      
+      setTouchStartDistance(distance);
+      setTouchStartCenter(center);
+      setTouchStartDomains({ x: [...xDomain], y: [...yDomain] });
+    }
+  };
+
+  // Handle touch move (for pinch to zoom and two-finger pan)
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartDistance && touchStartCenter && touchStartDomains && containerRef.current) {
+      e.preventDefault();
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const currentDistance = getTouchDistance(touch1, touch2);
+      const currentCenter = getTouchCenter(touch1, touch2);
+      
+      // Calculate zoom factor
+      const zoomFactor = currentDistance / touchStartDistance;
+      
+      // Get container dimensions
+      const container = containerRef.current;
+      const rect = container.getBoundingClientRect();
+      const containerWidth = rect.width;
+      const containerHeight = rect.height;
+      
+      // Calculate center point in data coordinates
+      const centerXPercent = (touchStartCenter.x - rect.left) / containerWidth;
+      const centerYPercent = (touchStartCenter.y - rect.top) / containerHeight;
+      
+      // Calculate new domains with zoom centered on touch point
+      const xRange = touchStartDomains.x[1] - touchStartDomains.x[0];
+      const yRange = touchStartDomains.y[1] - touchStartDomains.y[0];
+      
+      const newXRange = xRange / zoomFactor;
+      const newYRange = yRange / zoomFactor;
+      
+      const centerX = touchStartDomains.x[0] + xRange * centerXPercent;
+      const centerY = touchStartDomains.y[0] + yRange * (1 - centerYPercent); // Y is inverted
+      
+      const newXDomain: [number, number] = [
+        Math.max(0, centerX - newXRange * centerXPercent),
+        Math.min(maxTotalSessions, centerX + newXRange * (1 - centerXPercent)),
+      ];
+      
+      const newYDomain: [number, number] = plotType === "quality"
+        ? [
+            Math.max(1, centerY - newYRange * (1 - centerYPercent)),
+            Math.min(5, centerY + newYRange * centerYPercent),
+          ]
+        : [
+            Math.max(0, centerY - newYRange * (1 - centerYPercent)),
+            Math.min(100, centerY + newYRange * centerYPercent),
+          ];
+      
+      setXDomain(newXDomain);
+      setYDomain(newYDomain);
+    }
+  };
+
+  // Handle touch end
+  const handleTouchEnd = () => {
+    setTouchStartDistance(null);
+    setTouchStartCenter(null);
+    setTouchStartDomains(null);
+  };
+
   // Custom dot renderer to handle click and selection
   const renderDot = (props: any) => {
     const { cx, cy, payload } = props;
     const isSelected = payload.tutorId === selectedTutorId;
 
-    // All dots are 1.5x size, no size change on select
-    const dotRadius = (CHART_THEME.dot.default.r / 2) * 1.5; // 1.5x size for all dots
+    // Responsive dot sizes: larger on mobile/tablet for better touch targets
+    // Desktop: 1.5x size, Mobile/Tablet: 2x size
+    const baseRadius = CHART_THEME.dot.default.r / 2;
+    const dotRadius = isTouchDevice 
+      ? baseRadius * 2 // 2x size for mobile/tablet
+      : baseRadius * 1.5; // 1.5x size for desktop
 
     // Handle click with position
     const handleClick = (e: React.MouseEvent<SVGCircleElement>) => {
@@ -221,7 +336,18 @@ export function ScatterPlot({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={450} className="[&_svg]:outline-none [&_svg]:focus:outline-none">
+      <div
+        ref={containerRef}
+        className="relative"
+        onTouchStart={isTouchDevice ? handleTouchStart : undefined}
+        onTouchMove={isTouchDevice ? handleTouchMove : undefined}
+        onTouchEnd={isTouchDevice ? handleTouchEnd : undefined}
+      >
+        <ResponsiveContainer 
+          width="100%" 
+          height={isTouchDevice ? 400 : 450} 
+          className="[&_svg]:outline-none [&_svg]:focus:outline-none"
+        >
               <ScatterChart
                 margin={{ top: 10, right: 30, bottom: 30, left: 5 }}
                 data={chartData}
@@ -306,7 +432,17 @@ export function ScatterPlot({
           <Tooltip
             cursor={false}
             animationDuration={0}
+            wrapperStyle={{ outline: "none" }}
+            contentStyle={{ outline: "none" }}
+            // Recharts Tooltip automatically follows cursor and disappears on mouse leave
+            // For desktop: tooltip shows on hover, disappears after mouse leave
+            // For mobile: tooltip is disabled (use tap to select instead)
             content={({ active, payload }) => {
+              // Don't show tooltip on touch devices (mobile)
+              if (isTouchDevice) {
+                return null;
+              }
+              
               if (active && payload && payload[0]) {
                 const hoveredData = payload[0].payload as {
                   x: number;
@@ -324,7 +460,10 @@ export function ScatterPlot({
                 );
                 
                 return (
-                  <div className="bg-white p-2 border border-gray-200 rounded shadow-sm max-w-xs">
+                  <div className="bg-white p-2 border border-gray-200 rounded shadow-sm max-w-xs z-50">
+                    <p className="text-xs font-semibold text-gray-900 mb-1">
+                      Tutor ID: {hoveredData.tutorId}
+                    </p>
                     <p className="text-xs text-gray-600 mb-1">
                       {xLabel}: {hoveredData.x}
                     </p>
@@ -336,13 +475,15 @@ export function ScatterPlot({
                         {overlappingPoints.length} tutors at this point:
                       </p>
                     )}
-                    <div className="space-y-1">
-                      {overlappingPoints.map((point, index) => (
-                        <p key={index} className="text-xs font-medium">
-                          {point.tutorId}
-                        </p>
-                      ))}
-                    </div>
+                    {overlappingPoints.length > 1 && (
+                      <div className="space-y-1">
+                        {overlappingPoints.map((point, index) => (
+                          <p key={index} className="text-xs font-medium">
+                            {point.tutorId}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               }
@@ -369,6 +510,7 @@ export function ScatterPlot({
           </Scatter>
         </ScatterChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }

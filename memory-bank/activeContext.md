@@ -1,6 +1,6 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-07 (CC-9 complete)
+**Last Updated**: 2025-11-07 (IF-2, IF-3 complete)
 
 ## Current Focus
 
@@ -16,7 +16,7 @@
 
 **Phase 3 - Rules Engine (Tier 1)** (Estimated: 3-4 days) - ✅ COMPLETE
 
-**Phase 4 - Dashboard UI** (Estimated: 5-6 days) - ✅ IN PROGRESS (CC-7, CC-8, CC-9 done, CC-10+ pending)
+**Phase 4 - Dashboard UI** (Estimated: 5-6 days) - ✅ IN PROGRESS (CC-7, CC-8, CC-9, CC-10 done)
 
 Next phases:
 - Phase 5: Job Queue & Workers ← IN PROGRESS
@@ -40,9 +40,9 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **CC-9 Complete - Fullscreen Plot Modal** - Created `FullscreenPlotModal` component using Headless UI Dialog for displaying scatter plots in fullscreen modal view. Modal opens on fullscreen button click from any plot (attendance, reschedules, quality), maintains all interactive features (zoom/pan, dot click, threshold zones), includes close button (X) and ESC key handler, has dark overlay backdrop with smooth open/close animations, and renders plot larger with more detail. Full keyboard accessibility with ARIA labels and focus trap - 2025-11-07
-2. **CC-8 Complete - Table Sorting & Pagination** - Implemented column header click sorting with 3-state cycle (null → asc → desc → null), sort indicator arrows (ChevronUp/ChevronDown), pagination controls with rows per page dropdown (10, 25, 50, 100), page navigation with Previous/Next buttons and page number buttons (showing up to 5 at a time with ellipsis), summary row above table showing pagination state, and sticky table header on scroll. All state persisted in Zustand store. Full keyboard accessibility with ARIA labels - 2025-11-07
-3. **CC-7 Complete - Flagged Tutors Table** - Created `FlaggedTutorsTable` component with 6 columns (Tutor ID, Total Sessions, Attendance %, Sessions Kept %, Avg Rating, Days on Platform), mini visualizations (progress bars for percentages, star ratings), row highlighting based on risk flags (warning/critical), and click-to-highlight integration with scatter plots. Component integrated into dashboard page - 2025-11-07
+1. **IF-2, IF-3 Complete - Date Range Filtering & Responsive Plot Interactions** - Implemented URL param sync for date range filtering (IF-2): date range now syncs with URL params (startDate, endDate), making filters shareable via URL. Date range loads from URL on mount, updates URL when changed. Enhanced ScatterPlot with responsive interactions (IF-3): added touch support for mobile (pinch to zoom, two-finger pan), enhanced tooltip for desktop (shows tutor ID prominently, follows cursor, disabled on touch devices), optimized for different screen sizes (larger dots on mobile/tablet, responsive chart height), and tap to select works on mobile. All components update together when date range changes - 2025-11-07
+2. **CC-10 Complete - Session History Modal** - Created `SessionHistoryModal` component using Headless UI Dialog for displaying detailed session history for a selected tutor. Modal opens on "View Session History" button click from TutorDetailCard, displays tutor header with ID and total sessions, shows session list table with all columns (Date/Time, Subject, Rating, Attendance Status, Rescheduled, First Session), includes filters (subject, session type), sorting (date, rating, status), pagination controls (rows per page, page navigation), and export functionality (CSV download). Full keyboard accessibility with ARIA labels and focus trap - 2025-11-07
+3. **CC-9 Complete - Fullscreen Plot Modal** - Created `FullscreenPlotModal` component using Headless UI Dialog for displaying scatter plots in fullscreen modal view. Modal opens on fullscreen button click from any plot (attendance, reschedules, quality), maintains all interactive features (zoom/pan, dot click, threshold zones), includes close button (X) and ESC key handler, has dark overlay backdrop with smooth open/close animations, and renders plot larger with more detail. Full keyboard accessibility with ARIA labels and focus trap - 2025-11-07
 
 ---
 
@@ -112,8 +112,10 @@ None - Project is greenfield, no blockers.
 - `tests/integration/queue/job-priority.test.ts` - Integration tests for priority queuing (Task 5.21) ← NEW
 - `tests/integration/queue/job-load.test.ts` - Load tests for 100 concurrent jobs (Task 5.22) ← NEW
 - `src/components/dashboard/FlaggedTutorsTable.tsx` - Flagged tutors table with sorting, pagination, mini visualizations, and row highlighting (CC-7, CC-8)
-- `src/components/dashboard/FullscreenPlotModal.tsx` - Fullscreen plot modal component with Headless UI Dialog (CC-9) ← NEW
-- `src/app/dashboard/page.tsx` - Updated to include FullscreenPlotModal components for all three plot types (CC-9)
+- `src/components/dashboard/FullscreenPlotModal.tsx` - Fullscreen plot modal component with Headless UI Dialog (CC-9)
+- `src/components/dashboard/SessionHistoryModal.tsx` - Session history modal component with filters, sorting, pagination, and export (CC-10)
+- `src/components/dashboard/ScatterPlot.tsx` - Enhanced with touch support (pinch to zoom, two-finger pan), improved tooltip, and responsive optimizations (IF-3) ← UPDATED
+- `src/app/dashboard/page.tsx` - Added URL param sync for date range filtering (IF-2), integrated FullscreenPlotModal and SessionHistoryModal ← UPDATED
 - `src/app/dashboard/page.tsx` - Updated to include FlaggedTutorsTable component
 - `src/lib/scoring/rules-engine.ts` - Complete rules engine with all detection rules (Tasks 3.2-3.10)
 - `src/lib/scoring/aggregator.ts` - Scoring algorithm with all component scores (Tasks 3.11-3.17)
