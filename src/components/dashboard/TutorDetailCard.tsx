@@ -34,13 +34,13 @@ export function TutorDetailCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const { dateRange, setSessionHistoryModal } = useDashboardStore();
   const { data: tutorDetail, isLoading, error } = useTutorDetail(tutorId, dateRange);
-  
+
   // Find current index in tutorIds array
   const currentIndex = tutorIds.findIndex((id) => id === tutorId);
   const hasMultipleTutors = tutorIds.length > 1;
   const canGoPrevious = currentIndex > 0;
   const canGoNext = currentIndex < tutorIds.length - 1;
-  
+
   // Drag state
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -123,10 +123,10 @@ export function TutorDetailCard({
     // 1. Not currently dragging
     // 2. Card hasn't been manually dragged
     // 3. Position prop has actually changed (new click) OR it's the initial mount
-    const positionChanged = 
-      position.x !== lastPositionProp.x || 
+    const positionChanged =
+      position.x !== lastPositionProp.x ||
       position.y !== lastPositionProp.y;
-    
+
     if (!isDragging && !hasBeenDragged && (positionChanged || !isInitialized) && cardRef.current) {
       const card = cardRef.current;
       const rect = card.getBoundingClientRect();
@@ -156,13 +156,13 @@ export function TutorDetailCard({
       setIsInitialized(true);
     }
   }, [position, isDragging, hasBeenDragged, lastPositionProp, isInitialized]);
-  
+
   // Reset hasBeenDragged when position prop changes (new click, not just tutor navigation)
   useEffect(() => {
-    const positionChanged = 
-      position.x !== lastPositionProp.x || 
+    const positionChanged =
+      position.x !== lastPositionProp.x ||
       position.y !== lastPositionProp.y;
-    
+
     if (positionChanged) {
       setHasBeenDragged(false);
     }
@@ -216,13 +216,13 @@ export function TutorDetailCard({
 
   // Use fixed positioning and higher z-index when in modal (modal uses z-50)
   const zIndexClass = isInModal ? "z-[60]" : "z-50";
-  
+
   // Prevent clicks on the card from closing the modal
   const handleCardClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
   };
-  
+
   // Prevent mousedown from propagating to Dialog
   const handleCardMouseDown = (e: React.MouseEvent) => {
     // Only prevent if we're in a modal
@@ -232,7 +232,7 @@ export function TutorDetailCard({
     }
     handleMouseDown(e);
   };
-  
+
   return (
     <div
       ref={cardRef}
@@ -398,15 +398,14 @@ export function TutorDetailCard({
                 return (
                   <div
                     key={index}
-                    className={`text-xs px-1.5 py-0.5 rounded ${
-                      flag.severity === "critical"
+                    className={`text-xs px-1.5 py-0.5 rounded ${flag.severity === "critical"
                         ? "bg-red-100 text-red-800"
                         : flag.severity === "high"
-                        ? "bg-orange-100 text-orange-800"
-                        : flag.severity === "medium"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
+                          ? "bg-orange-100 text-orange-800"
+                          : flag.severity === "medium"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                      }`}
                   >
                     <div className="font-medium text-xs">{flag.type}</div>
                     <div className="text-xs opacity-75 leading-tight">{cleanedMessage}</div>
