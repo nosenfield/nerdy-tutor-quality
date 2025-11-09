@@ -161,7 +161,7 @@
 ### Phase 6: API Routes - IN PROGRESS
 - [x] Webhook endpoint (session-completed) ✅ (Task 6.1)
 - [x] Payload validation (Zod) ✅ (Task 6.2) - Comprehensive unit tests added
-- [ ] Signature verification (HMAC) (Task 6.3)
+- [x] Signature verification (HMAC) ✅ (Task 6.3) - HMAC-SHA256 with timing-safe comparison, comprehensive unit and integration tests
 - [ ] Session endpoints (list, get detail) (Tasks 6.9-6.12)
 - [ ] Tutor endpoints (list, get detail, get score) (Tasks 6.13-6.18)
 - [ ] Flag endpoints (list, get detail, resolve) (Tasks 6.19-6.23)

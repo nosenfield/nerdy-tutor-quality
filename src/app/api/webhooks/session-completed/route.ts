@@ -5,11 +5,13 @@
  * Validates payload, stores session in database, and queues processing job.
  * 
  * Flow:
- * 1. Validate payload with Zod
- * 2. Transform webhook payload to database format
- * 3. Store session in database
- * 4. Queue processing job (async, don't await)
- * 5. Return 200 OK quickly (< 2 seconds)
+ * 1. Get raw request body
+ * 2. Verify HMAC signature
+ * 3. Parse and validate payload with Zod
+ * 4. Transform webhook payload to database format
+ * 5. Store session in database
+ * 6. Queue processing job (async, don't await)
+ * 7. Return 200 OK quickly (< 2 seconds)
  * 
  * POST /api/webhooks/session-completed
  */
@@ -21,6 +23,11 @@ import { sessionQueue } from "@/lib/queue";
 import { JOB_TYPES } from "@/lib/queue/jobs";
 import { differenceInMinutes } from "date-fns";
 import { eq } from "drizzle-orm";
+import {
+  verifyWebhookSignature,
+  extractSignatureFromHeader,
+  getWebhookSecret,
+} from "@/lib/utils/webhook-security";
 
 /**
  * Transform webhook payload to database format
@@ -81,8 +88,71 @@ export async function POST(request: NextRequest) {
   let sessionId: string | undefined;
 
   try {
-    // Parse request body
-    const body = await request.json();
+    // Get raw request body as string for signature verification
+    const rawBody = await request.text();
+
+    // Verify webhook signature
+    const signatureHeader =
+      request.headers.get("X-Signature") ||
+      request.headers.get("X-Webhook-Signature") ||
+      request.headers.get("X-Hub-Signature-256");
+
+    const webhookSecret = getWebhookSecret();
+
+    if (!webhookSecret) {
+      console.error("WEBHOOK_SECRET not set in environment variables");
+      return NextResponse.json(
+        {
+          error: "Server configuration error",
+          message: "Webhook secret not configured",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!signatureHeader) {
+      console.error("Webhook signature header missing");
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          message: "Missing signature header",
+        },
+        { status: 401 }
+      );
+    }
+
+    const signature = extractSignatureFromHeader(signatureHeader);
+
+    if (!signature) {
+      console.error("Invalid signature format in header");
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          message: "Invalid signature format",
+        },
+        { status: 401 }
+      );
+    }
+
+    const isValidSignature = verifyWebhookSignature(
+      rawBody,
+      signature,
+      webhookSecret
+    );
+
+    if (!isValidSignature) {
+      console.error("Webhook signature verification failed");
+      return NextResponse.json(
+        {
+          error: "Unauthorized",
+          message: "Invalid signature",
+        },
+        { status: 401 }
+      );
+    }
+
+    // Parse request body as JSON
+    const body = JSON.parse(rawBody);
 
     // Validate payload with Zod
     const validationResult = webhookPayloadSchema.safeParse(body);

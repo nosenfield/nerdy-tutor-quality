@@ -12,6 +12,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { db, sessions } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import type { WebhookPayload } from "@/lib/utils/validation";
+import crypto from "crypto";
 
 /**
  * Test webhook payload
@@ -50,6 +51,7 @@ function createTestWebhookPayload(overrides?: Partial<WebhookPayload>): WebhookP
 describe("Session Completed Webhook", () => {
   let baseUrl: string;
   let dbAvailable = false;
+  let webhookSecret: string;
 
   beforeAll(async () => {
     // Check if database is available
@@ -57,6 +59,7 @@ describe("Session Completed Webhook", () => {
       await db.select().from(sessions).limit(1);
       dbAvailable = true;
       baseUrl = process.env.TEST_BASE_URL || "http://localhost:3000";
+      webhookSecret = process.env.WEBHOOK_SECRET || "test-secret-key";
     } catch (error) {
       dbAvailable = false;
       console.warn(
@@ -64,6 +67,13 @@ describe("Session Completed Webhook", () => {
       );
     }
   });
+
+  /**
+   * Generate HMAC signature for webhook payload
+   */
+  function generateSignature(payload: string, secret: string): string {
+    return crypto.createHmac("sha256", secret).update(payload).digest("hex");
+  }
 
   beforeEach(async () => {
     if (!dbAvailable) return;
@@ -83,20 +93,23 @@ describe("Session Completed Webhook", () => {
     // Note: This is a simplified cleanup - in production, use proper test data isolation
   });
 
-  it("should accept valid webhook payload", async () => {
+  it("should accept valid webhook payload with valid signature", async () => {
     if (!dbAvailable) {
       console.log("Skipping test - database not available");
       return;
     }
 
     const payload = createTestWebhookPayload();
+    const payloadString = JSON.stringify(payload);
+    const signature = generateSignature(payloadString, webhookSecret);
 
     const response = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Signature": signature,
       },
-      body: JSON.stringify(payload),
+      body: payloadString,
     });
 
     expect(response.status).toBe(200);
@@ -118,6 +131,55 @@ describe("Session Completed Webhook", () => {
     expect(session?.studentId).toBe(payload.student_id);
   });
 
+  it("should reject webhook with invalid signature", async () => {
+    if (!dbAvailable) {
+      console.log("Skipping test - database not available");
+      return;
+    }
+
+    const payload = createTestWebhookPayload();
+    const payloadString = JSON.stringify(payload);
+    const invalidSignature = "invalid-signature-hex";
+
+    const response = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Signature": invalidSignature,
+      },
+      body: payloadString,
+    });
+
+    expect(response.status).toBe(401);
+    const data = await response.json();
+    expect(data.error).toBe("Unauthorized");
+    expect(data.message).toBe("Invalid signature");
+  });
+
+  it("should reject webhook with missing signature header", async () => {
+    if (!dbAvailable) {
+      console.log("Skipping test - database not available");
+      return;
+    }
+
+    const payload = createTestWebhookPayload();
+    const payloadString = JSON.stringify(payload);
+
+    const response = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // No X-Signature header
+      },
+      body: payloadString,
+    });
+
+    expect(response.status).toBe(401);
+    const data = await response.json();
+    expect(data.error).toBe("Unauthorized");
+    expect(data.message).toBe("Missing signature header");
+  });
+
   it("should reject invalid webhook payload", async () => {
     if (!dbAvailable) {
       console.log("Skipping test - database not available");
@@ -129,13 +191,16 @@ describe("Session Completed Webhook", () => {
       tutor_id: "test_tutor_123",
       // Missing required fields
     };
+    const payloadString = JSON.stringify(invalidPayload);
+    const signature = generateSignature(payloadString, webhookSecret);
 
     const response = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Signature": signature,
       },
-      body: JSON.stringify(invalidPayload),
+      body: payloadString,
     });
 
     expect(response.status).toBe(400);
@@ -152,14 +217,17 @@ describe("Session Completed Webhook", () => {
     }
 
     const payload = createTestWebhookPayload();
+    const payloadString = JSON.stringify(payload);
+    const signature = generateSignature(payloadString, webhookSecret);
 
     // First request should succeed
     const response1 = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Signature": signature,
       },
-      body: JSON.stringify(payload),
+      body: payloadString,
     });
 
     expect(response1.status).toBe(200);
@@ -169,8 +237,9 @@ describe("Session Completed Webhook", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Signature": signature,
       },
-      body: JSON.stringify(payload),
+      body: payloadString,
     });
 
     expect(response2.status).toBe(409);
@@ -188,13 +257,16 @@ describe("Session Completed Webhook", () => {
     const payload = createTestWebhookPayload({
       is_first_session: true,
     });
+    const payloadString = JSON.stringify(payload);
+    const signature = generateSignature(payloadString, webhookSecret);
 
     const response = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-Signature": signature,
       },
-      body: JSON.stringify(payload),
+      body: payloadString,
     });
 
     expect(response.status).toBe(200);
@@ -204,6 +276,64 @@ describe("Session Completed Webhook", () => {
 
     // Note: Verifying job priority would require checking the queue,
     // which is tested in queue integration tests
+  });
+
+  it("should accept signature with prefix format (sha256=...)", async () => {
+    if (!dbAvailable) {
+      console.log("Skipping test - database not available");
+      return;
+    }
+
+    const payload = createTestWebhookPayload();
+    const payloadString = JSON.stringify(payload);
+    const signature = generateSignature(payloadString, webhookSecret);
+    const signatureWithPrefix = `sha256=${signature}`;
+
+    const response = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Webhook-Signature": signatureWithPrefix,
+      },
+      body: payloadString,
+    });
+
+    expect(response.status).toBe(200);
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.session_id).toBe(payload.session_id);
+  });
+
+  it("should reject tampered payload with original signature", async () => {
+    if (!dbAvailable) {
+      console.log("Skipping test - database not available");
+      return;
+    }
+
+    const originalPayload = createTestWebhookPayload();
+    const originalPayloadString = JSON.stringify(originalPayload);
+    const signature = generateSignature(originalPayloadString, webhookSecret);
+
+    // Tamper with the payload
+    const tamperedPayload = {
+      ...originalPayload,
+      tutor_id: "tampered_tutor_id",
+    };
+    const tamperedPayloadString = JSON.stringify(tamperedPayload);
+
+    const response = await fetch(`${baseUrl}/api/webhooks/session-completed`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Signature": signature, // Original signature, but payload is tampered
+      },
+      body: tamperedPayloadString,
+    });
+
+    expect(response.status).toBe(401);
+    const data = await response.json();
+    expect(data.error).toBe("Unauthorized");
+    expect(data.message).toBe("Invalid signature");
   });
 });
 
