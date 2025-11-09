@@ -366,7 +366,7 @@ export function detectNoShow(context: RuleContext): RuleResult {
     "no_show",
     severity,
     `Tutor no-show on ${sessionDate}`,
-    `Tutor ${session.tutorId} did not join the scheduled session on ${sessionDate}. This impacts student experience and may indicate reliability issues.`,
+    `${session.sessionId} | ${sessionDate}`,
     {
       recommendedAction: "Contact tutor to understand reason for no-show. Review tutor's attendance history and consider coaching if this is a pattern.",
       supportingData: {
@@ -439,7 +439,7 @@ export function detectLateness(context: RuleContext): RuleResult {
     "chronic_lateness",
     severity,
     `Tutor ${latenessMinutes} minutes late on ${sessionDate}`,
-    `Tutor ${session.tutorId} joined the session ${latenessMinutes} minutes late on ${sessionDate}. This impacts student experience and may indicate time management issues.`,
+    `${latenessMinutes} minutes late | ${sessionDate}`,
     {
       recommendedAction: "Discuss punctuality expectations with tutor. Review their schedule management and provide coaching on time management if this is a pattern.",
       supportingData: {
@@ -522,7 +522,7 @@ export function detectEarlyEnd(context: RuleContext): RuleResult {
     "early_end",
     severity,
     `Tutor ended session ${earlyMinutes} minutes early on ${sessionDate}`,
-    `Tutor ${session.tutorId} ended the session ${earlyMinutes} minutes early on ${sessionDate}. This may indicate incomplete coverage of material or time management issues.`,
+    `${earlyMinutes} minutes early | ${sessionDate}`,
     {
       recommendedAction: "Review session content to ensure all material was covered. Discuss session completion expectations with tutor. Check if this is a pattern.",
       supportingData: {
@@ -598,7 +598,7 @@ export function detectPoorFirstSession(context: RuleContext): RuleResult {
     "poor_first_session",
     severity,
     `Poor first session rating (${studentRating}/5) on ${sessionDate}`,
-    `Tutor ${session.tutorId} received a ${studentRating}-star rating on their first session with student ${session.studentId} on ${sessionDate}. Poor first sessions are a major churn driver (24% of students don't return).`,
+    `${studentRating}/5 | ${sessionDate}`,
     {
       recommendedAction: "Review session recording/transcript if available. Discuss first session best practices with tutor. Consider pairing tutor with a mentor for first session coaching. Follow up with student to understand concerns.",
       supportingData: {
@@ -835,7 +835,7 @@ export function detectHighRescheduleRate(context: RuleContext): RuleResult {
     "high_reschedule_rate",
     severity,
     `High reschedule rate: ${reschedulePercent.toFixed(1)}% (${tutorStats.rescheduleCount}/${tutorStats.totalSessions} sessions)`,
-    `Tutor ${tutorStats.tutorId} has rescheduled ${tutorStats.rescheduleCount} out of ${tutorStats.totalSessions} sessions (${reschedulePercent.toFixed(1)}%) in the last ${config.aggregateWindowDays} days. ${tutorInitiatedPercent.toFixed(1)}% were tutor-initiated. High reschedule rates can indicate scheduling issues or reliability problems.`,
+    `${reschedulePercent.toFixed(1)}% (${tutorStats.rescheduleCount}/${tutorStats.totalSessions})`,
     {
       recommendedAction: "Review tutor's schedule management and availability. Discuss rescheduling patterns and identify root causes. Consider coaching on time management and commitment if tutor-initiated reschedules are high.",
       supportingData: {
@@ -915,7 +915,7 @@ export function detectChronicLateness(context: RuleContext): RuleResult {
     "chronic_lateness",
     severity,
     `Chronic lateness: ${latePercent.toFixed(1)}% late (${tutorStats.lateCount}/${tutorStats.totalSessions} sessions)`,
-    `Tutor ${tutorStats.tutorId} was late to ${tutorStats.lateCount} out of ${tutorStats.totalSessions} sessions (${latePercent.toFixed(1)}%) in the last ${config.aggregateWindowDays} days. Average lateness: ${avgLateness.toFixed(1)} minutes. Chronic lateness impacts student experience and indicates time management issues.`,
+    `${latePercent.toFixed(1)}% (${tutorStats.lateCount}/${tutorStats.totalSessions})`,
     {
       recommendedAction: "Discuss punctuality expectations with tutor. Review their schedule management and identify root causes. Provide coaching on time management and consider adjusting their schedule if needed.",
       supportingData: {
@@ -1036,7 +1036,7 @@ export async function detectDecliningRatingTrend(
     "low_ratings",
     severity,
     `Declining rating trend: ${avg7d.toFixed(2)} (7d) < ${avg30d.toFixed(2)} (30d) < ${avg90d.toFixed(2)} (90d)`,
-    `Tutor ${tutorStats.tutorId} shows a declining rating trend: ${avg7d.toFixed(2)} stars (7-day avg) < ${avg30d.toFixed(2)} stars (30-day avg) < ${avg90d.toFixed(2)} stars (90-day avg). This represents a ${declinePercent.toFixed(1)}% decline from the 90-day average and may indicate quality issues.`,
+    `${avg7d.toFixed(2)} < ${avg30d.toFixed(2)} < ${avg90d.toFixed(2)}`,
     {
       recommendedAction: "Review recent session recordings/transcripts if available. Discuss feedback patterns with tutor. Identify specific areas of concern and provide targeted coaching. Consider pairing with a mentor or additional training.",
       supportingData: {

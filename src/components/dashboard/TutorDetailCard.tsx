@@ -348,23 +348,47 @@ export function TutorDetailCard({
               </h4>
             </div>
             <div className="space-y-1">
-              {tutorDetail.riskFlags.map((flag, index) => (
-                <div
-                  key={index}
-                  className={`text-xs px-1.5 py-0.5 rounded ${
-                    flag.severity === "critical"
-                      ? "bg-red-100 text-red-800"
-                      : flag.severity === "high"
-                      ? "bg-orange-100 text-orange-800"
-                      : flag.severity === "medium"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  <div className="font-medium text-xs">{flag.type}</div>
-                  <div className="text-xs opacity-75 leading-tight">{flag.message}</div>
-                </div>
-              ))}
+              {tutorDetail.riskFlags.map((flag, index) => {
+                // Remove tutor ID from message (it's redundant since it's in the header)
+                let cleanedMessage = flag.message.replace(
+                  new RegExp(`Tutor ${tutorDetail.tutorId}\\s+`, "gi"),
+                  ""
+                );
+                // Remove "did not join the scheduled session" text
+                cleanedMessage = cleanedMessage.replace(
+                  /\s*did\s+not\s+join\s+the\s+scheduled\s+session\s*/gi,
+                  ""
+                );
+                // Remove "joined the session" text
+                cleanedMessage = cleanedMessage.replace(
+                  /\s*joined\s+the\s+session\s*/gi,
+                  ""
+                );
+                // Remove "this impacts..." sentences
+                cleanedMessage = cleanedMessage.replace(
+                  /\s*[Tt]his\s+(impacts?|may\s+indicate).*?\./gi,
+                  ""
+                );
+                // Clean up any extra spaces
+                cleanedMessage = cleanedMessage.trim().replace(/\s+/g, " ");
+                return (
+                  <div
+                    key={index}
+                    className={`text-xs px-1.5 py-0.5 rounded ${
+                      flag.severity === "critical"
+                        ? "bg-red-100 text-red-800"
+                        : flag.severity === "high"
+                        ? "bg-orange-100 text-orange-800"
+                        : flag.severity === "medium"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    <div className="font-medium text-xs">{flag.type}</div>
+                    <div className="text-xs opacity-75 leading-tight">{cleanedMessage}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

@@ -393,24 +393,15 @@ export function FlaggedTutorsTable() {
   const pageNumbers = getPageNumbers();
   const startIndex = (tablePage - 1) * rowsPerPage;
   const endIndex = Math.min(startIndex + rowsPerPage, sortedData.length);
-  const flaggedCount = sortedData.filter(t => t.riskFlags.length > 0).length;
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-gray-900">
           Flagged Tutors
         </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          {sortedData.length} tutor{sortedData.length !== 1 ? "s" : ""}{" "}
-          flagged for review
-        </p>
-      </div>
-
-      {/* Summary row above table */}
-      <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
         <p className="text-sm text-gray-700">
-          Showing {startIndex + 1}-{endIndex} of {sortedData.length} tutors | {flaggedCount} flagged for review
+          Showing {startIndex + 1}-{endIndex} of {sortedData.length} tutors
         </p>
       </div>
 

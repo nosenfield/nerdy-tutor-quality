@@ -15,7 +15,7 @@ import {
 } from "recharts";
 import { CHART_THEME } from "@/lib/chart-theme";
 import type { ScatterPlotDataPoint } from "@/lib/types/dashboard";
-import { Maximize2, RotateCcw } from "lucide-react";
+import { Maximize2 } from "lucide-react";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 
 /**
@@ -137,12 +137,6 @@ export function ScatterPlot({
       displayZones.flatMap((zone) => [zone.min, zone.max]).filter((v) => v > 0 && v < maxYValue)
     )
   ).sort((a, b) => a - b);
-
-  // Handle reset view
-  const handleResetView = () => {
-    setXDomain([0, maxTotalSessions]);
-    setYDomain(plotType === "quality" ? [1, 5] : [0, 100]);
-  };
 
   // Handle fullscreen
   const handleFullscreen = () => {
@@ -310,16 +304,6 @@ export function ScatterPlot({
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
         <div className="flex items-center gap-2">
-          {/* Reset View Button */}
-          <button
-            onClick={handleResetView}
-            className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-            title="Reset view"
-            aria-label="Reset view"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </button>
           {/* Fullscreen Button */}
           {plotType && (
             <button
