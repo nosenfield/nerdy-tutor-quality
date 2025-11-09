@@ -21,12 +21,15 @@ function getRedisConfig(): RedisOptions {
   // Parse Redis URL (supports both Redis and Upstash formats)
   try {
     const url = new URL(redisUrl);
+    const isUpstash = url.hostname.includes("upstash.io") || url.hostname.includes("upstash.com");
+    const requiresTls = url.protocol === "rediss:" || isUpstash;
+    
     return {
       host: url.hostname,
       port: parseInt(url.port || "6379"),
       password: url.password || undefined,
-      // Upstash-specific options
-      tls: url.protocol === "rediss:" ? {} : undefined,
+      // Upstash requires TLS - enable if rediss:// or if hostname contains upstash
+      tls: requiresTls ? {} : undefined,
       maxRetriesPerRequest: 3,
       retryStrategy: (times: number) => {
         const delay = Math.min(times * 50, 2000);

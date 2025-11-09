@@ -24,6 +24,8 @@
     "test:db": "tsx src/lib/db/test-connection.ts"
   },
   "dependencies": {
+    "@bull-board/api": "^6.14.1",
+    "@bull-board/express": "^6.14.1",
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",
     "@supabase/ssr": "^0.7.0",
@@ -33,6 +35,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.7",
+    "express": "^5.1.0",
     "ioredis": "^5.8.2",
     "lucide-react": "^0.552.0",
     "next": "16.0.1",

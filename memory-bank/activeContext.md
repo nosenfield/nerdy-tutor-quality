@@ -1,11 +1,11 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-07 (IF-2, IF-3 complete)
+**Last Updated**: 2025-11-07 (Phase 5 complete)
 
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 5 Job Queue & Workers - IN PROGRESS** - Bull queue infrastructure implemented with Redis connection, job definitions, workers, and session processing logic. Backfill script created to process existing sessions and generate flags. Ready for testing and integration.
+**Phase 6 API Routes - NEXT** - Ready to begin API route development for webhook endpoints and dashboard API. Phase 5 (Job Queue & Workers) is complete with Bull Board monitoring setup.
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -18,9 +18,10 @@
 
 **Phase 4 - Dashboard UI** (Estimated: 5-6 days) - ✅ IN PROGRESS (CC-7, CC-8, CC-9, CC-10 done)
 
+**Phase 5 - Job Queue & Workers** (Estimated: 3-4 days) - ✅ COMPLETE
+
 Next phases:
-- Phase 5: Job Queue & Workers ← IN PROGRESS
-- Phase 6: API Routes
+- Phase 6: API Routes ← NEXT
 
 ### Active Decisions
 - **Decision 1: Next.js 16 App Router** - Using Next.js 16 with React 19 for latest performance improvements and features. App Router provides better performance and simpler data fetching patterns. Next.js 16 requires React 19, which includes latest React features and optimizations.
@@ -40,30 +41,25 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **IF-2, IF-3 Complete - Date Range Filtering & Responsive Plot Interactions** - Implemented URL param sync for date range filtering (IF-2): date range now syncs with URL params (startDate, endDate), making filters shareable via URL. Date range loads from URL on mount, updates URL when changed. Enhanced ScatterPlot with responsive interactions (IF-3): added touch support for mobile (pinch to zoom, two-finger pan), enhanced tooltip for desktop (shows tutor ID prominently, follows cursor, disabled on touch devices), optimized for different screen sizes (larger dots on mobile/tablet, responsive chart height), and tap to select works on mobile. All components update together when date range changes - 2025-11-07
-2. **CC-10 Complete - Session History Modal** - Created `SessionHistoryModal` component using Headless UI Dialog for displaying detailed session history for a selected tutor. Modal opens on "View Session History" button click from TutorDetailCard, displays tutor header with ID and total sessions, shows session list table with all columns (Date/Time, Subject, Rating, Attendance Status, Rescheduled, First Session), includes filters (subject, session type), sorting (date, rating, status), pagination controls (rows per page, page navigation), and export functionality (CSV download). Full keyboard accessibility with ARIA labels and focus trap - 2025-11-07
-3. **CC-9 Complete - Fullscreen Plot Modal** - Created `FullscreenPlotModal` component using Headless UI Dialog for displaying scatter plots in fullscreen modal view. Modal opens on fullscreen button click from any plot (attendance, reschedules, quality), maintains all interactive features (zoom/pan, dot click, threshold zones), includes close button (X) and ESC key handler, has dark overlay backdrop with smooth open/close animations, and renders plot larger with more detail. Full keyboard accessibility with ARIA labels and focus trap - 2025-11-07
+1. **Phase 5 Complete - Job Queue & Workers** - Completed Phase 5 with Bull Board monitoring setup: installed Bull Board dependencies (@bull-board/api, @bull-board/express), created queue monitoring setup (monitoring.ts) with Bull Board configuration for all queues (session, high-priority, normal-priority, low-priority), created API route for queue status (`/api/admin/queue/status`) returning JSON status with queue metrics (waiting, active, completed, failed, delayed), created queue setup documentation (_docs/queue-setup.md) with Upstash Redis setup instructions, and documented environment variables. All queue infrastructure is complete and ready for production use - 2025-11-07
+2. **IF-2, IF-3 Complete - Date Range Filtering & Responsive Plot Interactions** - Implemented URL param sync for date range filtering (IF-2): date range now syncs with URL params (startDate, endDate), making filters shareable via URL. Date range loads from URL on mount, updates URL when changed. Enhanced ScatterPlot with responsive interactions (IF-3): added touch support for mobile (pinch to zoom, two-finger pan), enhanced tooltip for desktop (shows tutor ID prominently, follows cursor, disabled on touch devices), optimized for different screen sizes (larger dots on mobile/tablet, responsive chart height), and tap to select works on mobile. All components update together when date range changes - 2025-11-07
+3. **CC-10 Complete - Session History Modal** - Created `SessionHistoryModal` component using Headless UI Dialog for displaying detailed session history for a selected tutor. Modal opens on "View Session History" button click from TutorDetailCard, displays tutor header with ID and total sessions, shows session list table with all columns (Date/Time, Subject, Rating, Attendance Status, Rescheduled, First Session), includes filters (subject, session type), sorting (date, rating, status), pagination controls (rows per page, page navigation), and export functionality (CSV download). Full keyboard accessibility with ARIA labels and focus trap - 2025-11-07
 
 ---
 
 ## Next Steps
 
-### Immediate (Next Session - Phase 5)
-- [x] Install Bull and ioredis dependencies ✅
-- [x] Set up Redis connection and queue infrastructure ✅
-- [x] Create job type definitions ✅
-- [x] Implement session processing logic ✅
-- [x] Implement flag creation logic ✅
-- [x] Implement workers ✅
-- [x] Create backfill script ✅
-- [x] Create worker startup script ✅
-- [x] Write tests for job queuing (Task 5.18) ✅
-- [x] Write tests for job processing (Task 5.19) ✅
-- [x] Write tests for retry logic (Task 5.20) ✅
-- [x] Write tests for priority queuing (Task 5.21) ✅
-- [x] Write load tests for 100 concurrent jobs (Task 5.22) ✅
+### Immediate (Next Session - Phase 6)
+- [ ] Create webhook endpoint for session-completed events
+- [ ] Implement payload validation with Zod
+- [ ] Implement signature verification (HMAC)
+- [ ] Store session in database
+- [ ] Queue processing job
+- [ ] Create session endpoints (list, get detail)
+- [ ] Create tutor endpoints (list, get detail, get score)
+- [ ] Create flag endpoints (list, get detail, resolve)
 
-### Near-Term (This Week - Phase 3)
+### Near-Term (This Week - Phase 6)
 - [ ] Create aggregator.ts to combine all signals
 - [ ] Implement scoring algorithm (attendance, ratings, completion, reliability)
 - [ ] Write comprehensive unit tests for all rules
@@ -99,18 +95,22 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Recently Modified
 
-- `src/lib/queue/index.ts` - Bull queue configuration and initialization ← NEW
-- `src/lib/queue/jobs.ts` - Job type definitions ← NEW
-- `src/lib/queue/workers.ts` - Worker implementations ← NEW
-- `src/lib/queue/process-session.ts` - Session processing logic ← NEW
-- `src/lib/queue/create-flags.ts` - Flag creation logic ← NEW
-- `src/scripts/process-sessions.ts` - Backfill script for processing existing sessions ← NEW
-- `src/scripts/start-worker.ts` - Worker startup script ← NEW
-- `tests/integration/queue/job-queuing.test.ts` - Integration tests for job queuing (Task 5.18) ← NEW
-- `tests/integration/queue/job-processing.test.ts` - Integration tests for job processing (Task 5.19) ← NEW
-- `tests/integration/queue/job-retry.test.ts` - Integration tests for retry logic (Task 5.20) ← NEW
-- `tests/integration/queue/job-priority.test.ts` - Integration tests for priority queuing (Task 5.21) ← NEW
-- `tests/integration/queue/job-load.test.ts` - Load tests for 100 concurrent jobs (Task 5.22) ← NEW
+- `src/lib/queue/monitoring.ts` - Bull Board monitoring setup with queue status API ← NEW
+- `src/app/api/admin/queue/route.ts` - Queue monitoring API route ← NEW
+- `src/app/api/admin/queue/status/route.ts` - Queue status JSON API endpoint ← NEW
+- `_docs/queue-setup.md` - Queue setup guide with Upstash Redis instructions ← NEW
+- `src/lib/queue/index.ts` - Bull queue configuration and initialization
+- `src/lib/queue/jobs.ts` - Job type definitions
+- `src/lib/queue/workers.ts` - Worker implementations
+- `src/lib/queue/process-session.ts` - Session processing logic
+- `src/lib/queue/create-flags.ts` - Flag creation logic
+- `src/scripts/process-sessions.ts` - Backfill script for processing existing sessions
+- `src/scripts/start-worker.ts` - Worker startup script
+- `tests/integration/queue/job-queuing.test.ts` - Integration tests for job queuing (Task 5.18)
+- `tests/integration/queue/job-processing.test.ts` - Integration tests for job processing (Task 5.19)
+- `tests/integration/queue/job-retry.test.ts` - Integration tests for retry logic (Task 5.20)
+- `tests/integration/queue/job-priority.test.ts` - Integration tests for priority queuing (Task 5.21)
+- `tests/integration/queue/job-load.test.ts` - Load tests for 100 concurrent jobs (Task 5.22)
 - `src/components/dashboard/FlaggedTutorsTable.tsx` - Flagged tutors table with sorting, pagination, mini visualizations, and row highlighting (CC-7, CC-8)
 - `src/components/dashboard/FullscreenPlotModal.tsx` - Fullscreen plot modal component with Headless UI Dialog (CC-9)
 - `src/components/dashboard/SessionHistoryModal.tsx` - Session history modal component with filters, sorting, pagination, and export (CC-10)
