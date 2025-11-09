@@ -163,7 +163,9 @@
 - [x] Payload validation (Zod) ✅ (Task 6.2) - Comprehensive unit tests added
 - [x] Signature verification (HMAC) ✅ (Task 6.3) - HMAC-SHA256 with timing-safe comparison, comprehensive unit and integration tests
 - [x] Rate limiting ✅ (Task 6.7) - 100 req/min per IP, sliding window algorithm, comprehensive unit and integration tests
-- [ ] Session endpoints (list, get detail) (Tasks 6.9-6.12)
+- [x] GET /api/sessions endpoint ✅ (Task 6.9) - List sessions with filters and pagination, comprehensive integration tests
+- [ ] GET /api/sessions/[id] endpoint (Task 6.10)
+- [ ] Pagination and filtering (Tasks 6.11-6.12) - Already implemented in Task 6.9
 - [ ] Tutor endpoints (list, get detail, get score) (Tasks 6.13-6.18)
 - [ ] Flag endpoints (list, get detail, resolve) (Tasks 6.19-6.23)
 - [ ] Analytics endpoints (overview, trends) (Tasks 6.24-6.25)
