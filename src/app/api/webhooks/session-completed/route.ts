@@ -28,6 +28,12 @@ import {
   extractSignatureFromHeader,
   getWebhookSecret,
 } from "@/lib/utils/webhook-security";
+import {
+  checkRateLimit,
+  extractIpAddress,
+  WEBHOOK_RATE_LIMIT,
+} from "@/lib/utils/rate-limit";
+import { createRedisConnection } from "@/lib/queue";
 
 /**
  * Transform webhook payload to database format
@@ -88,6 +94,53 @@ export async function POST(request: NextRequest) {
   let sessionId: string | undefined;
 
   try {
+    // Extract IP address for rate limiting
+    const ip = extractIpAddress(request);
+
+    // Check rate limit (before signature verification to save compute)
+    let rateLimitResult;
+    try {
+      const redis = createRedisConnection();
+      rateLimitResult = await checkRateLimit(
+        redis,
+        ip,
+        "/api/webhooks/session-completed",
+        WEBHOOK_RATE_LIMIT
+      );
+    } catch (error) {
+      // If Redis fails, allow request (fail open)
+      // Log error but don't block legitimate traffic
+      console.error("Rate limit check failed, allowing request:", error);
+      rateLimitResult = {
+        allowed: true,
+        limit: WEBHOOK_RATE_LIMIT.limit,
+        remaining: WEBHOOK_RATE_LIMIT.limit,
+        reset: Date.now() + WEBHOOK_RATE_LIMIT.windowMs,
+      };
+    }
+
+    // If rate limit exceeded, return 429
+    if (!rateLimitResult.allowed) {
+      console.warn(`Rate limit exceeded for IP ${ip}`);
+      return NextResponse.json(
+        {
+          error: "Too Many Requests",
+          message: "Rate limit exceeded. Please try again later.",
+        },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimitResult.limit.toString(),
+            "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+            "X-RateLimit-Reset": new Date(rateLimitResult.reset).toISOString(),
+            "Retry-After": Math.ceil(
+              (rateLimitResult.reset - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      );
+    }
+
     // Get raw request body as string for signature verification
     const rawBody = await request.text();
 
@@ -237,7 +290,14 @@ export async function POST(request: NextRequest) {
         queued: true,
         message: "Session received and queued for processing",
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          "X-RateLimit-Limit": rateLimitResult.limit.toString(),
+          "X-RateLimit-Remaining": rateLimitResult.remaining.toString(),
+          "X-RateLimit-Reset": new Date(rateLimitResult.reset).toISOString(),
+        },
+      }
     );
   } catch (error) {
     // Handle unexpected errors

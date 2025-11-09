@@ -1,11 +1,11 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-09 (Task 6.3 complete)
+**Last Updated**: 2025-11-09 (Task 6.7 complete)
 
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 6 API Routes - IN PROGRESS** - Task 6.3 (HMAC signature verification) complete. Implemented HMAC-SHA256 signature verification for webhook security: created webhook security utilities (verifyWebhookSignature, extractSignatureFromHeader, getWebhookSecret), integrated signature verification into webhook endpoint (verifies signature before parsing JSON), supports multiple header formats (X-Signature, X-Webhook-Signature, X-Hub-Signature-256), uses timing-safe comparison to prevent timing attacks, handles missing/invalid signatures with 401 Unauthorized, and comprehensive unit and integration tests. All tests passing. Next: Continue with remaining Phase 6 tasks (session endpoints, tutor endpoints, flag endpoints).
+**Phase 6 API Routes - IN PROGRESS** - Task 6.7 (Rate limiting) complete. Implemented rate limiting for webhook endpoint: created rate limiting utilities (`src/lib/utils/rate-limit.ts`) with `checkRateLimit` (sliding window algorithm using Redis), `extractIpAddress` (extracts IP from X-Real-IP, X-Forwarded-For, or request IP), integrated rate limiting into webhook endpoint (checks before signature verification, returns 429 Too Many Requests when exceeded), includes rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After), handles Redis errors gracefully (fail open), and comprehensive unit tests (12 tests) and integration tests covering all scenarios. All tests passing. Webhook endpoint now complete (Tasks 6.1-6.7). Next: Continue with remaining Phase 6 tasks (session endpoints, tutor endpoints, flag endpoints).
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -41,7 +41,8 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Task 6.3 Complete - HMAC Signature Verification** - Implemented HMAC-SHA256 signature verification for webhook security: created webhook security utilities (`src/lib/utils/webhook-security.ts`) with `verifyWebhookSignature` (uses crypto.timingSafeEqual for constant-time comparison), `extractSignatureFromHeader` (supports multiple header formats with/without prefix), and `getWebhookSecret` (reads from environment), integrated signature verification into webhook endpoint (verifies signature before parsing JSON, returns 401 for invalid/missing signatures), supports multiple header formats (X-Signature, X-Webhook-Signature, X-Hub-Signature-256), handles missing WEBHOOK_SECRET with 500 error, and comprehensive unit tests (17 tests) and integration tests (7 tests) covering all scenarios. All tests passing - 2025-11-09
+1. **Task 6.7 Complete - Rate Limiting** - Implemented rate limiting for webhook endpoint: created rate limiting utilities (`src/lib/utils/rate-limit.ts`) with `checkRateLimit` (sliding window algorithm using Redis, 100 req/min per IP), `extractIpAddress` (extracts IP from X-Real-IP, X-Forwarded-For, or request IP), integrated rate limiting into webhook endpoint (checks before signature verification to save compute, returns 429 Too Many Requests when exceeded), includes rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After), handles Redis errors gracefully (fail open - allows request if Redis unavailable), and comprehensive unit tests (12 tests) and integration tests covering all scenarios. All tests passing. Webhook endpoint now complete (Tasks 6.1-6.7) - 2025-11-09
+2. **Task 6.3 Complete - HMAC Signature Verification** - Implemented HMAC-SHA256 signature verification for webhook security: created webhook security utilities (`src/lib/utils/webhook-security.ts`) with `verifyWebhookSignature` (uses crypto.timingSafeEqual for constant-time comparison), `extractSignatureFromHeader` (supports multiple header formats with/without prefix), and `getWebhookSecret` (reads from environment), integrated signature verification into webhook endpoint (verifies signature before parsing JSON, returns 401 for invalid/missing signatures), supports multiple header formats (X-Signature, X-Webhook-Signature, X-Hub-Signature-256), handles missing WEBHOOK_SECRET with 500 error, and comprehensive unit tests (17 tests) and integration tests (7 tests) covering all scenarios. All tests passing - 2025-11-09
 2. **Task 6.2 Complete - Payload Validation** - Verified and enhanced webhook payload validation: created comprehensive unit tests for validation schema (28 tests covering valid payloads, invalid payloads, field types, enum values, feedback ratings, URL fields, and edge cases), verified validation schema is complete and correct, verified integration in webhook endpoint, and all tests passing. Validation schema properly validates all required fields, handles optional fields, and provides clear error messages - 2025-11-09
 2. **Task 6.1 Complete - Webhook Endpoint** - Created webhook endpoint for session-completed events (`/api/webhooks/session-completed/route.ts`): implemented POST handler with Zod payload validation, transforms webhook payload (snake_case) to database format (camelCase), stores session in database with duplicate handling (409 Conflict), queues processing job with priority (high for first sessions, normal otherwise), returns 200 OK quickly (< 2 seconds) without awaiting job completion, includes structured logging and error handling, and created integration tests. This enables automatic flag generation when sessions arrive from Nerdy platform - 2025-11-09
 2. **Phase 5 Complete - Job Queue & Workers** - Completed Phase 5 with Bull Board monitoring setup: installed Bull Board dependencies (@bull-board/api, @bull-board/express), created queue monitoring setup (monitoring.ts) with Bull Board configuration for all queues (session, high-priority, normal-priority, low-priority), created API route for queue status (`/api/admin/queue/status`) returning JSON status with queue metrics (waiting, active, completed, failed, delayed), created queue setup documentation (_docs/queue-setup.md) with Upstash Redis setup instructions, and documented environment variables. All queue infrastructure is complete and ready for production use - 2025-11-07
@@ -58,6 +59,7 @@ Next phases:
 - [x] Implement signature verification (HMAC) ✅ (Task 6.3)
 - [x] Store session in database ✅ (Task 6.4)
 - [x] Queue processing job ✅ (Task 6.5)
+- [x] Add rate limiting ✅ (Task 6.7)
 - [ ] Create session endpoints (list, get detail) - Tasks 6.9-6.12
 - [ ] Create tutor endpoints (list, get detail, get score) - Tasks 6.13-6.18
 - [ ] Create flag endpoints (list, get detail, resolve) - Tasks 6.19-6.23
@@ -98,10 +100,12 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Recently Modified
 
-- `src/lib/utils/webhook-security.ts` - HMAC signature verification utilities (Task 6.3) ← NEW
-- `tests/unit/utils/webhook-security.test.ts` - Unit tests for signature verification (Task 6.3) ← NEW
-- `src/app/api/webhooks/session-completed/route.ts` - Integrated signature verification (Task 6.3) ← UPDATED
-- `tests/integration/webhooks/session-completed.test.ts` - Updated integration tests with signature verification (Task 6.3) ← UPDATED
+- `src/lib/utils/rate-limit.ts` - Rate limiting utilities (Task 6.7) ← NEW
+- `tests/unit/utils/rate-limit.test.ts` - Unit tests for rate limiting (Task 6.7) ← NEW
+- `src/app/api/webhooks/session-completed/route.ts` - Integrated rate limiting (Task 6.7) ← UPDATED
+- `tests/integration/webhooks/session-completed.test.ts` - Updated integration tests with rate limiting (Task 6.7) ← UPDATED
+- `src/lib/utils/webhook-security.ts` - HMAC signature verification utilities (Task 6.3)
+- `tests/unit/utils/webhook-security.test.ts` - Unit tests for signature verification (Task 6.3)
 - `tests/unit/utils/validation.test.ts` - Comprehensive unit tests for validation schema (Task 6.2)
 - `src/app/api/webhooks/session-completed/route.ts` - Webhook endpoint for session-completed events (Task 6.1)
 - `tests/integration/webhooks/session-completed.test.ts` - Integration tests for webhook endpoint
