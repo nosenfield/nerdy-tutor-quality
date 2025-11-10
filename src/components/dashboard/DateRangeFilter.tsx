@@ -4,7 +4,6 @@ import { Listbox, Transition, RadioGroup } from "@headlessui/react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import {
   subDays,
-  subMonths,
   subQuarters,
   startOfToday,
   endOfToday,
@@ -39,7 +38,7 @@ const QUICK_FILTERS: QuickFilterOption[] = [
   },
   {
     id: "last-week",
-    label: "Last Week",
+    label: "Last 7 Days",
     getDateRange: () => ({
       start: subDays(startOfToday(), 7),
       end: endOfToday(), // Include full day
@@ -47,15 +46,15 @@ const QUICK_FILTERS: QuickFilterOption[] = [
   },
   {
     id: "last-month",
-    label: "Last Month",
+    label: "Last 30 Days",
     getDateRange: () => ({
-      start: subMonths(startOfToday(), 1),
+      start: subDays(startOfToday(), 30),
       end: endOfToday(), // Include full day
     }),
   },
   {
     id: "last-quarter",
-    label: "Last Quarter",
+    label: "Last 3 Months",
     getDateRange: () => ({
       start: subQuarters(startOfToday(), 1),
       end: endOfToday(), // Include full day
@@ -78,7 +77,7 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
   const today = startOfToday();
   const endOfDay = endOfToday();
   const lastWeek = subDays(today, 7);
-  const lastMonth = subMonths(today, 1);
+  const lastMonth = subDays(today, 30);
   const lastQuarter = subQuarters(today, 1);
 
   // Check if date range matches a quick filter

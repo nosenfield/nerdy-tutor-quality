@@ -12,8 +12,6 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 
 import { sql } from "drizzle-orm";
-import { getTutorStats } from "../lib/scoring/rules-engine";
-import { calculateAllScores } from "../lib/scoring/aggregator";
 import type { TutorScoreInsert } from "../lib/types/tutor";
 import { subDays } from "date-fns";
 
@@ -24,10 +22,13 @@ async function calculateScores() {
   try {
     console.log("📊 Starting tutor score calculation...");
 
-    // Dynamic import to ensure env vars are loaded before db module initialization
+    // Dynamic imports to ensure env vars are loaded before db module initialization
+    // This prevents hoisting issues where db connection is created before env vars are available
     const dbModule = await import("../lib/db");
     const db = dbModule.db;
     const { tutorScores, sessions } = await import("../lib/db/schema");
+    const { getTutorStats } = await import("../lib/scoring/rules-engine");
+    const { calculateAllScores } = await import("../lib/scoring/aggregator");
 
     // Get all unique tutor IDs from sessions
     const tutorIdsResult = await db
@@ -51,15 +52,28 @@ async function calculateScores() {
     // Calculate scores for each tutor
     const scoresToInsert: TutorScoreInsert[] = [];
     let processed = 0;
+    let errors = 0;
 
     for (const tutorId of tutorIds) {
       try {
-        // Get tutor stats
-        const stats = await getTutorStats(
-          tutorId,
-          windowStart,
-          windowEnd
-        );
+        // Get tutor stats with retry logic
+        let stats;
+        let retries = 3;
+        while (retries > 0) {
+          try {
+            stats = await getTutorStats(
+              tutorId,
+              windowStart,
+              windowEnd
+            );
+            break;
+          } catch (error) {
+            retries--;
+            if (retries === 0) throw error;
+            // Wait before retry (exponential backoff)
+            await new Promise((resolve) => setTimeout(resolve, 1000 * (3 - retries)));
+          }
+        }
 
         // Skip tutors with no sessions
         if (stats.totalSessions === 0) {
@@ -98,10 +112,14 @@ async function calculateScores() {
         processed++;
 
         if (processed % 10 === 0) {
-          console.log(`   Processed ${processed}/${tutorIds.length} tutors...`);
+          console.log(`   Processed ${processed}/${tutorIds.length} tutors... (${errors} errors)`);
         }
+
+        // Small delay to avoid overwhelming the connection pool
+        await new Promise((resolve) => setTimeout(resolve, 50));
       } catch (error) {
-        console.error(`   Error processing tutor ${tutorId}:`, error);
+        errors++;
+        console.error(`   Error processing tutor ${tutorId}:`, error instanceof Error ? error.message : error);
         continue;
       }
     }

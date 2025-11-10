@@ -17,15 +17,18 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { db, tutorScores, flags } from "@/lib/db";
+import { db, tutorScores, flags, sessions } from "@/lib/db";
 import { eq, and, desc } from "drizzle-orm";
 import {
   calculateAttendanceScore,
   calculateRatingsScore,
   calculateCompletionScore,
   calculateReliabilityScore,
+  calculateAllScores,
 } from "@/lib/scoring/aggregator";
-import type { TutorStats } from "@/lib/scoring/rules-engine";
+import { getTutorStats } from "@/lib/scoring/rules-engine";
+import { subDays } from "date-fns";
+import { randomUUID } from "node:crypto";
 
 export async function GET(
   request: NextRequest,
@@ -35,6 +38,23 @@ export async function GET(
     const { id } = await params;
     const tutorId = id;
 
+    // Parse date range from query parameters
+    const { searchParams } = new URL(request.url);
+    const startDateParam = searchParams.get("start_date");
+    const endDateParam = searchParams.get("end_date");
+    
+    let windowStart: Date | undefined;
+    let windowEnd: Date | undefined;
+    
+    if (startDateParam && endDateParam) {
+      windowStart = new Date(startDateParam);
+      windowEnd = new Date(endDateParam);
+    } else {
+      // Default to last 30 days if no date range provided
+      windowEnd = new Date();
+      windowStart = subDays(windowEnd, 30);
+    }
+
     // Get latest score for this tutor
     const allScores = await db
       .select()
@@ -42,52 +62,190 @@ export async function GET(
       .where(eq(tutorScores.tutorId, tutorId))
       .orderBy(desc(tutorScores.calculatedAt));
 
+    let currentScore: typeof allScores[0] | null = null;
+    let calculatedStats: TutorStats | null = null;
+    let calculatedBreakdown: {
+      attendance: number;
+      ratings: number;
+      completion: number;
+      reliability: number;
+    } | null = null;
+
+    // If no scores exist, calculate on the fly from sessions
     if (allScores.length === 0) {
-      return NextResponse.json(
-        {
-          error: "Tutor not found",
-          message: `No scores found for tutor_id: ${tutorId}`,
-        },
-        { status: 404 }
-      );
+      // Check if tutor has any sessions
+      const tutorSessionsCheck = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.tutorId, tutorId))
+        .limit(1);
+
+      if (tutorSessionsCheck.length === 0) {
+        return NextResponse.json(
+          {
+            error: "Tutor not found",
+            message: `No sessions or scores found for tutor_id: ${tutorId}`,
+          },
+          { status: 404 }
+        );
+      }
+
+      // Calculate score on the fly using the date range
+      
+      try {
+        calculatedStats = await getTutorStats(tutorId, windowStart, windowEnd);
+        const { overallScore, confidenceScore, breakdown } = calculateAllScores(calculatedStats);
+        calculatedBreakdown = breakdown;
+
+        // Create a virtual score object for the response
+        const tempId = randomUUID();
+        currentScore = {
+          id: tempId,
+          tutorId: tutorId,
+          calculatedAt: windowEnd,
+          windowStart: windowStart,
+          windowEnd: windowEnd,
+          totalSessions: calculatedStats.totalSessions,
+          firstSessions: calculatedStats.firstSessions,
+          noShowCount: calculatedStats.noShowCount,
+          noShowRate: calculatedStats.noShowRate ? String(calculatedStats.noShowRate) : null,
+          lateCount: calculatedStats.lateCount,
+          lateRate: calculatedStats.lateRate ? String(calculatedStats.lateRate) : null,
+          avgLatenessMinutes: calculatedStats.avgLatenessMinutes ? String(calculatedStats.avgLatenessMinutes) : null,
+          earlyEndCount: calculatedStats.earlyEndCount,
+          earlyEndRate: calculatedStats.earlyEndRate ? String(calculatedStats.earlyEndRate) : null,
+          avgEarlyEndMinutes: calculatedStats.avgEarlyEndMinutes ? String(calculatedStats.avgEarlyEndMinutes) : null,
+          rescheduleCount: calculatedStats.rescheduleCount,
+          rescheduleRate: calculatedStats.rescheduleRate ? String(calculatedStats.rescheduleRate) : null,
+          tutorInitiatedReschedules: calculatedStats.tutorInitiatedReschedules,
+          avgStudentRating: calculatedStats.avgStudentRating ? String(calculatedStats.avgStudentRating) : null,
+          avgFirstSessionRating: calculatedStats.avgFirstSessionRating ? String(calculatedStats.avgFirstSessionRating) : null,
+          ratingTrend: calculatedStats.ratingTrend,
+          overallScore: overallScore ? Math.round(overallScore) : null,
+          confidenceScore: confidenceScore ? String(confidenceScore) : null,
+          createdAt: windowEnd,
+        } as typeof allScores[0];
+      } catch (calcError) {
+        console.error("Error calculating score on the fly:", calcError);
+        return NextResponse.json(
+          {
+            error: "Internal server error",
+            message: "Failed to calculate tutor score",
+          },
+          { status: 500 }
+        );
+      }
+    } else {
+      // If scores exist, check if we need to recalculate for the date range
+      const latestScore = allScores[0];
+      const scoreMatchesRange =
+        windowStart && windowEnd &&
+        latestScore.windowStart.getTime() === windowStart.getTime() &&
+        latestScore.windowEnd.getTime() === windowEnd.getTime();
+      
+      if (scoreMatchesRange) {
+        currentScore = latestScore;
+      } else {
+        // Recalculate score for the requested date range
+        try {
+          calculatedStats = await getTutorStats(tutorId, windowStart!, windowEnd!);
+          const { overallScore, confidenceScore, breakdown } = calculateAllScores(calculatedStats);
+          calculatedBreakdown = breakdown;
+          
+          const tempId = randomUUID();
+          currentScore = {
+            id: tempId,
+            tutorId: tutorId,
+            calculatedAt: windowEnd!,
+            windowStart: windowStart!,
+            windowEnd: windowEnd!,
+            totalSessions: calculatedStats.totalSessions,
+            firstSessions: calculatedStats.firstSessions,
+            noShowCount: calculatedStats.noShowCount,
+            noShowRate: calculatedStats.noShowRate ? String(calculatedStats.noShowRate) : null,
+            lateCount: calculatedStats.lateCount,
+            lateRate: calculatedStats.lateRate ? String(calculatedStats.lateRate) : null,
+            avgLatenessMinutes: calculatedStats.avgLatenessMinutes ? String(calculatedStats.avgLatenessMinutes) : null,
+            earlyEndCount: calculatedStats.earlyEndCount,
+            earlyEndRate: calculatedStats.earlyEndRate ? String(calculatedStats.earlyEndRate) : null,
+            avgEarlyEndMinutes: calculatedStats.avgEarlyEndMinutes ? String(calculatedStats.avgEarlyEndMinutes) : null,
+            rescheduleCount: calculatedStats.rescheduleCount,
+            rescheduleRate: calculatedStats.rescheduleRate ? String(calculatedStats.rescheduleRate) : null,
+            tutorInitiatedReschedules: calculatedStats.tutorInitiatedReschedules,
+            avgStudentRating: calculatedStats.avgStudentRating ? String(calculatedStats.avgStudentRating) : null,
+            avgFirstSessionRating: calculatedStats.avgFirstSessionRating ? String(calculatedStats.avgFirstSessionRating) : null,
+            ratingTrend: calculatedStats.ratingTrend,
+            overallScore: overallScore ? Math.round(overallScore) : null,
+            confidenceScore: confidenceScore ? String(confidenceScore) : null,
+            createdAt: windowEnd!,
+          } as typeof allScores[0];
+        } catch (calcError) {
+          console.error("Error recalculating score for date range:", calcError);
+          // Fall back to latest score
+          currentScore = latestScore;
+        }
+      }
     }
 
-    const currentScore = allScores[0];
-
-    // Get active flags for this tutor
+    // Get active flags for this tutor filtered by date range
+    const flagConditions = [
+      eq(flags.tutorId, tutorId),
+      eq(flags.status, "open"),
+    ];
+    if (windowStart && windowEnd) {
+      flagConditions.push(
+        gte(flags.createdAt, windowStart),
+        lte(flags.createdAt, windowEnd)
+      );
+    }
+    
     const activeFlags = await db
       .select()
       .from(flags)
-      .where(and(eq(flags.tutorId, tutorId), eq(flags.status, "open")))
+      .where(and(...flagConditions))
       .orderBy(desc(flags.createdAt));
 
-    // Convert TutorScore to TutorStats format for score calculation
-    const tutorStats: TutorStats = {
-      totalSessions: currentScore.totalSessions,
-      firstSessions: currentScore.firstSessions,
-      noShowCount: currentScore.noShowCount,
-      noShowRate: currentScore.noShowRate ? Number(currentScore.noShowRate) : null,
-      lateCount: currentScore.lateCount,
-      lateRate: currentScore.lateRate ? Number(currentScore.lateRate) : null,
-      avgLatenessMinutes: currentScore.avgLatenessMinutes ? Number(currentScore.avgLatenessMinutes) : null,
-      earlyEndCount: currentScore.earlyEndCount,
-      earlyEndRate: currentScore.earlyEndRate ? Number(currentScore.earlyEndRate) : null,
-      avgEarlyEndMinutes: currentScore.avgEarlyEndMinutes ? Number(currentScore.avgEarlyEndMinutes) : null,
-      rescheduleCount: currentScore.rescheduleCount,
-      rescheduleRate: currentScore.rescheduleRate ? Number(currentScore.rescheduleRate) : null,
-      tutorInitiatedReschedules: currentScore.tutorInitiatedReschedules,
-      avgStudentRating: currentScore.avgStudentRating ? Number(currentScore.avgStudentRating) : null,
-      avgFirstSessionRating: currentScore.avgFirstSessionRating ? Number(currentScore.avgFirstSessionRating) : null,
-      ratingTrend: currentScore.ratingTrend as "improving" | "stable" | "declining" | null,
+    // Calculate score breakdown
+    // If we calculated on the fly, we already have the breakdown from calculateAllScores
+    // Otherwise, we need to convert TutorScore to TutorStats format
+    let breakdown: {
+      attendance: number;
+      ratings: number;
+      completion: number;
+      reliability: number;
     };
 
-    // Calculate score breakdown
-    const breakdown = {
-      attendance: calculateAttendanceScore(tutorStats),
-      ratings: calculateRatingsScore(tutorStats),
-      completion: calculateCompletionScore(tutorStats),
-      reliability: calculateReliabilityScore(tutorStats),
-    };
+    if (calculatedBreakdown) {
+      // We calculated on the fly, so use the breakdown we already calculated
+      breakdown = calculatedBreakdown;
+    } else {
+      // Convert TutorScore to TutorStats format for score calculation
+      const tutorStats: TutorStats = {
+        totalSessions: currentScore.totalSessions,
+        firstSessions: currentScore.firstSessions,
+        noShowCount: currentScore.noShowCount,
+        noShowRate: currentScore.noShowRate ? Number(currentScore.noShowRate) : null,
+        lateCount: currentScore.lateCount,
+        lateRate: currentScore.lateRate ? Number(currentScore.lateRate) : null,
+        avgLatenessMinutes: currentScore.avgLatenessMinutes ? Number(currentScore.avgLatenessMinutes) : null,
+        earlyEndCount: currentScore.earlyEndCount,
+        earlyEndRate: currentScore.earlyEndRate ? Number(currentScore.earlyEndRate) : null,
+        avgEarlyEndMinutes: currentScore.avgEarlyEndMinutes ? Number(currentScore.avgEarlyEndMinutes) : null,
+        rescheduleCount: currentScore.rescheduleCount,
+        rescheduleRate: currentScore.rescheduleRate ? Number(currentScore.rescheduleRate) : null,
+        tutorInitiatedReschedules: currentScore.tutorInitiatedReschedules,
+        avgStudentRating: currentScore.avgStudentRating ? Number(currentScore.avgStudentRating) : null,
+        avgFirstSessionRating: currentScore.avgFirstSessionRating ? Number(currentScore.avgFirstSessionRating) : null,
+        ratingTrend: currentScore.ratingTrend as "improving" | "stable" | "declining" | null,
+      };
+
+      breakdown = {
+        attendance: calculateAttendanceScore(tutorStats),
+        ratings: calculateRatingsScore(tutorStats),
+        completion: calculateCompletionScore(tutorStats),
+        reliability: calculateReliabilityScore(tutorStats),
+      };
+    }
 
     // Transform to API format (camelCase to snake_case)
     const transformScore = (score: typeof currentScore) => ({

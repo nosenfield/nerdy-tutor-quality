@@ -61,6 +61,29 @@ export interface TutorDetailResponse {
     created_at: string;
     updated_at: string;
   }>;
+  all_sessions: Array<{
+    session_id: string;
+    tutor_id: string;
+    student_id: string;
+    session_start_time: string;
+    session_end_time: string;
+    tutor_join_time: string | null;
+    student_join_time: string | null;
+    tutor_leave_time: string | null;
+    student_leave_time: string | null;
+    session_length_scheduled: number | null;
+    session_length_actual: number | null;
+    is_first_session: boolean;
+    student_feedback_rating: number | null;
+    tutor_feedback_rating: number | null;
+    student_feedback_description: string | null;
+    tutor_feedback_description: string | null;
+    was_rescheduled: boolean;
+    rescheduled_by: string | null;
+    reschedule_count: number;
+    created_at: string;
+    updated_at: string;
+  }>;
   active_flags: Array<{
     id: string;
     tutor_id: string;
@@ -123,8 +146,18 @@ export interface TutorDetailResponse {
 /**
  * Fetch tutor detail data from API
  */
-async function fetchTutorDetail(tutorId: string): Promise<TutorDetailResponse> {
-  const response = await fetch(`/api/tutors/${tutorId}`);
+async function fetchTutorDetail(
+  tutorId: string,
+  dateRange?: { start: Date; end: Date }
+): Promise<TutorDetailResponse> {
+  const url = new URL(`/api/tutors/${tutorId}`, window.location.origin);
+  
+  if (dateRange) {
+    url.searchParams.set("start_date", dateRange.start.toISOString());
+    url.searchParams.set("end_date", dateRange.end.toISOString());
+  }
+
+  const response = await fetch(url.toString());
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -142,10 +175,13 @@ async function fetchTutorDetail(tutorId: string): Promise<TutorDetailResponse> {
 /**
  * Hook to fetch comprehensive tutor detail data
  */
-export function useTutorDetailData(tutorId: string) {
+export function useTutorDetailData(
+  tutorId: string,
+  dateRange?: { start: Date; end: Date }
+) {
   return useQuery({
-    queryKey: ["tutor-detail", tutorId],
-    queryFn: () => fetchTutorDetail(tutorId),
+    queryKey: ["tutor-detail", tutorId, dateRange?.start.toISOString(), dateRange?.end.toISOString()],
+    queryFn: () => fetchTutorDetail(tutorId, dateRange),
     enabled: !!tutorId, // Only fetch if tutorId is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes

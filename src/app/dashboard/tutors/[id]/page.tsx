@@ -4,7 +4,6 @@ import { use, useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { TutorHeader } from "@/components/tutor-detail/TutorHeader";
-import { ScoreBreakdown } from "@/components/tutor-detail/ScoreBreakdown";
 import { PerformanceTimeline } from "@/components/tutor-detail/PerformanceTimeline";
 import { ActiveFlagsList } from "@/components/tutor-detail/ActiveFlagsList";
 import { RecentSessionsTable } from "@/components/tutor-detail/RecentSessionsTable";
@@ -13,9 +12,9 @@ import { useTutorDetailData } from "@/lib/hooks/useTutorDetailData";
 import { useTutorScoreBreakdown } from "@/lib/hooks/useTutorScoreBreakdown";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import { Switch, Listbox, Transition, RadioGroup } from "@headlessui/react";
-import { RefreshCw, Check, ChevronsUpDown } from "lucide-react";
+import { RefreshCw, Check, ChevronsUpDown, ChevronRight } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, subDays, subMonths, subQuarters, startOfToday, endOfToday } from "date-fns";
+import { format, subDays, subQuarters, startOfToday, endOfToday } from "date-fns";
 import { Fragment } from "react";
 import type { DateRange } from "@/lib/types/dashboard";
 
@@ -35,7 +34,7 @@ const QUICK_FILTERS = [
   },
   {
     id: "last-week" as QuickFilter,
-    label: "Last Week",
+    label: "Last 7 Days",
     getDateRange: () => ({
       start: subDays(startOfToday(), 7),
       end: endOfToday(),
@@ -43,15 +42,15 @@ const QUICK_FILTERS = [
   },
   {
     id: "last-month" as QuickFilter,
-    label: "Last Month",
+    label: "Last 30 Days",
     getDateRange: () => ({
-      start: subMonths(startOfToday(), 1),
+      start: subDays(startOfToday(), 30),
       end: endOfToday(),
     }),
   },
   {
     id: "last-quarter" as QuickFilter,
-    label: "Last Quarter",
+    label: "Last 3 Months",
     getDateRange: () => ({
       start: subQuarters(startOfToday(), 1),
       end: endOfToday(),
@@ -74,7 +73,7 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
   const today = startOfToday();
   const endOfDay = endOfToday();
   const lastWeek = subDays(today, 7);
-  const lastMonth = subMonths(today, 1);
+  const lastMonth = subDays(today, 30);
   const lastQuarter = subQuarters(today, 1);
 
   if (
@@ -143,13 +142,13 @@ export default function TutorDetailPage({
     isLoading,
     error,
     dataUpdatedAt,
-  } = useTutorDetailData(tutorId);
+  } = useTutorDetailData(tutorId, dateRange);
 
   // Fetch score breakdown
   const {
     data: scoreBreakdownData,
     isLoading: isLoadingBreakdown,
-  } = useTutorScoreBreakdown(tutorId);
+  } = useTutorScoreBreakdown(tutorId, dateRange);
 
   // Handle data source toggle
   const handleDataSourceToggle = (enabled: boolean) => {
@@ -208,6 +207,9 @@ export default function TutorDetailPage({
     const filter = QUICK_FILTERS.find((f) => f.id === filterId);
     if (filter) {
       setDateRange(filter.getDateRange());
+      // Invalidate queries to refetch with new date range
+      queryClient.invalidateQueries({ queryKey: ["tutor-detail", tutorId] });
+      queryClient.invalidateQueries({ queryKey: ["tutor-score-breakdown", tutorId] });
     }
   };
 
@@ -298,7 +300,20 @@ export default function TutorDetailPage({
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-semibold text-gray-900">🚂 Tooter</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-2xl font-semibold text-gray-900">🚂 Tooter</h1>
+            {/* Breadcrumb */}
+            <nav className="flex items-center gap-2 text-sm text-gray-600" aria-label="Breadcrumb">
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="hover:text-gray-900 transition-colors"
+              >
+                Dashboard
+              </button>
+              <ChevronRight className="h-4 w-4" />
+              <span className="text-gray-900 font-medium">Tutor {tutorId}</span>
+            </nav>
+          </div>
           <LogoutButton />
         </div>
       </header>
@@ -470,25 +485,20 @@ export default function TutorDetailPage({
           currentScore={current_score}
           activeFlagsCount={active_flags?.length ?? 0}
           recentSessionsCount={recent_sessions?.length ?? 0}
+          scoreBreakdown={scoreBreakdownData?.breakdown}
+          performanceHistory={performance_history?.map((ph) => ({
+            calculated_at: ph.calculated_at,
+            overall_score: ph.overall_score,
+          }))}
         />
 
-        {/* Score Breakdown (Task 4.16) */}
-        {scoreBreakdownData && !isLoadingBreakdown && (
-          <ScoreBreakdown
-            breakdown={scoreBreakdownData.breakdown}
-            performanceHistory={performance_history?.map((ph) => ({
-              calculated_at: ph.calculated_at,
-              overall_score: ph.overall_score,
-            }))}
-          />
-        )}
-
         {/* Performance Timeline Chart (Task 4.17) ⭐ KEY */}
-        {performance_history && performance_history.length > 0 && (
+        {tutorData.all_sessions && tutorData.all_sessions.length > 0 && (
           <PerformanceTimeline
-            performanceHistory={performance_history}
+            allSessions={tutorData.all_sessions}
             activeFlags={active_flags ?? []}
             interventions={interventions ?? []}
+            dateRange={dateRange}
           />
         )}
 

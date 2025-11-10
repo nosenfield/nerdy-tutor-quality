@@ -210,8 +210,24 @@ export async function seedMockData(options: SeedOptions = {}) {
   console.log("\n📅 Generating sessions...");
   const allSessions: (typeof sessions.$inferInsert)[] = [];
   const sessionsPerTutorCounts: number[] = [];
+  const timeSpanCounts = {
+    "7 days": 0,
+    "30 days": 0,
+    "3 months": 0,
+  };
+
+  // Define time span options
+  const timeSpanOptions = [
+    { label: "7 days", days: 7 },
+    { label: "30 days", days: 30 },
+    { label: "3 months", days: 90 },
+  ] as const;
 
   for (const tutor of allTutors) {
+    // Randomly assign a time span for this tutor
+    const timeSpan = faker.helpers.arrayElement(timeSpanOptions);
+    timeSpanCounts[timeSpan.label as keyof typeof timeSpanCounts]++;
+    
     // Vary sessions per tutor between 1-30 if not specified
     const tutorSessionCount = useVariedSessions
       ? faker.number.int({ min: 1, max: 30 })
@@ -223,7 +239,7 @@ export async function seedMockData(options: SeedOptions = {}) {
       tutor,
       studentPool,
       tutorSessionCount,
-      daysBack
+      timeSpan.days // Use the tutor's assigned time span
     );
     allSessions.push(...tutorSessions);
   }
@@ -237,6 +253,10 @@ export async function seedMockData(options: SeedOptions = {}) {
   if (useVariedSessions) {
     console.log(`   Sessions per tutor: ${minSessions}-${maxSessions} (avg: ${avgSessionsPerTutor.toFixed(1)})`);
   }
+  console.log(`   Time span distribution:`);
+  Object.entries(timeSpanCounts).forEach(([span, count]) => {
+    console.log(`     ${span}: ${count} tutors`);
+  });
 
   // Insert into database
   console.log("\n💾 Inserting into database...");

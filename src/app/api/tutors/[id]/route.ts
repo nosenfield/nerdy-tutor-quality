@@ -30,6 +30,23 @@ export async function GET(
     const { id } = await params;
     const tutorId = id;
 
+    // Parse date range from query parameters
+    const { searchParams } = new URL(request.url);
+    const startDateParam = searchParams.get("start_date");
+    const endDateParam = searchParams.get("end_date");
+    
+    let windowStart: Date | undefined;
+    let windowEnd: Date | undefined;
+    
+    if (startDateParam && endDateParam) {
+      windowStart = new Date(startDateParam);
+      windowEnd = new Date(endDateParam);
+    } else {
+      // Default to last 30 days if no date range provided
+      windowEnd = new Date();
+      windowStart = subDays(windowEnd, 30);
+    }
+
     // Get latest score for this tutor
     const allScores = await db
       .select()
@@ -59,9 +76,7 @@ export async function GET(
         );
       }
 
-      // Calculate score on the fly (last 90 days)
-      const windowEnd = new Date();
-      const windowStart = subDays(windowEnd, 90);
+      // Calculate score on the fly using the date range
       
       try {
         const stats = await getTutorStats(tutorId, windowStart, windowEnd);
@@ -175,23 +190,104 @@ export async function GET(
         );
       }
     } else {
+      // If scores exist, recalculate using the date range if it differs from the stored score
+      // For now, we'll use the latest score but filter sessions/flags by date range
       currentScore = allScores[0];
-      performanceHistory = allScores.slice(0, 10); // Last 10 scores
+      
+      // Filter performance history by date range
+      performanceHistory = allScores
+        .filter((score) => {
+          const scoreStart = score.windowStart;
+          const scoreEnd = score.windowEnd;
+          // Include scores that overlap with the requested date range
+          return (
+            (scoreStart <= windowEnd && scoreEnd >= windowStart)
+          );
+        })
+        .slice(0, 10);
+      
+      // If we have a date range and the latest score doesn't match, recalculate
+      if (windowStart && windowEnd) {
+        const latestScore = allScores[0];
+        const scoreMatchesRange =
+          latestScore.windowStart.getTime() === windowStart.getTime() &&
+          latestScore.windowEnd.getTime() === windowEnd.getTime();
+        
+        if (!scoreMatchesRange) {
+          // Recalculate score for the requested date range
+          try {
+            const stats = await getTutorStats(tutorId, windowStart, windowEnd);
+            const { overallScore, confidenceScore, breakdown } = calculateAllScores(stats);
+            
+            const tempId = randomUUID();
+            currentScore = {
+              id: tempId,
+              tutorId: tutorId,
+              calculatedAt: windowEnd,
+              windowStart: windowStart,
+              windowEnd: windowEnd,
+              totalSessions: stats.totalSessions,
+              firstSessions: stats.firstSessions,
+              noShowCount: stats.noShowCount,
+              noShowRate: stats.noShowRate ? String(stats.noShowRate) : null,
+              lateCount: stats.lateCount,
+              lateRate: stats.lateRate ? String(stats.lateRate) : null,
+              avgLatenessMinutes: stats.avgLatenessMinutes ? String(stats.avgLatenessMinutes) : null,
+              earlyEndCount: stats.earlyEndCount,
+              earlyEndRate: stats.earlyEndRate ? String(stats.earlyEndRate) : null,
+              avgEarlyEndMinutes: stats.avgEarlyEndMinutes ? String(stats.avgEarlyEndMinutes) : null,
+              rescheduleCount: stats.rescheduleCount,
+              rescheduleRate: stats.rescheduleRate ? String(stats.rescheduleRate) : null,
+              tutorInitiatedReschedules: stats.tutorInitiatedReschedules,
+              avgStudentRating: stats.avgStudentRating ? String(stats.avgStudentRating) : null,
+              avgFirstSessionRating: stats.avgFirstSessionRating ? String(stats.avgFirstSessionRating) : null,
+              ratingTrend: stats.ratingTrend,
+              overallScore: overallScore ? Math.round(overallScore) : null,
+              confidenceScore: confidenceScore ? String(confidenceScore) : null,
+              createdAt: windowEnd,
+            } as typeof allScores[0];
+          } catch (calcError) {
+            console.error("Error recalculating score for date range:", calcError);
+            // Fall back to latest score
+          }
+        }
+      }
     }
 
-    // Get recent sessions (last 20)
-    const recentSessions = await db
+    // Get all sessions for this tutor filtered by date range (for timeline chart aggregation)
+    const sessionConditions = [eq(sessions.tutorId, tutorId)];
+    if (windowStart && windowEnd) {
+      sessionConditions.push(
+        gte(sessions.sessionStartTime, windowStart),
+        lte(sessions.sessionStartTime, windowEnd)
+      );
+    }
+    
+    const allSessions = await db
       .select()
       .from(sessions)
-      .where(eq(sessions.tutorId, tutorId))
-      .orderBy(desc(sessions.sessionStartTime))
-      .limit(20);
+      .where(and(...sessionConditions))
+      .orderBy(desc(sessions.sessionStartTime));
 
-    // Get active flags (status = 'open')
+    // Get recent sessions (last 20) for the table
+    const recentSessions = allSessions.slice(0, 20);
+
+    // Get active flags (status = 'open') filtered by date range (flags created within the range)
+    const flagConditions = [
+      eq(flags.tutorId, tutorId),
+      eq(flags.status, "open"),
+    ];
+    if (windowStart && windowEnd) {
+      flagConditions.push(
+        gte(flags.createdAt, windowStart),
+        lte(flags.createdAt, windowEnd)
+      );
+    }
+    
     const activeFlags = await db
       .select()
       .from(flags)
-      .where(and(eq(flags.tutorId, tutorId), eq(flags.status, "open")))
+      .where(and(...flagConditions))
       .orderBy(desc(flags.createdAt));
 
     // Get interventions for this tutor
@@ -292,6 +388,7 @@ export async function GET(
         tutor_id: tutorId,
         current_score: transformScore(currentScore),
         recent_sessions: recentSessions.map(transformSession),
+        all_sessions: allSessions.map(transformSession), // All sessions for timeline aggregation
         active_flags: activeFlags.map(transformFlag),
         performance_history: performanceHistory.map(transformScore),
         interventions: tutorInterventions.map(transformIntervention),

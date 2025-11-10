@@ -17,7 +17,7 @@ import type {
 import { Switch, Listbox, Transition, RadioGroup } from "@headlessui/react";
 import { RefreshCw, Check, ChevronsUpDown } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { format, subDays, subMonths, subQuarters, startOfToday, endOfToday } from "date-fns";
+import { format, subDays, subQuarters, startOfToday, endOfToday } from "date-fns";
 import { Fragment } from "react";
 import type { DateRange } from "@/lib/types/dashboard";
 
@@ -37,7 +37,7 @@ const QUICK_FILTERS = [
   },
   {
     id: "last-week" as QuickFilter,
-    label: "Last Week",
+    label: "Last 7 Days",
     getDateRange: () => ({
       start: subDays(startOfToday(), 7),
       end: endOfToday(),
@@ -45,15 +45,15 @@ const QUICK_FILTERS = [
   },
   {
     id: "last-month" as QuickFilter,
-    label: "Last Month",
+    label: "Last 30 Days",
     getDateRange: () => ({
-      start: subMonths(startOfToday(), 1),
+      start: subDays(startOfToday(), 30),
       end: endOfToday(),
     }),
   },
   {
     id: "last-quarter" as QuickFilter,
-    label: "Last Quarter",
+    label: "Last 3 Months",
     getDateRange: () => ({
       start: subQuarters(startOfToday(), 1),
       end: endOfToday(),
@@ -76,7 +76,7 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
   const today = startOfToday();
   const endOfDay = endOfToday();
   const lastWeek = subDays(today, 7);
-  const lastMonth = subMonths(today, 1);
+  const lastMonth = subDays(today, 30);
   const lastQuarter = subQuarters(today, 1);
 
   if (

@@ -101,11 +101,11 @@ export function ScoreBreakdown({
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">
+    <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-3">
         Score Breakdown
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         {scores.map((score) => {
           const colors = getScoreColor(score.value);
           const trend = getTrend(score.value, performanceHistory);
@@ -113,36 +113,36 @@ export function ScoreBreakdown({
           return (
             <div
               key={score.label}
-              className={`${colors.bg} ${colors.border} border rounded-lg p-4`}
+              className={`${colors.bg} ${colors.border} border rounded-lg p-3`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="text-sm font-medium text-gray-700">
+              <div className="flex items-center justify-between mb-1">
+                <div className="text-xs font-medium text-gray-700">
                   {score.label}
                 </div>
                 {trend && (
                   <div className="flex items-center gap-1">
                     {trend === "improving" && (
-                      <TrendingUp className="h-4 w-4 text-green-600" />
+                      <TrendingUp className="h-3 w-3 text-green-600" />
                     )}
                     {trend === "declining" && (
-                      <TrendingDown className="h-4 w-4 text-red-600" />
+                      <TrendingDown className="h-3 w-3 text-red-600" />
                     )}
                     {trend === "stable" && (
-                      <Minus className="h-4 w-4 text-gray-600" />
+                      <Minus className="h-3 w-3 text-gray-600" />
                     )}
                   </div>
                 )}
               </div>
-              <div className={`${colors.text} text-2xl font-bold mb-2`}>
+              <div className={`${colors.text} text-xl font-bold mb-1.5`}>
                 {Math.round(score.value)}/100
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1.5">
                 <div
-                  className={`${colors.progress} h-2 rounded-full transition-all duration-300`}
+                  className={`${colors.progress} h-1.5 rounded-full transition-all duration-300`}
                   style={{ width: `${score.value}%` }}
                 />
               </div>
-              <div className="text-xs text-gray-600">{score.description}</div>
+              <div className="text-xs text-gray-600 leading-tight">{score.description}</div>
             </div>
           );
         })}

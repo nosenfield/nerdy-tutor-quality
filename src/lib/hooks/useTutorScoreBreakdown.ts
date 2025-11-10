@@ -41,9 +41,17 @@ export interface ScoreBreakdownResponse {
  * Fetch tutor score breakdown from API
  */
 async function fetchTutorScoreBreakdown(
-  tutorId: string
+  tutorId: string,
+  dateRange?: { start: Date; end: Date }
 ): Promise<ScoreBreakdownResponse> {
-  const response = await fetch(`/api/tutors/${tutorId}/score`);
+  const url = new URL(`/api/tutors/${tutorId}/score`, window.location.origin);
+  
+  if (dateRange) {
+    url.searchParams.set("start_date", dateRange.start.toISOString());
+    url.searchParams.set("end_date", dateRange.end.toISOString());
+  }
+
+  const response = await fetch(url.toString());
 
   if (!response.ok) {
     if (response.status === 404) {
@@ -63,10 +71,13 @@ async function fetchTutorScoreBreakdown(
 /**
  * Hook to fetch tutor score breakdown
  */
-export function useTutorScoreBreakdown(tutorId: string) {
+export function useTutorScoreBreakdown(
+  tutorId: string,
+  dateRange?: { start: Date; end: Date }
+) {
   return useQuery({
-    queryKey: ["tutor-score-breakdown", tutorId],
-    queryFn: () => fetchTutorScoreBreakdown(tutorId),
+    queryKey: ["tutor-score-breakdown", tutorId, dateRange?.start.toISOString(), dateRange?.end.toISOString()],
+    queryFn: () => fetchTutorScoreBreakdown(tutorId, dateRange),
     enabled: !!tutorId, // Only fetch if tutorId is provided
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes

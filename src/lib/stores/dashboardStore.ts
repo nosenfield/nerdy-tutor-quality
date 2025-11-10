@@ -6,7 +6,7 @@
  */
 
 import { create } from "zustand";
-import { subMonths, startOfToday, endOfToday } from "date-fns";
+import { subDays, startOfToday, endOfToday } from "date-fns";
 import type { DateRange } from "@/lib/types/dashboard";
 
 interface DashboardStore {
@@ -50,12 +50,12 @@ interface DashboardStore {
 }
 
 /**
- * Default date range: Last month
+ * Default date range: Last 30 days
  * Uses date-fns functions to match the filter's calculation exactly
  */
 function getDefaultDateRange(): DateRange {
   const end = endOfToday();
-  const start = subMonths(startOfToday(), 1);
+  const start = subDays(startOfToday(), 30);
   return { start, end };
 }
 
