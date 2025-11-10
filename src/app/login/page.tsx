@@ -17,8 +17,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   
   // Test credentials (can be overridden via environment variables)
-  const testEmail = process.env.NEXT_PUBLIC_TEST_EMAIL || "admin@example.com";
-  const testPassword = process.env.NEXT_PUBLIC_TEST_PASSWORD || "password123";
+  const testEmail = process.env.NEXT_PUBLIC_TEST_EMAIL || "test@example.com";
+  const testPassword = process.env.NEXT_PUBLIC_TEST_PASSWORD || "testpassword123";
   
   const handleUseTestCredentials = () => {
     setEmail(testEmail);

@@ -65,8 +65,9 @@ function transformPerformanceData(
   const chartData: Array<{
     date: string;
     dateFormatted: string;
-    attendancePercentage: number | null;
-    sessionsKeptPercentage: number | null;
+    totalSessions: number | null;
+    attendedSessions: number | null;
+    keptSessions: number | null;
     avgRating: number | null;
   }> = allDays.map((day) => {
     const dayKey = format(day, "yyyy-MM-dd");
@@ -77,8 +78,9 @@ function transformPerformanceData(
       return {
         date: dayKey,
         dateFormatted: format(day, "MMM d"),
-        attendancePercentage: null,
-        sessionsKeptPercentage: null,
+        totalSessions: null,
+        attendedSessions: null,
+        keptSessions: null,
         avgRating: null,
       };
     }
@@ -86,19 +88,17 @@ function transformPerformanceData(
     // Calculate metrics for days with sessions
     const totalSessions = daySessions.length;
 
-    // Calculate attendance % (1 - no_show_rate)
+    // Calculate attended sessions count (sessions where tutor joined)
     const noShowCount = daySessions.filter(
       (s) => !s.tutor_join_time
     ).length;
-    const noShowRate = totalSessions > 0 ? noShowCount / totalSessions : 0;
-    const attendancePercentage = (1 - noShowRate) * 100;
+    const attendedSessions = totalSessions - noShowCount;
 
-    // Calculate sessions kept % (1 - reschedule_rate)
+    // Calculate kept sessions count (sessions that were not rescheduled)
     const rescheduleCount = daySessions.filter(
       (s) => s.was_rescheduled
     ).length;
-    const rescheduleRate = totalSessions > 0 ? rescheduleCount / totalSessions : 0;
-    const sessionsKeptPercentage = (1 - rescheduleRate) * 100;
+    const keptSessions = totalSessions - rescheduleCount;
 
     // Calculate average rating (1-5 scale)
     const ratings = daySessions
@@ -111,8 +111,9 @@ function transformPerformanceData(
     return {
       date: dayKey,
       dateFormatted: format(day, "MMM d"),
-      attendancePercentage,
-      sessionsKeptPercentage,
+      totalSessions,
+      attendedSessions,
+      keptSessions,
       avgRating: avgRating ?? null,
     };
   });
@@ -142,7 +143,7 @@ function transformPerformanceData(
       return {
         date: flag.created_at,
         dateFormatted: targetPoint?.dateFormatted ?? format(flagDate, "MMM d"),
-        y: targetPoint?.attendancePercentage ?? 0,
+        y: targetPoint?.totalSessions ?? 0,
         type: "flag",
         severity: flag.severity,
         title: flag.title,
@@ -174,7 +175,7 @@ function transformPerformanceData(
       return {
         date: intervention.intervention_date,
         dateFormatted: targetPoint?.dateFormatted ?? format(interventionDate, "MMM d"),
-        y: targetPoint?.attendancePercentage ?? 0,
+        y: targetPoint?.totalSessions ?? 0,
         type: "intervention",
         interventionType: intervention.intervention_type,
       };
@@ -198,7 +199,7 @@ function CustomTooltip({ active, payload, label }: any) {
         {payload.map((entry: any, index: number) => {
           const value = entry.dataKey === "avgRating" 
             ? entry.value.toFixed(2)
-            : `${entry.value.toFixed(1)}%`;
+            : Math.round(entry.value).toString();
           return (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {entry.name}: {value}
@@ -215,8 +216,8 @@ function CustomTooltip({ active, payload, label }: any) {
  * Performance Timeline Chart Component
  * 
  * Displays tutor performance progression over time with:
- * - Session attendance % (0-100%)
- * - Sessions kept % (0-100%)
+ * - Attended sessions count (sessions where tutor joined)
+ * - Kept sessions count (sessions that were not rescheduled)
  * - Average rating (1-5 scale)
  * - Flag event markers
  * - Intervention event markers
@@ -246,10 +247,17 @@ export function PerformanceTimeline({
   // Check if there's any data with actual values (not all null)
   const hasData = chartData.some(
     (point) =>
-      point.attendancePercentage !== null ||
-      point.sessionsKeptPercentage !== null ||
+      point.attendedSessions !== null ||
+      point.keptSessions !== null ||
       point.avgRating !== null
   );
+
+  // Calculate max session count for Y-axis domain (with 10% padding)
+  const maxSessionCount = Math.max(
+    ...chartData.map((point) => point.totalSessions ?? 0),
+    1 // Minimum of 1 to avoid division by zero
+  );
+  const yAxisMax = Math.ceil(maxSessionCount * 1.1);
 
   // Calculate number of days in the date range
   const daysInRange = chartData.length;
@@ -290,11 +298,12 @@ export function PerformanceTimeline({
                   interval={xAxisInterval}
                 />
                 <YAxis
-                  yAxisId="percentage"
-                  domain={[0, 100]}
+                  yAxisId="count"
+                  domain={[0, yAxisMax]}
                   tick={{ fontSize: 12 }}
+                  tickFormatter={(value) => Math.round(value).toString()}
                   label={{
-                    value: "Percentage (%)",
+                    value: "Session Count",
                     angle: -90,
                     position: "insideLeft",
                     style: { textAnchor: "middle" },
@@ -315,12 +324,12 @@ export function PerformanceTimeline({
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
 
-                {/* Session Attendance Line */}
+                {/* Attended Sessions Line */}
                 <Line
-                  yAxisId="percentage"
+                  yAxisId="count"
                   type="monotone"
-                  dataKey="attendancePercentage"
-                  name="Attendance %"
+                  dataKey="attendedSessions"
+                  name="Attended Sessions"
                   stroke="#10B981"
                   strokeWidth={2}
                   dot={{ fill: "#10B981", r: 3 }}
@@ -328,12 +337,12 @@ export function PerformanceTimeline({
                   connectNulls={true}
                 />
 
-                {/* Sessions Kept Line */}
+                {/* Kept Sessions Line */}
                 <Line
-                  yAxisId="percentage"
+                  yAxisId="count"
                   type="monotone"
-                  dataKey="sessionsKeptPercentage"
-                  name="Sessions Kept %"
+                  dataKey="keptSessions"
+                  name="Kept Sessions"
                   stroke="#3B82F6"
                   strokeWidth={2}
                   dot={{ fill: "#3B82F6", r: 3 }}
