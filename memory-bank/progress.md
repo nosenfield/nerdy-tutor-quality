@@ -166,8 +166,14 @@
 - [x] GET /api/sessions endpoint ✅ (Task 6.9) - List sessions with filters and pagination, comprehensive integration tests
 - [x] GET /api/sessions/[id] endpoint ✅ (Task 6.10) - Get session detail by session_id, comprehensive integration tests
 - [x] Pagination and filtering ✅ (Tasks 6.11-6.12) - Already implemented in Task 6.9
-- [ ] Tutor endpoints (list, get detail, get score) (Tasks 6.13-6.18)
-- [ ] Flag endpoints (list, get detail, resolve) (Tasks 6.19-6.23)
+- [x] GET /api/tutors endpoint ✅ (Task 6.13) - List tutors with filtering (min_score, max_score, has_flags), sorting (score, name, session_count), and pagination, comprehensive integration tests
+- [x] GET /api/tutors/[id] endpoint ✅ (Task 6.14) - Get tutor detail with current score, recent sessions, active flags, performance history, and interventions, comprehensive integration tests
+- [x] GET /api/tutors/[id]/score endpoint ✅ (Task 6.15) - Get current score with breakdown (attendance, ratings, completion, reliability) and flags, comprehensive integration tests
+- [x] Pagination, sorting, filtering ✅ (Tasks 6.16-6.18) - Already implemented in Task 6.13
+- [x] GET /api/flags endpoint ✅ (Task 6.19) - List flags with filtering (tutor_id, status, severity) and pagination, comprehensive integration tests
+- [x] GET /api/flags/[id] endpoint ✅ (Task 6.20) - Get flag detail with tutor info, related sessions, and interventions, comprehensive integration tests
+- [x] POST /api/flags/[id]/resolve endpoint ✅ (Task 6.21) - Mark flag as resolved with optional intervention creation, comprehensive integration tests
+- [x] Status and severity filtering ✅ (Tasks 6.22-6.23) - Already implemented in Task 6.19
 - [ ] Analytics endpoints (overview, trends) (Tasks 6.24-6.25)
 - [ ] Integration tests for all endpoints (Tasks 6.26-6.30)
 
