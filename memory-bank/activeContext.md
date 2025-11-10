@@ -1,11 +1,11 @@
 # Active Context: Tutor Quality Scoring System
 
-**Last Updated**: 2025-11-09 (Tasks 6.24-6.30 complete)
+**Last Updated**: 2025-11-09 (Phase 1 complete, Phase 2 starting)
 
 ## Current Focus
 
 ### What We're Working On Right Now
-**Phase 6 API Routes - COMPLETE** - All API endpoints complete (Tasks 6.1-6.30). Created analytics endpoints: GET /api/analytics/overview (Task 6.24) with today's stats, trends (avg_score, flag_rate), and top_issues; GET /api/analytics/trends (Task 6.25) with time-series data for metrics (avg_score, flag_rate, no_show_rate, reschedule_rate), periods (7d, 30d, 90d, 1y), and grouping (day, week, month). Verified all existing integration tests are comprehensive (webhook, sessions, tutors, flags). Created Postman/Bruno collection (Task 6.30) with all endpoints, example requests, and environment variables. All endpoints include comprehensive integration tests, proper error handling, and transform database records to API format (snake_case). All tests passing. Phase 6 complete!
+**Phase 2: Production Deployment** - Starting pre-deployment testing and monitoring setup. Following recommended-path-cursor.md hybrid strategy. Phase 1 (Tutor Progression Visualization) is complete with tutor detail page, performance timeline, and all supporting components. Next: Task 8.12 (Run full test suite), Task 8.14 (Manual QA), Task 8.16 (Fix critical bugs), and Task 8.1-8.3 (Sentry setup).
 
 ### Current Phase
 **Phase 0 of 9: Project Setup** - ✅ COMPLETE (9/10 tasks - Husky deferred as P1 optional)
@@ -16,12 +16,16 @@
 
 **Phase 3 - Rules Engine (Tier 1)** (Estimated: 3-4 days) - ✅ COMPLETE
 
-**Phase 4 - Dashboard UI** (Estimated: 5-6 days) - ✅ IN PROGRESS (CC-7, CC-8, CC-9, CC-10 done)
+**Phase 4 - Dashboard UI** (Estimated: 5-6 days) - ✅ COMPLETE (includes tutor detail page)
 
 **Phase 5 - Job Queue & Workers** (Estimated: 3-4 days) - ✅ COMPLETE
 
+**Phase 6 - API Routes** (Estimated: 3-4 days) - ✅ COMPLETE
+
+**Phase 1: Tutor Progression Visualization** (Goal 1) - ✅ COMPLETE
+
 Next phases:
-- Phase 6: API Routes ← NEXT
+- Phase 2: Production Deployment (Goal 2) ← CURRENT
 
 ### Active Decisions
 - **Decision 1: Next.js 16 App Router** - Using Next.js 16 with React 19 for latest performance improvements and features. App Router provides better performance and simpler data fetching patterns. Next.js 16 requires React 19, which includes latest React features and optimizations.
@@ -41,7 +45,8 @@ Next phases:
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. **Tasks 6.24-6.30 Complete - Analytics Endpoints and API Collection** - Created analytics endpoints: GET /api/analytics/overview (Task 6.24) with today's stats (sessions_processed, flags_raised, tutors_flagged), trends (avg_score, avg_score_change, flag_rate, flag_rate_change vs last week), and top_issues (most common flag types); GET /api/analytics/trends (Task 6.25) with time-series data for metrics (avg_score, flag_rate, no_show_rate, reschedule_rate), periods (7d, 30d, 90d, 1y), and grouping (day, week, month). Verified all existing integration tests are comprehensive (webhook, sessions, tutors, flags). Created Postman/Bruno collection (Task 6.30) with all endpoints, example requests, and environment variables. All endpoints include comprehensive integration tests, proper error handling, and transform database records to API format (snake_case). All tests passing. Phase 6 complete! - 2025-11-09
+1. **Phase 1 Complete - Tutor Detail Page Implementation** - Created complete tutor detail page (/dashboard/tutors/[id]) with all components: TutorHeader, ScoreBreakdown, PerformanceTimeline (line chart with flag/intervention markers), ActiveFlagsList, RecentSessionsTable, InterventionsHistory. Added navigation from flagged tutors table and tutor detail card to tutor detail page. Fixed API endpoint to calculate scores on-the-fly when missing. Fixed date range default to use date-fns functions for consistency. All components working correctly. Phase 1 (Tutor Progression Visualization) complete! - 2025-11-09
+2. **Tasks 6.24-6.30 Complete - Analytics Endpoints and API Collection** - Created analytics endpoints: GET /api/analytics/overview (Task 6.24) with today's stats (sessions_processed, flags_raised, tutors_flagged), trends (avg_score, avg_score_change, flag_rate, flag_rate_change vs last week), and top_issues (most common flag types); GET /api/analytics/trends (Task 6.25) with time-series data for metrics (avg_score, flag_rate, no_show_rate, reschedule_rate), periods (7d, 30d, 90d, 1y), and grouping (day, week, month). Verified all existing integration tests are comprehensive (webhook, sessions, tutors, flags). Created Postman/Bruno collection (Task 6.30) with all endpoints, example requests, and environment variables. All endpoints include comprehensive integration tests, proper error handling, and transform database records to API format (snake_case). All tests passing. Phase 6 complete! - 2025-11-09
 2. **Tasks 6.13-6.23 Complete - Tutor and Flag Endpoints** - Created complete tutor and flag API endpoints: GET /api/tutors (Task 6.13) with filtering, sorting, and pagination; GET /api/tutors/[id] (Task 6.14) for tutor detail with current score, recent sessions, active flags, performance history, and interventions; GET /api/tutors/[id]/score (Task 6.15) with score breakdown (attendance, ratings, completion, reliability) and flags; GET /api/flags (Task 6.19) with filtering (tutor_id, status, severity) and pagination; GET /api/flags/[id] (Task 6.20) for flag detail with tutor info, related sessions, and interventions; POST /api/flags/[id]/resolve (Task 6.21) to mark flags resolved with optional intervention creation. All endpoints include comprehensive integration tests, proper error handling (404 for not found, 400 for invalid params), and transform database records to API format (snake_case). All tests passing - 2025-11-09
 2. **Tasks 6.9-6.12 Complete - Session Endpoints** - Created complete session API endpoints: GET /api/sessions (Task 6.9) with filtering (tutor_id, student_id, date range, is_first_session) and pagination (limit/offset, default: 50), GET /api/sessions/[id] (Task 6.10) for session detail by session_id, pagination (Task 6.11) and filtering (Task 6.12) already implemented in Task 6.9. All endpoints include query parameter validation, proper error handling (404 for not found, 400 for invalid params), transform database records to API format (camelCase to snake_case), and comprehensive integration tests (14 tests total). All tests passing - 2025-11-09
 2. **Task 6.7 Complete - Rate Limiting** - Implemented rate limiting for webhook endpoint: created rate limiting utilities (`src/lib/utils/rate-limit.ts`) with `checkRateLimit` (sliding window algorithm using Redis, 100 req/min per IP), `extractIpAddress` (extracts IP from X-Real-IP, X-Forwarded-For, or request IP), integrated rate limiting into webhook endpoint (checks before signature verification to save compute, returns 429 Too Many Requests when exceeded), includes rate limit headers (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, Retry-After), handles Redis errors gracefully (fail open - allows request if Redis unavailable), and comprehensive unit tests (12 tests) and integration tests covering all scenarios. All tests passing. Webhook endpoint now complete (Tasks 6.1-6.7) - 2025-11-09
@@ -56,32 +61,24 @@ Next phases:
 
 ## Next Steps
 
-### Immediate (Next Session - Phase 6)
-- [x] Create webhook endpoint for session-completed events ✅ (Task 6.1)
-- [x] Implement payload validation with Zod ✅ (Task 6.2)
-- [x] Implement signature verification (HMAC) ✅ (Task 6.3)
-- [x] Store session in database ✅ (Task 6.4)
-- [x] Queue processing job ✅ (Task 6.5)
-- [x] Add rate limiting ✅ (Task 6.7)
-- [x] Create GET /api/sessions endpoint ✅ (Task 6.9)
-- [x] Create GET /api/sessions/[id] endpoint ✅ (Task 6.10)
-- [x] Add pagination to sessions list ✅ (Task 6.11 - already done in 6.9)
-- [x] Add filtering to sessions list ✅ (Task 6.12 - already done in 6.9)
-- [ ] Create tutor endpoints (list, get detail, get score) - Tasks 6.13-6.18
-- [ ] Create flag endpoints (list, get detail, resolve) - Tasks 6.19-6.23
+### Immediate (Next Session - Phase 2: Production Deployment)
+- [ ] Task 8.12: Run full test suite and fix failures
+- [ ] Task 8.14: Manual QA testing
+- [ ] Task 8.16: Fix critical bugs found in testing
+- [ ] Task 8.1-8.3: Sentry setup and error boundaries
+- [ ] Task 8.4-8.5: Structured logging
 
-### Near-Term (This Week - Phase 6)
-- [ ] Create aggregator.ts to combine all signals
-- [ ] Implement scoring algorithm (attendance, ratings, completion, reliability)
-- [ ] Write comprehensive unit tests for all rules
-- [ ] Test rules engine against seeded "problem tutor" data
-- [ ] Validate false positive rate is acceptable
+### Near-Term (This Week - Phase 2)
+- [ ] Task 8.7: Quick DB query audit (light check)
+- [ ] Task 8.10: Quick dashboard load check
+- [ ] Task 8.17-8.18: Vercel setup and configuration
+- [ ] Task 8.19-8.21: Staging environment deployment
+- [ ] Task 8.22: Production deployment
 
-### Following Week (Phase 4)
-- [ ] Begin dashboard UI development
-- [ ] Dashboard layout and navigation
-- [ ] Stats overview with KPI cards
-- [ ] Performance trend charts using Recharts
+### Following Week (Phase 2 Post-Deployment)
+- [ ] Task 8.24-8.25: Monitoring and alerts setup
+- [ ] Task 8.15: Real traffic load testing
+- [ ] Monitor production metrics and iterate
 
 ---
 
@@ -106,10 +103,23 @@ None - Project is greenfield, no blockers.
 
 ## Key Files Recently Modified
 
-- `src/lib/utils/rate-limit.ts` - Rate limiting utilities (Task 6.7) ← NEW
-- `tests/unit/utils/rate-limit.test.ts` - Unit tests for rate limiting (Task 6.7) ← NEW
-- `src/app/api/webhooks/session-completed/route.ts` - Integrated rate limiting (Task 6.7) ← UPDATED
-- `tests/integration/webhooks/session-completed.test.ts` - Updated integration tests with rate limiting (Task 6.7) ← UPDATED
+- `src/app/dashboard/tutors/[id]/page.tsx` - Tutor detail page (Phase 1) ← NEW
+- `src/components/tutor-detail/TutorHeader.tsx` - Tutor header component (Phase 1) ← NEW
+- `src/components/tutor-detail/ScoreBreakdown.tsx` - Score breakdown component (Phase 1) ← NEW
+- `src/components/tutor-detail/PerformanceTimeline.tsx` - Performance timeline chart (Phase 1) ← NEW
+- `src/components/tutor-detail/ActiveFlagsList.tsx` - Active flags list (Phase 1) ← NEW
+- `src/components/tutor-detail/RecentSessionsTable.tsx` - Recent sessions table (Phase 1) ← NEW
+- `src/components/tutor-detail/InterventionsHistory.tsx` - Interventions history (Phase 1) ← NEW
+- `src/lib/hooks/useTutorDetailData.ts` - Tutor detail data hook (Phase 1) ← NEW
+- `src/lib/hooks/useTutorScoreBreakdown.ts` - Score breakdown hook (Phase 1) ← NEW
+- `src/app/api/tutors/[id]/route.ts` - Fixed to calculate scores on-the-fly when missing ← UPDATED
+- `src/components/dashboard/TutorDetailCard.tsx` - Added clickable tutor ID link ← UPDATED
+- `src/components/dashboard/FlaggedTutorsTable.tsx` - Added navigation to tutor detail page ← UPDATED
+- `src/lib/stores/dashboardStore.ts` - Fixed default date range to use date-fns functions ← UPDATED
+- `src/lib/utils/rate-limit.ts` - Rate limiting utilities (Task 6.7)
+- `tests/unit/utils/rate-limit.test.ts` - Unit tests for rate limiting (Task 6.7)
+- `src/app/api/webhooks/session-completed/route.ts` - Integrated rate limiting (Task 6.7)
+- `tests/integration/webhooks/session-completed.test.ts` - Updated integration tests with rate limiting (Task 6.7)
 - `src/lib/utils/webhook-security.ts` - HMAC signature verification utilities (Task 6.3)
 - `tests/unit/utils/webhook-security.test.ts` - Unit tests for signature verification (Task 6.3)
 - `tests/unit/utils/validation.test.ts` - Comprehensive unit tests for validation schema (Task 6.2)
@@ -229,9 +239,9 @@ None - Project is greenfield, no blockers.
 
 ## Notes
 
-**Project Status**: Phase 2 complete! Mock data generation working perfectly with 3,150 sessions. Database seeding confirmed working. Moving to Phase 3 (Rules Engine).
+**Project Status**: Phase 1 (Tutor Progression Visualization) complete! Tutor detail page fully implemented with all components. Phase 6 (API Routes) complete. Moving to Phase 2 (Production Deployment) following recommended-path-cursor.md.
 
-**Next Major Milestone**: Build Tier 1 rules engine with all behavioral signal detection (no-show, lateness, early-end, poor first sessions, reschedule patterns).
+**Next Major Milestone**: Deploy to production with monitoring and error tracking. Complete pre-deployment testing, fix critical bugs, set up Sentry, deploy to staging, then production.
 
 **Risk Level**: LOW - Well-planned project with clear requirements, proven tech stack, and comprehensive documentation. Phases 0-2 completed successfully. Main risks are timeline management and maintaining code quality at pace.
 

@@ -16,10 +16,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db, tutorScores, sessions, flags, interventions } from "@/lib/db";
-import { eq, and, desc, inArray } from "drizzle-orm";
+import { eq, and, desc, inArray, gte, lte } from "drizzle-orm";
 import { getTutorStats } from "@/lib/scoring/rules-engine";
 import { calculateAllScores } from "@/lib/scoring/aggregator";
-import { subDays } from "date-fns";
+import { subDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { randomUUID } from "node:crypto";
 
 export async function GET(
   request: NextRequest,
@@ -68,8 +69,7 @@ export async function GET(
 
         // Create a virtual score object for the response
         // We'll use a minimal structure that matches the expected format
-        // Note: Using a temporary UUID for the id field since it's required by the type
-        const tempId = "00000000-0000-0000-0000-000000000000";
+        const tempId = randomUUID();
         currentScore = {
           id: tempId,
           tutorId: tutorId,
@@ -97,8 +97,73 @@ export async function GET(
           createdAt: windowEnd,
         } as typeof allScores[0];
 
-        // Performance history is empty for on-the-fly calculations
-        performanceHistory = [];
+        // Generate performance history from session data (monthly windows for last 6 months)
+        // This creates a timeline even when scores aren't pre-calculated
+        const historyEntries: typeof allScores = [];
+        const now = new Date();
+        
+        // Calculate scores for each of the last 6 months
+        for (let i = 0; i < 6; i++) {
+          const monthEnd = i === 0 ? now : endOfMonth(subMonths(now, i));
+          const monthStart = startOfMonth(subMonths(now, i));
+          
+          // Only calculate if we have sessions in this period
+          const monthSessions = await db
+            .select()
+            .from(sessions)
+            .where(
+              and(
+                eq(sessions.tutorId, tutorId),
+                gte(sessions.sessionStartTime, monthStart),
+                lte(sessions.sessionStartTime, monthEnd)
+              )
+            )
+            .limit(1);
+          
+          if (monthSessions.length > 0) {
+            try {
+              const monthStats = await getTutorStats(tutorId, monthStart, monthEnd);
+              const { overallScore: monthScore } = calculateAllScores(monthStats);
+              
+              if (monthScore !== null) {
+                historyEntries.push({
+                  id: randomUUID(),
+                  tutorId: tutorId,
+                  calculatedAt: monthEnd,
+                  windowStart: monthStart,
+                  windowEnd: monthEnd,
+                  totalSessions: monthStats.totalSessions,
+                  firstSessions: monthStats.firstSessions,
+                  noShowCount: monthStats.noShowCount,
+                  noShowRate: monthStats.noShowRate ? String(monthStats.noShowRate) : null,
+                  lateCount: monthStats.lateCount,
+                  lateRate: monthStats.lateRate ? String(monthStats.lateRate) : null,
+                  avgLatenessMinutes: monthStats.avgLatenessMinutes ? String(monthStats.avgLatenessMinutes) : null,
+                  earlyEndCount: monthStats.earlyEndCount,
+                  earlyEndRate: monthStats.earlyEndRate ? String(monthStats.earlyEndRate) : null,
+                  avgEarlyEndMinutes: monthStats.avgEarlyEndMinutes ? String(monthStats.avgEarlyEndMinutes) : null,
+                  rescheduleCount: monthStats.rescheduleCount,
+                  rescheduleRate: monthStats.rescheduleRate ? String(monthStats.rescheduleRate) : null,
+                  tutorInitiatedReschedules: monthStats.tutorInitiatedReschedules,
+                  avgStudentRating: monthStats.avgStudentRating ? String(monthStats.avgStudentRating) : null,
+                  avgFirstSessionRating: monthStats.avgFirstSessionRating ? String(monthStats.avgFirstSessionRating) : null,
+                  ratingTrend: monthStats.ratingTrend,
+                  overallScore: monthScore ? Math.round(monthScore) : null,
+                  confidenceScore: null,
+                  createdAt: monthEnd,
+                } as typeof allScores[0]);
+              }
+            } catch (monthError) {
+              // Skip this month if calculation fails
+              console.error(`Error calculating score for month ${i}:`, monthError);
+            }
+          }
+        }
+        
+        // Sort by date (oldest first) and limit to 10 entries
+        performanceHistory = historyEntries
+          .sort((a, b) => a.calculatedAt.getTime() - b.calculatedAt.getTime())
+          .slice(-10);
       } catch (calcError) {
         console.error("Error calculating score on the fly:", calcError);
         return NextResponse.json(
