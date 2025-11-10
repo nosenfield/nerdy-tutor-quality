@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { AlertTriangle, ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Listbox, Transition } from "@headlessui/react";
 import { useFlaggedTutors } from "@/lib/hooks/useDashboardData";
@@ -25,6 +26,7 @@ interface TableColumn {
  * Clicking a row highlights the tutor in the scatter plots.
  */
 export function FlaggedTutorsTable() {
+  const router = useRouter();
   const { 
     dateRange, 
     selectedTutorId,
@@ -47,9 +49,9 @@ export function FlaggedTutorsTable() {
         sortable: true,
         renderCell: (tutor: TutorSummary) => (
           <button
-            onClick={() => handleRowClick(tutor.tutorId)}
+            onClick={(e) => handleTutorIdClick(e, tutor.tutorId)}
             className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium text-left"
-            aria-label={`Select tutor ${tutor.tutorId}`}
+            aria-label={`View details for tutor ${tutor.tutorId}`}
           >
             {tutor.tutorId}
           </button>
@@ -161,6 +163,12 @@ export function FlaggedTutorsTable() {
   // Handle row click to highlight tutor in scatter plots
   const handleRowClick = (tutorId: string) => {
     setSelectedTutor(tutorId);
+  };
+
+  // Handle tutor ID click to navigate to tutor detail page
+  const handleTutorIdClick = (e: React.MouseEvent, tutorId: string) => {
+    e.stopPropagation(); // Prevent row click from firing
+    router.push(`/dashboard/tutors/${tutorId}`);
   };
 
   // Handle column header click for sorting

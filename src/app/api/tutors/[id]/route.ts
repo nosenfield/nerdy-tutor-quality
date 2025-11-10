@@ -17,6 +17,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, tutorScores, sessions, flags, interventions } from "@/lib/db";
 import { eq, and, desc, inArray } from "drizzle-orm";
+import { getTutorStats } from "@/lib/scoring/rules-engine";
+import { calculateAllScores } from "@/lib/scoring/aggregator";
+import { subDays } from "date-fns";
 
 export async function GET(
   request: NextRequest,
@@ -33,18 +36,83 @@ export async function GET(
       .where(eq(tutorScores.tutorId, tutorId))
       .orderBy(desc(tutorScores.calculatedAt));
 
-    if (allScores.length === 0) {
-      return NextResponse.json(
-        {
-          error: "Tutor not found",
-          message: `No scores found for tutor_id: ${tutorId}`,
-        },
-        { status: 404 }
-      );
-    }
+    let currentScore: typeof allScores[0] | null = null;
+    let performanceHistory: typeof allScores = [];
 
-    const currentScore = allScores[0];
-    const performanceHistory = allScores.slice(0, 10); // Last 10 scores
+    // If no scores exist, calculate on the fly from sessions
+    if (allScores.length === 0) {
+      // Check if tutor has any sessions
+      const tutorSessionsCheck = await db
+        .select()
+        .from(sessions)
+        .where(eq(sessions.tutorId, tutorId))
+        .limit(1);
+
+      if (tutorSessionsCheck.length === 0) {
+        return NextResponse.json(
+          {
+            error: "Tutor not found",
+            message: `No sessions or scores found for tutor_id: ${tutorId}`,
+          },
+          { status: 404 }
+        );
+      }
+
+      // Calculate score on the fly (last 90 days)
+      const windowEnd = new Date();
+      const windowStart = subDays(windowEnd, 90);
+      
+      try {
+        const stats = await getTutorStats(tutorId, windowStart, windowEnd);
+        const { overallScore, confidenceScore, breakdown } = calculateAllScores(stats);
+
+        // Create a virtual score object for the response
+        // We'll use a minimal structure that matches the expected format
+        // Note: Using a temporary UUID for the id field since it's required by the type
+        const tempId = "00000000-0000-0000-0000-000000000000";
+        currentScore = {
+          id: tempId,
+          tutorId: tutorId,
+          calculatedAt: windowEnd,
+          windowStart: windowStart,
+          windowEnd: windowEnd,
+          totalSessions: stats.totalSessions,
+          firstSessions: stats.firstSessions,
+          noShowCount: stats.noShowCount,
+          noShowRate: stats.noShowRate ? String(stats.noShowRate) : null,
+          lateCount: stats.lateCount,
+          lateRate: stats.lateRate ? String(stats.lateRate) : null,
+          avgLatenessMinutes: stats.avgLatenessMinutes ? String(stats.avgLatenessMinutes) : null,
+          earlyEndCount: stats.earlyEndCount,
+          earlyEndRate: stats.earlyEndRate ? String(stats.earlyEndRate) : null,
+          avgEarlyEndMinutes: stats.avgEarlyEndMinutes ? String(stats.avgEarlyEndMinutes) : null,
+          rescheduleCount: stats.rescheduleCount,
+          rescheduleRate: stats.rescheduleRate ? String(stats.rescheduleRate) : null,
+          tutorInitiatedReschedules: stats.tutorInitiatedReschedules,
+          avgStudentRating: stats.avgStudentRating ? String(stats.avgStudentRating) : null,
+          avgFirstSessionRating: stats.avgFirstSessionRating ? String(stats.avgFirstSessionRating) : null,
+          ratingTrend: stats.ratingTrend,
+          overallScore: overallScore ? Math.round(overallScore) : null,
+          confidenceScore: confidenceScore ? String(confidenceScore) : null,
+          createdAt: windowEnd,
+        } as typeof allScores[0];
+
+        // Performance history is empty for on-the-fly calculations
+        performanceHistory = [];
+      } catch (calcError) {
+        console.error("Error calculating score on the fly:", calcError);
+        return NextResponse.json(
+          {
+            error: "Internal server error",
+            message: "Failed to calculate tutor score",
+          },
+          { status: 500 }
+        );
+      }
+    } else {
+      currentScore = allScores[0];
+      performanceHistory = allScores.slice(0, 10); // Last 10 scores
+    }
 
     // Get recent sessions (last 20)
     const recentSessions = await db
@@ -102,18 +170,21 @@ export async function GET(
       tutor_id: session.tutorId,
       student_id: session.studentId,
       session_start_time: session.sessionStartTime.toISOString(),
-      session_end_time: session.sessionEndTime?.toISOString() || null,
-      scheduled_start_time: session.scheduledStartTime.toISOString(),
-      scheduled_end_time: session.scheduledEndTime.toISOString(),
-      duration_minutes: session.durationMinutes,
+      session_end_time: session.sessionEndTime.toISOString(),
+      tutor_join_time: session.tutorJoinTime?.toISOString() || null,
+      student_join_time: session.studentJoinTime?.toISOString() || null,
+      tutor_leave_time: session.tutorLeaveTime?.toISOString() || null,
+      student_leave_time: session.studentLeaveTime?.toISOString() || null,
+      session_length_scheduled: session.sessionLengthScheduled,
+      session_length_actual: session.sessionLengthActual,
       is_first_session: session.isFirstSession,
-      student_rating: session.studentRating ? Number(session.studentRating) : null,
-      tutor_rating: session.tutorRating ? Number(session.tutorRating) : null,
-      feedback_text: session.feedbackText,
-      feedback_rating: session.feedbackRating,
+      student_feedback_rating: session.studentFeedbackRating || null,
+      tutor_feedback_rating: session.tutorFeedbackRating || null,
+      student_feedback_description: session.studentFeedbackDescription || null,
+      tutor_feedback_description: session.tutorFeedbackDescription || null,
       was_rescheduled: session.wasRescheduled,
-      rescheduled_by: session.rescheduledBy,
-      reschedule_reason: session.rescheduleReason,
+      rescheduled_by: session.rescheduledBy || null,
+      reschedule_count: session.rescheduleCount || 0,
       created_at: session.createdAt.toISOString(),
       updated_at: session.updatedAt.toISOString(),
     });

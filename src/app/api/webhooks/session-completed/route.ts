@@ -238,8 +238,28 @@ export async function POST(request: NextRequest) {
       await db.insert(sessions).values(sessionData);
       console.log(`Session ${sessionId} stored in database`);
     } catch (error: any) {
+      // Log detailed database error for debugging
+      console.error("Database insert error:", {
+        code: error?.code,
+        message: error?.message,
+        detail: error?.detail,
+        constraint: error?.constraint,
+        table: error?.table,
+        column: error?.column,
+        dataType: error?.dataType,
+        cause: error?.cause,
+      });
+      
       // Check if it's a unique constraint violation
-      if (error?.code === "23505" || error?.message?.includes("unique")) {
+      // PostgreSQL error code 23505 = unique_violation
+      // Also check error.cause for Drizzle-wrapped errors
+      const isDuplicateError = 
+        error?.code === "23505" || 
+        error?.message?.includes("unique") ||
+        error?.cause?.message?.includes("duplicate key") ||
+        error?.cause?.message?.includes("unique constraint");
+      
+      if (isDuplicateError) {
         console.warn(`Session ${sessionId} already exists in database`);
         return NextResponse.json(
           {
@@ -302,12 +322,43 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     // Handle unexpected errors
     console.error(`Error processing webhook for session ${sessionId || "unknown"}:`, error);
+    
+    // Log detailed error information for debugging
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      if ('cause' in error && error.cause) {
+        console.error("Error cause:", error.cause);
+      }
+    } else {
+      console.error("Error object:", JSON.stringify(error, null, 2));
+    }
 
-    // Return generic error (don't expose internal details)
+    // Return generic error (don't expose internal details in production)
+    // In development, include more details
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    // Extract PostgreSQL error details if available
+    const pgError = error && typeof error === 'object' && 'code' in error ? {
+      code: (error as any).code,
+      detail: (error as any).detail,
+      constraint: (error as any).constraint,
+      table: (error as any).table,
+      column: (error as any).column,
+    } : null;
+    
     return NextResponse.json(
       {
         error: "Internal server error",
         message: "Failed to process webhook",
+        ...(isDevelopment && error instanceof Error && {
+          details: {
+            name: error.name,
+            message: error.message,
+            ...(pgError && { pgError }),
+          },
+        }),
       },
       { status: 500 }
     );

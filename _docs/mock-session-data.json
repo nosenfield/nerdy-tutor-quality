@@ -1,0 +1,273 @@
+{
+  "sessions": [
+    {
+      "name": "Basic Successful Session",
+      "description": "A standard 60-minute session with both tutor and student joining on time",
+      "payload": {
+        "session_id": "session_001_2025-11-09",
+        "tutor_id": "tutor_alice_smith",
+        "student_id": "student_john_doe",
+        "session_start_time": "2025-11-09T14:00:00Z",
+        "session_end_time": "2025-11-09T15:00:00Z",
+        "tutor_join_time": "2025-11-09T14:00:00Z",
+        "student_join_time": "2025-11-09T14:00:00Z",
+        "tutor_leave_time": "2025-11-09T15:00:00Z",
+        "student_leave_time": "2025-11-09T15:00:00Z",
+        "subjects_covered": ["Math", "Algebra"],
+        "is_first_session": false,
+        "was_rescheduled": false,
+        "tutor_feedback": {
+          "rating": 4,
+          "description": "Student was engaged and asked good questions. Made good progress on quadratic equations."
+        },
+        "student_feedback": {
+          "rating": 5,
+          "description": "Great tutor! Explained everything clearly and was very patient."
+        },
+        "video_url": "https://example.com/videos/session_001_2025-11-09.mp4",
+        "transcript_url": "https://example.com/transcripts/session_001_2025-11-09.txt",
+        "ai_summary": "Session focused on quadratic equations. Student showed strong understanding of factoring methods."
+      }
+    },
+    {
+      "name": "First Session",
+      "description": "A student's first session with a tutor",
+      "payload": {
+        "session_id": "session_002_2025-11-09",
+        "tutor_id": "tutor_bob_jones",
+        "student_id": "student_jane_smith",
+        "session_start_time": "2025-11-09T10:00:00Z",
+        "session_end_time": "2025-11-09T11:00:00Z",
+        "tutor_join_time": "2025-11-09T10:00:00Z",
+        "student_join_time": "2025-11-09T10:02:00Z",
+        "tutor_leave_time": "2025-11-09T11:00:00Z",
+        "student_leave_time": "2025-11-09T11:00:00Z",
+        "subjects_covered": ["Science", "Chemistry"],
+        "is_first_session": true,
+        "was_rescheduled": false,
+        "tutor_feedback": {
+          "rating": 5,
+          "description": "First session went well. Student is eager to learn and has good foundational knowledge."
+        },
+        "student_feedback": {
+          "rating": 5,
+          "description": "Really enjoyed the first session. Looking forward to more lessons!"
+        }
+      }
+    },
+    {
+      "name": "Rescheduled Session",
+      "description": "A session that was rescheduled by the student",
+      "payload": {
+        "session_id": "session_003_2025-11-09",
+        "tutor_id": "tutor_carol_williams",
+        "student_id": "student_mike_brown",
+        "session_start_time": "2025-11-09T16:00:00Z",
+        "session_end_time": "2025-11-09T17:00:00Z",
+        "tutor_join_time": "2025-11-09T16:00:00Z",
+        "student_join_time": "2025-11-09T16:00:00Z",
+        "tutor_leave_time": "2025-11-09T17:00:00Z",
+        "student_leave_time": "2025-11-09T17:00:00Z",
+        "subjects_covered": ["English", "Writing"],
+        "is_first_session": false,
+        "was_rescheduled": true,
+        "rescheduled_by": "student",
+        "tutor_feedback": {
+          "rating": 4,
+          "description": "Good session despite the reschedule. Student worked on essay structure."
+        },
+        "student_feedback": {
+          "rating": 4,
+          "description": "Helpful feedback on my essay. Thanks for being flexible with the schedule."
+        }
+      }
+    },
+    {
+      "name": "Late Tutor Join",
+      "description": "Tutor joined 10 minutes late, potential quality issue",
+      "payload": {
+        "session_id": "session_004_2025-11-09",
+        "tutor_id": "tutor_david_miller",
+        "student_id": "student_sarah_wilson",
+        "session_start_time": "2025-11-09T13:00:00Z",
+        "session_end_time": "2025-11-09T14:00:00Z",
+        "tutor_join_time": "2025-11-09T13:10:00Z",
+        "student_join_time": "2025-11-09T13:00:00Z",
+        "tutor_leave_time": "2025-11-09T14:00:00Z",
+        "student_leave_time": "2025-11-09T14:00:00Z",
+        "subjects_covered": ["Math", "Geometry"],
+        "is_first_session": false,
+        "was_rescheduled": false,
+        "tutor_feedback": {
+          "rating": 3,
+          "description": "Apologized for being late. Session went well once started."
+        },
+        "student_feedback": {
+          "rating": 3,
+          "description": "Tutor was late but made up for it. Still learned a lot."
+        }
+      }
+    },
+    {
+      "name": "High Quality Session",
+      "description": "Perfect session with excellent ratings from both parties",
+      "payload": {
+        "session_id": "session_005_2025-11-09",
+        "tutor_id": "tutor_emma_davis",
+        "student_id": "student_tom_anderson",
+        "session_start_time": "2025-11-09T15:00:00Z",
+        "session_end_time": "2025-11-09T16:00:00Z",
+        "tutor_join_time": "2025-11-09T15:00:00Z",
+        "student_join_time": "2025-11-09T15:00:00Z",
+        "tutor_leave_time": "2025-11-09T16:00:00Z",
+        "student_leave_time": "2025-11-09T16:00:00Z",
+        "subjects_covered": ["Physics", "Mechanics"],
+        "is_first_session": false,
+        "was_rescheduled": false,
+        "tutor_feedback": {
+          "rating": 5,
+          "description": "Excellent session! Student grasped complex concepts quickly and asked insightful questions."
+        },
+        "student_feedback": {
+          "rating": 5,
+          "description": "Best tutor I've had! Explained everything perfectly and made physics fun."
+        },
+        "video_url": "https://example.com/videos/session_005_2025-11-09.mp4",
+        "transcript_url": "https://example.com/transcripts/session_005_2025-11-09.txt",
+        "ai_summary": "Highly productive session on Newton's laws. Student demonstrated strong problem-solving skills."
+      }
+    },
+    {
+      "name": "Low Quality Session",
+      "description": "Session with poor ratings indicating potential issues",
+      "payload": {
+        "session_id": "session_006_2025-11-09",
+        "tutor_id": "tutor_frank_taylor",
+        "student_id": "student_lisa_martinez",
+        "session_start_time": "2025-11-09T11:00:00Z",
+        "session_end_time": "2025-11-09T12:00:00Z",
+        "tutor_join_time": "2025-11-09T11:05:00Z",
+        "student_join_time": "2025-11-09T11:00:00Z",
+        "tutor_leave_time": "2025-11-09T11:55:00Z",
+        "student_leave_time": "2025-11-09T12:00:00Z",
+        "subjects_covered": ["History"],
+        "is_first_session": false,
+        "was_rescheduled": false,
+        "tutor_feedback": {
+          "rating": 2,
+          "description": "Student seemed disengaged. Had difficulty staying focused."
+        },
+        "student_feedback": {
+          "rating": 2,
+          "description": "Tutor seemed unprepared. Didn't explain things clearly."
+        }
+      }
+    },
+    {
+      "name": "Minimal Data Session",
+      "description": "Session with only required fields, missing optional data",
+      "payload": {
+        "session_id": "session_007_2025-11-09",
+        "tutor_id": "tutor_grace_lee",
+        "student_id": "student_chris_park",
+        "session_start_time": "2025-11-09T09:00:00Z",
+        "session_end_time": "2025-11-09T10:00:00Z",
+        "subjects_covered": [],
+        "is_first_session": false,
+        "was_rescheduled": false
+      }
+    },
+    {
+      "name": "Multiple Subjects Session",
+      "description": "Session covering multiple subjects",
+      "payload": {
+        "session_id": "session_008_2025-11-09",
+        "tutor_id": "tutor_henry_clark",
+        "student_id": "student_amy_rodriguez",
+        "session_start_time": "2025-11-09T12:00:00Z",
+        "session_end_time": "2025-11-09T13:30:00Z",
+        "tutor_join_time": "2025-11-09T12:00:00Z",
+        "student_join_time": "2025-11-09T12:00:00Z",
+        "tutor_leave_time": "2025-11-09T13:30:00Z",
+        "student_leave_time": "2025-11-09T13:30:00Z",
+        "subjects_covered": ["Math", "Algebra", "Geometry", "Trigonometry"],
+        "is_first_session": false,
+        "was_rescheduled": false,
+        "tutor_feedback": {
+          "rating": 4,
+          "description": "Covered multiple topics efficiently. Student kept up well with the pace."
+        },
+        "student_feedback": {
+          "rating": 4,
+          "description": "Lots of material covered but tutor made it manageable."
+        }
+      }
+    },
+    {
+      "name": "Short Session",
+      "description": "A 30-minute session instead of the standard 60 minutes",
+      "payload": {
+        "session_id": "session_009_2025-11-09",
+        "tutor_id": "tutor_ivy_martin",
+        "student_id": "student_jake_thompson",
+        "session_start_time": "2025-11-09T08:00:00Z",
+        "session_end_time": "2025-11-09T08:30:00Z",
+        "tutor_join_time": "2025-11-09T08:00:00Z",
+        "student_join_time": "2025-11-09T08:00:00Z",
+        "tutor_leave_time": "2025-11-09T08:30:00Z",
+        "student_leave_time": "2025-11-09T08:30:00Z",
+        "subjects_covered": ["Spanish"],
+        "is_first_session": false,
+        "was_rescheduled": false,
+        "tutor_feedback": {
+          "rating": 4,
+          "description": "Quick but effective session. Student practiced conversation skills."
+        },
+        "student_feedback": {
+          "rating": 4,
+          "description": "Short but helpful. Good practice for speaking."
+        }
+      }
+    },
+    {
+      "name": "System Rescheduled Session",
+      "description": "Session rescheduled by the system (e.g., technical issues)",
+      "payload": {
+        "session_id": "session_010_2025-11-09",
+        "tutor_id": "tutor_jack_white",
+        "student_id": "student_olivia_green",
+        "session_start_time": "2025-11-09T17:00:00Z",
+        "session_end_time": "2025-11-09T18:00:00Z",
+        "tutor_join_time": "2025-11-09T17:00:00Z",
+        "student_join_time": "2025-11-09T17:00:00Z",
+        "tutor_leave_time": "2025-11-09T18:00:00Z",
+        "student_leave_time": "2025-11-09T18:00:00Z",
+        "subjects_covered": ["Biology"],
+        "is_first_session": false,
+        "was_rescheduled": true,
+        "rescheduled_by": "system",
+        "tutor_feedback": {
+          "rating": 4,
+          "description": "Session went smoothly after the reschedule. Covered cell biology topics."
+        },
+        "student_feedback": {
+          "rating": 4,
+          "description": "Thanks for rescheduling. Great session on cell structure."
+        }
+      }
+    }
+  ],
+  "usage": {
+    "description": "These mock session payloads can be used for manual testing of the webhook endpoint",
+    "example_curl": "curl -X POST http://localhost:3000/api/webhooks/session-completed -H 'Content-Type: application/json' -H 'X-Signature: <signature>' -d '<payload>'",
+    "generate_signature": "./scripts/generate-webhook-signature.sh '<payload>'",
+    "notes": [
+      "Each session has a unique session_id - change it if testing duplicate session handling",
+      "All timestamps are in ISO 8601 format (required by the schema)",
+      "Ratings must be integers between 1 and 5",
+      "Optional fields can be omitted for testing minimal payloads",
+      "Use different tutor_id and student_id values to test filtering"
+    ]
+  }
+}
+
