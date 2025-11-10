@@ -1,9 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { ArrowLeft, Calendar, AlertCircle, Clock } from "lucide-react";
 import type { TutorDetailResponse } from "@/lib/hooks/useTutorDetailData";
-import { format } from "date-fns";
 
 interface TutorHeaderProps {
   tutorId: string;
@@ -19,24 +16,28 @@ function getScoreColor(score: number): {
   bg: string;
   text: string;
   badge: string;
+  progress: string;
 } {
   if (score >= 81) {
     return {
       bg: "bg-green-50",
-      text: "text-green-800",
+      text: "text-green-600",
       badge: "🟢",
+      progress: "bg-green-500",
     };
   } else if (score >= 51) {
     return {
       bg: "bg-yellow-50",
-      text: "text-yellow-800",
+      text: "text-yellow-600",
       badge: "🟡",
+      progress: "bg-yellow-500",
     };
   } else {
     return {
       bg: "bg-red-50",
-      text: "text-red-800",
+      text: "text-red-600",
       badge: "🔴",
+      progress: "bg-red-500",
     };
   }
 }
@@ -79,7 +80,6 @@ export function TutorHeader({
   activeFlagsCount,
   recentSessionsCount,
 }: TutorHeaderProps) {
-  const router = useRouter();
   const overallScore = currentScore?.overall_score ?? 0;
   const scoreColor = getScoreColor(overallScore);
   const confidenceLevel = getConfidenceLevel(currentScore?.confidence_score ?? null);
@@ -89,68 +89,69 @@ export function TutorHeader({
   const daysSinceLastSession = getDaysSinceLastSession(lastSessionDate);
 
   return (
-    <div className="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg shadow-sm p-6 text-white mb-6">
-      <div className="flex items-start justify-between mb-4">
+    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+      <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-bold">Tutor #{tutorId}</h1>
-          </div>
-          
-          <div className="flex items-center gap-4 mt-4">
-            {/* Overall Score */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-              <div className="text-sm opacity-90 mb-1">Overall Score</div>
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-bold">{overallScore}</span>
-                <span className="text-lg">/100</span>
-                <span className="text-xl">{scoreColor.badge}</span>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Tutor #{tutorId}</h2>
+          <p className="text-sm text-gray-600 mb-4">Tutor ID: {tutorId}</p>
+
+          <div className="flex items-center gap-6 mt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">📊</span>
+              <div>
+                <p className="text-xs text-gray-500">Total Sessions</p>
+                <p className="text-lg font-semibold text-gray-900">
+                  {currentScore?.total_sessions ?? 0}
+                </p>
               </div>
             </div>
-
-            {/* Confidence Level */}
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2">
-              <div className="text-sm opacity-90 mb-1">Confidence</div>
-              <div className="text-lg font-semibold">{confidenceLevel}</div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🚩</span>
+              <div>
+                <p className="text-xs text-gray-500">Active Flags</p>
+                <p className="text-lg font-semibold text-red-600">
+                  {activeFlagsCount}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">📅</span>
+              <div>
+                <p className="text-xs text-gray-500">Last Session</p>
+                <p className="text-sm font-medium text-gray-900">{daysSinceLastSession}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">📈</span>
+              <div>
+                <p className="text-xs text-gray-500">Confidence</p>
+                <p className="text-sm font-medium text-green-600">
+                  {confidenceLevel} ({currentScore?.total_sessions ?? 0}+ sessions)
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Back Button */}
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors backdrop-blur-sm"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back</span>
-        </button>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="h-4 w-4 opacity-80" />
-            <span className="text-sm opacity-90">Total Sessions</span>
+        <div className="text-right">
+          <p className="text-sm text-gray-600 mb-2">Overall Score</p>
+          <div className="flex items-center gap-3">
+            <div className={`text-5xl font-bold ${scoreColor.text}`}>{overallScore}</div>
+            <div>
+              <span className="text-3xl">{scoreColor.badge}</span>
+              <p className={`text-sm font-medium mt-1 ${
+                overallScore < 51 ? "text-red-600" : overallScore >= 81 ? "text-green-600" : "text-gray-600"
+              }`}>
+                {overallScore < 51 ? "Declining ↓" : overallScore >= 81 ? "Improving ↑" : "Stable →"}
+              </p>
+            </div>
           </div>
-          <div className="text-xl font-semibold">
-            {currentScore?.total_sessions ?? 0}
+          <div className="mt-2 w-48 h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full ${scoreColor.progress || "bg-yellow-500"}`}
+              style={{ width: `${overallScore}%` }}
+            />
           </div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <AlertCircle className="h-4 w-4 opacity-80" />
-            <span className="text-sm opacity-90">Active Flags</span>
-          </div>
-          <div className="text-xl font-semibold">{activeFlagsCount}</div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="h-4 w-4 opacity-80" />
-            <span className="text-sm opacity-90">Last Session</span>
-          </div>
-          <div className="text-xl font-semibold">{daysSinceLastSession}</div>
         </div>
       </div>
     </div>

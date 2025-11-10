@@ -166,16 +166,21 @@ export async function seedMockData(options: SeedOptions = {}) {
   const { sessions } = await import("../lib/db/schema");
 
   const {
-    tutorCount = 100,
-    sessionsPerTutor = 30,
+    tutorCount = 50, // Reduced default to keep total sessions reasonable
+    sessionsPerTutor, // If not specified, will vary per tutor
     daysBack = 30,
     includeProblemTutors = true,
   } = options;
 
+  const useVariedSessions = sessionsPerTutor === undefined;
+
   console.log("🌱 Starting mock data generation...");
   console.log(`   Tutors: ${tutorCount}`);
-  console.log(`   Sessions per tutor: ${sessionsPerTutor}`);
-  console.log(`   Total sessions: ${tutorCount * sessionsPerTutor}`);
+  if (useVariedSessions) {
+    console.log(`   Sessions per tutor: 1-30 (varied)`);
+  } else {
+    console.log(`   Sessions per tutor: ${sessionsPerTutor} (fixed)`);
+  }
   console.log(`   Time period: ${daysBack} days`);
 
   // Generate tutors
@@ -204,18 +209,34 @@ export async function seedMockData(options: SeedOptions = {}) {
   // Generate sessions
   console.log("\n📅 Generating sessions...");
   const allSessions: (typeof sessions.$inferInsert)[] = [];
+  const sessionsPerTutorCounts: number[] = [];
 
   for (const tutor of allTutors) {
+    // Vary sessions per tutor between 1-30 if not specified
+    const tutorSessionCount = useVariedSessions
+      ? faker.number.int({ min: 1, max: 30 })
+      : sessionsPerTutor;
+    
+    sessionsPerTutorCounts.push(tutorSessionCount);
+    
     const tutorSessions = generateSessionsForTutor(
       tutor,
       studentPool,
-      sessionsPerTutor,
+      tutorSessionCount,
       daysBack
     );
     allSessions.push(...tutorSessions);
   }
 
-  console.log(`   Generated ${allSessions.length} sessions`);
+  const totalSessions = allSessions.length;
+  const avgSessionsPerTutor = totalSessions / allTutors.length;
+  const minSessions = Math.min(...sessionsPerTutorCounts);
+  const maxSessions = Math.max(...sessionsPerTutorCounts);
+
+  console.log(`   Generated ${totalSessions} sessions`);
+  if (useVariedSessions) {
+    console.log(`   Sessions per tutor: ${minSessions}-${maxSessions} (avg: ${avgSessionsPerTutor.toFixed(1)})`);
+  }
 
   // Insert into database
   console.log("\n💾 Inserting into database...");
