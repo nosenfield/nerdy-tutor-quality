@@ -122,7 +122,7 @@ export function extractIpAddress(request: NextRequest | Request): string {
   }
 
   // Fallback to request IP (if available)
-  if ("ip" in request && request.ip) {
+  if ("ip" in request && request.ip && typeof request.ip === "string") {
     return request.ip;
   }
 

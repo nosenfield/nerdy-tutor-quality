@@ -1,6 +1,10 @@
 /**
  * CRUD Test Pattern Template
  * Copy this template for standard Create-Read-Update-Delete testing
+ * 
+ * NOTE: This is a template file with example tests. These tests are skipped
+ * because they reference functions that don't exist. When copying this template,
+ * replace the imports and implement the actual functions.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -8,7 +12,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 // Replace with your actual imports
 // import { createItem, getItem, updateItem, deleteItem } from './your-module';
 
-describe('CRUD Operations for [Resource]', () => {
+describe.skip('CRUD Operations for [Resource]', () => {
   // Setup and teardown
   beforeEach(() => {
     // Arrange: Set up test database/state
@@ -27,12 +31,12 @@ describe('CRUD Operations for [Resource]', () => {
       };
 
       // Act
-      const result = await createItem(newItem);
+      // const result = await createItem(newItem);
 
       // Assert
-      expect(result).toBeDefined();
-      expect(result.id).toBeDefined();
-      expect(result.name).toBe('Test Item');
+      // expect(result).toBeDefined();
+      // expect(result.id).toBeDefined();
+      // expect(result.name).toBe('Test Item');
     });
 
     it('should reject invalid data', async () => {
@@ -40,7 +44,7 @@ describe('CRUD Operations for [Resource]', () => {
       const invalidItem = { name: '' }; // Missing required fields
 
       // Act & Assert
-      await expect(createItem(invalidItem)).rejects.toThrow();
+      // await expect(createItem(invalidItem)).rejects.toThrow();
     });
 
     it('should handle duplicate items appropriately', async () => {
@@ -51,21 +55,21 @@ describe('CRUD Operations for [Resource]', () => {
   describe('Read', () => {
     it('should retrieve existing item by ID', async () => {
       // Arrange
-      const created = await createItem({ name: 'Test' });
+      // const created = await createItem({ name: 'Test' });
 
       // Act
-      const retrieved = await getItem(created.id);
+      // const retrieved = await getItem(created.id);
 
       // Assert
-      expect(retrieved).toEqual(created);
+      // expect(retrieved).toEqual(created);
     });
 
     it('should return null for non-existent ID', async () => {
       // Act
-      const result = await getItem('non-existent-id');
+      // const result = await getItem('non-existent-id');
 
       // Assert
-      expect(result).toBeNull();
+      // expect(result).toBeNull();
     });
 
     it('should list all items with pagination', async () => {
@@ -76,13 +80,13 @@ describe('CRUD Operations for [Resource]', () => {
   describe('Update', () => {
     it('should update existing item', async () => {
       // Arrange
-      const item = await createItem({ name: 'Original' });
+      // const item = await createItem({ name: 'Original' });
 
       // Act
-      const updated = await updateItem(item.id, { name: 'Updated' });
+      // const updated = await updateItem(item.id, { name: 'Updated' });
 
       // Assert
-      expect(updated.name).toBe('Updated');
+      // expect(updated.name).toBe('Updated');
     });
 
     it('should reject updates with invalid data', async () => {
@@ -97,14 +101,14 @@ describe('CRUD Operations for [Resource]', () => {
   describe('Delete', () => {
     it('should delete existing item', async () => {
       // Arrange
-      const item = await createItem({ name: 'To Delete' });
+      // const item = await createItem({ name: 'To Delete' });
 
       // Act
-      await deleteItem(item.id);
+      // await deleteItem(item.id);
 
       // Assert
-      const retrieved = await getItem(item.id);
-      expect(retrieved).toBeNull();
+      // const retrieved = await getItem(item.id);
+      // expect(retrieved).toBeNull();
     });
 
     it('should handle deleting non-existent item gracefully', async () => {

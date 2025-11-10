@@ -96,7 +96,7 @@ export async function transformTutorScoreToSummary(
 ): Promise<TutorSummary> {
   // Calculate attendance percentage (100% - no_show_rate)
   const noShowRate = score.noShowRate ? Number(score.noShowRate) : 0;
-  const attendancePercentage = Math.max(0, (1 - noShowRate) * 100);
+  const attendancePercentage = Math.max(0, (1 - (noShowRate ?? 0)) * 100);
 
   // Calculate kept sessions percentage (100% - reschedule_rate)
   const rescheduleRate = score.rescheduleRate ? Number(score.rescheduleRate) : 0;
@@ -155,7 +155,7 @@ export function transformTutorScoreToDetail(
 ): TutorDetail {
   // Calculate attendance percentage
   const noShowRate = score.noShowRate ? Number(score.noShowRate) : 0;
-  const attendancePercentage = Math.max(0, (1 - noShowRate) * 100);
+  const attendancePercentage = Math.max(0, (1 - (noShowRate ?? 0)) * 100);
 
   // Calculate kept sessions percentage
   const rescheduleRate = score.rescheduleRate ? Number(score.rescheduleRate) : 0;
@@ -321,27 +321,27 @@ export async function getTutorSummariesFromSessions(
         isNoShow(s.tutorJoinTime)
       ).length;
       const noShowRate = calculateRate(noShowCount, totalSessions);
-      const attendancePercentage = Math.max(0, (1 - noShowRate) * 100);
+      const attendancePercentage = Math.max(0, (1 - (noShowRate ?? 0)) * 100);
 
       // Calculate reschedule metrics
       const rescheduleCount = tutorSessions.filter((s) => s.wasRescheduled).length;
       const rescheduleRate = calculateRate(rescheduleCount, totalSessions);
-      const keptSessionsPercentage = Math.max(0, (1 - rescheduleRate) * 100);
+      const keptSessionsPercentage = Math.max(0, (1 - (rescheduleRate ?? 0)) * 100);
 
       // Calculate rating metrics
       const studentRatings = tutorSessions
         .map((s) => s.studentFeedbackRating)
         .filter((r): r is number => r !== null && r !== undefined);
-      const avgRating =
-        studentRatings.length > 0 ? average(studentRatings) : 0;
+      const avgRating: number =
+        studentRatings.length > 0 ? (average(studentRatings) ?? 0) : 0;
 
       // Calculate first session rating
       const firstSessionRatings = tutorSessions
         .filter((s) => s.isFirstSession)
         .map((s) => s.studentFeedbackRating)
         .filter((r): r is number => r !== null && r !== undefined);
-      const firstSessionAvgRating =
-        firstSessionRatings.length > 0 ? average(firstSessionRatings) : undefined;
+      const firstSessionAvgRating: number | undefined =
+        firstSessionRatings.length > 0 ? (average(firstSessionRatings) ?? undefined) : undefined;
 
       // Calculate first session metrics
       const firstSessionsList = tutorSessions.filter((s) => s.isFirstSession);
@@ -433,27 +433,27 @@ export async function getTutorSummaryFromSessions(
       isNoShow(s.tutorJoinTime)
     ).length;
     const noShowRate = calculateRate(noShowCount, totalSessions);
-    const attendancePercentage = Math.max(0, (1 - noShowRate) * 100);
+    const attendancePercentage = Math.max(0, (1 - (noShowRate ?? 0)) * 100);
 
     // Calculate reschedule metrics
     const rescheduleCount = tutorSessions.filter((s) => s.wasRescheduled).length;
     const rescheduleRate = calculateRate(rescheduleCount, totalSessions);
-    const keptSessionsPercentage = Math.max(0, (1 - rescheduleRate) * 100);
+    const keptSessionsPercentage = Math.max(0, (1 - (rescheduleRate ?? 0)) * 100);
 
     // Calculate rating metrics
     const studentRatings = tutorSessions
       .map((s) => s.studentFeedbackRating)
       .filter((r): r is number => r !== null && r !== undefined);
-    const avgRating =
-      studentRatings.length > 0 ? average(studentRatings) : 0;
+    const avgRating: number =
+      studentRatings.length > 0 ? (average(studentRatings) ?? 0) : 0;
 
     // Calculate first session rating
     const firstSessionRatings = tutorSessions
       .filter((s) => s.isFirstSession)
       .map((s) => s.studentFeedbackRating)
       .filter((r): r is number => r !== null && r !== undefined);
-    const firstSessionAvgRating =
-      firstSessionRatings.length > 0 ? average(firstSessionRatings) : undefined;
+    const firstSessionAvgRating: number | undefined =
+      firstSessionRatings.length > 0 ? (average(firstSessionRatings) ?? undefined) : undefined;
 
     // Calculate first session metrics
     const firstSessionsList = tutorSessions.filter((s) => s.isFirstSession);

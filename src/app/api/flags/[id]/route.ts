@@ -58,7 +58,7 @@ export async function GET(
     const currentScore = allScores[0] || null;
 
     // Get related sessions (if flag has session_id, get that session; otherwise get recent sessions for tutor)
-    let relatedSessions = [];
+    let relatedSessions: (typeof sessions.$inferSelect)[] = [];
     if (flag.sessionId) {
       const session = await db
         .select()
@@ -127,22 +127,21 @@ export async function GET(
       student_id: session.studentId,
       session_start_time: session.sessionStartTime.toISOString(),
       session_end_time: session.sessionEndTime?.toISOString() || null,
-      scheduled_start_time: session.scheduledStartTime.toISOString(),
-      scheduled_end_time: session.scheduledEndTime.toISOString(),
-      duration_minutes: session.durationMinutes,
+      scheduled_start_time: session.sessionStartTime.toISOString(), // sessionStartTime is the scheduled time
+      scheduled_end_time: session.sessionEndTime?.toISOString() || null, // sessionEndTime is the scheduled end time
+      duration_minutes: session.sessionLengthScheduled || null,
       is_first_session: session.isFirstSession,
-      student_rating: session.studentRating ? Number(session.studentRating) : null,
-      tutor_rating: session.tutorRating ? Number(session.tutorRating) : null,
-      feedback_text: session.feedbackText,
-      feedback_rating: session.feedbackRating,
+      student_rating: session.studentFeedbackRating ? Number(session.studentFeedbackRating) : null,
+      tutor_rating: session.tutorFeedbackRating ? Number(session.tutorFeedbackRating) : null,
+      feedback_text: session.studentFeedbackDescription || null,
+      feedback_rating: session.studentFeedbackRating || null,
       was_rescheduled: session.wasRescheduled,
-      rescheduled_by: session.rescheduledBy,
-      reschedule_reason: session.rescheduleReason,
+      rescheduled_by: session.rescheduledBy || null,
       created_at: session.createdAt.toISOString(),
       updated_at: session.updatedAt.toISOString(),
     });
 
-    const transformFlag = (flag: typeof flag) => ({
+    const transformFlag = (flag: typeof flags.$inferSelect) => ({
       id: flag.id,
       tutor_id: flag.tutorId,
       session_id: flag.sessionId,
@@ -161,7 +160,7 @@ export async function GET(
       updated_at: flag.updatedAt.toISOString(),
     });
 
-    const transformIntervention = (intervention: typeof flagInterventions[0]) => ({
+    const transformIntervention = (intervention: typeof interventions.$inferSelect) => ({
       id: intervention.id,
       flag_id: intervention.flagId,
       tutor_id: intervention.tutorId,

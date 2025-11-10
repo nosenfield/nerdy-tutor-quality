@@ -12,6 +12,9 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+// Bull requires Node.js runtime (not Edge)
+export const runtime = "nodejs";
+
 /**
  * Handle GET requests - serve Bull Board UI
  * 

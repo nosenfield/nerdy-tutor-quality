@@ -82,14 +82,20 @@ describe("Flag Resolve API Endpoint", () => {
       return;
     }
 
-    // Get an open flag from the database
-    const flag = await db
+    // Get an open flag from the database, or any flag if none are open
+    let flag = await db
       .select()
       .from(flags)
       .where(eq(flags.status, "open"))
       .limit(1);
+    
+    // If no open flags, try to get any flag
     if (flag.length === 0) {
-      console.log("Skipping test - no open flags in database");
+      flag = await db.select().from(flags).limit(1);
+    }
+    
+    if (flag.length === 0) {
+      console.log("Skipping test - no flags in database");
       return;
     }
 

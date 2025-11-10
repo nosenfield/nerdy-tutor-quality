@@ -206,7 +206,7 @@ export function TutorDetailCard({
       >
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-gray-900">
-            Tutor Details
+            Details
           </h3>
           <button
             onClick={onClose}
@@ -217,7 +217,7 @@ export function TutorDetailCard({
           </button>
         </div>
         <div className="text-xs text-red-600">
-          {error ? "Error loading tutor details" : "Tutor not found"}
+          {error ? "Error loading details" : "Not found"}
         </div>
       </div>
     );
@@ -267,19 +267,18 @@ export function TutorDetailCard({
               onMouseDown={(e) => e.stopPropagation()}
               disabled={!canGoPrevious}
               className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              aria-label="Previous tutor"
+              aria-label="Previous"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
           )}
           <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-gray-900">
-              Tutor{" "}
               <button
                 onClick={handleTutorIdClick}
                 onMouseDown={(e) => e.stopPropagation()}
                 className="text-indigo-600 hover:text-indigo-800 hover:underline font-semibold"
-                aria-label={`View details for tutor ${tutorDetail.tutorId}`}
+                aria-label={`View details for ${tutorDetail.tutorId}`}
               >
                 {tutorDetail.tutorId}
               </button>
@@ -302,7 +301,7 @@ export function TutorDetailCard({
               onMouseDown={(e) => e.stopPropagation()}
               disabled={!canGoNext}
               className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              aria-label="Next tutor"
+              aria-label="Next"
             >
               <ChevronRight className="h-4 w-4" />
             </button>

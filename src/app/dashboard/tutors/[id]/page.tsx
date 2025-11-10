@@ -493,14 +493,12 @@ export default function TutorDetailPage({
         />
 
         {/* Performance Timeline Chart (Task 4.17) ⭐ KEY */}
-        {tutorData.all_sessions && tutorData.all_sessions.length > 0 && (
-          <PerformanceTimeline
-            allSessions={tutorData.all_sessions}
-            activeFlags={active_flags ?? []}
-            interventions={interventions ?? []}
-            dateRange={dateRange}
-          />
-        )}
+        <PerformanceTimeline
+          allSessions={tutorData.all_sessions ?? []}
+          activeFlags={active_flags ?? []}
+          interventions={interventions ?? []}
+          dateRange={dateRange}
+        />
 
         {/* Active Flags & Interventions - Side by Side (Tasks 4.18 & 4.20) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

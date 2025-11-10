@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, tutorScores, sessions, flags, interventions } from "@/lib/db";
 import { eq, and, desc, inArray, gte, lte } from "drizzle-orm";
-import { getTutorStats } from "@/lib/scoring/rules-engine";
+import { getTutorStats, type TutorStats } from "@/lib/scoring/rules-engine";
 import { calculateAllScores } from "@/lib/scoring/aggregator";
 import { subDays, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { randomUUID } from "node:crypto";
@@ -216,7 +216,7 @@ export async function GET(
         if (!scoreMatchesRange) {
           // Recalculate score for the requested date range
           try {
-            const stats = await getTutorStats(tutorId, windowStart, windowEnd);
+            const stats: TutorStats = await getTutorStats(tutorId, windowStart, windowEnd);
             const { overallScore, confidenceScore, breakdown } = calculateAllScores(stats);
             
             const tempId = randomUUID();

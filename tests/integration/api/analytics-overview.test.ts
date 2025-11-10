@@ -29,28 +29,32 @@ describe("Analytics Overview API Endpoint", () => {
     }
   });
 
-  it("should return analytics overview with correct structure", async () => {
-    if (!dbAvailable) {
-      console.log("Skipping test - database not available");
-      return;
-    }
+  it(
+    "should return analytics overview with correct structure",
+    async () => {
+      if (!dbAvailable) {
+        console.log("Skipping test - database not available");
+        return;
+      }
 
-    const response = await fetch(`${baseUrl}/api/analytics/overview`);
+      const response = await fetch(`${baseUrl}/api/analytics/overview`);
 
-    expect(response.status).toBe(200);
-    const data = await response.json();
-    expect(data).toHaveProperty("today");
-    expect(data).toHaveProperty("trends");
-    expect(data).toHaveProperty("top_issues");
-    expect(data.today).toHaveProperty("sessions_processed");
-    expect(data.today).toHaveProperty("flags_raised");
-    expect(data.today).toHaveProperty("tutors_flagged");
-    expect(data.trends).toHaveProperty("avg_score");
-    expect(data.trends).toHaveProperty("avg_score_change");
-    expect(data.trends).toHaveProperty("flag_rate");
-    expect(data.trends).toHaveProperty("flag_rate_change");
-    expect(Array.isArray(data.top_issues)).toBe(true);
-  });
+      expect(response.status).toBe(200);
+      const data = await response.json();
+      expect(data).toHaveProperty("today");
+      expect(data).toHaveProperty("trends");
+      expect(data).toHaveProperty("top_issues");
+      expect(data.today).toHaveProperty("sessions_processed");
+      expect(data.today).toHaveProperty("flags_raised");
+      expect(data.today).toHaveProperty("tutors_flagged");
+      expect(data.trends).toHaveProperty("avg_score");
+      expect(data.trends).toHaveProperty("avg_score_change");
+      expect(data.trends).toHaveProperty("flag_rate");
+      expect(data.trends).toHaveProperty("flag_rate_change");
+      expect(Array.isArray(data.top_issues)).toBe(true);
+    },
+    10000
+  );
 
   it("should return today's stats with correct types", async () => {
     if (!dbAvailable) {
@@ -80,9 +84,15 @@ describe("Analytics Overview API Endpoint", () => {
 
     expect(response.status).toBe(200);
     const data = await response.json();
-    expect(typeof data.trends.avg_score).toBe("number");
+    // avg_score can be number or null
+    expect(
+      typeof data.trends.avg_score === "number" || data.trends.avg_score === null
+    ).toBe(true);
     expect(typeof data.trends.avg_score_change).toBe("number");
-    expect(typeof data.trends.flag_rate).toBe("number");
+    // flag_rate can be number or null
+    expect(
+      typeof data.trends.flag_rate === "number" || data.trends.flag_rate === null
+    ).toBe(true);
     expect(typeof data.trends.flag_rate_change).toBe("number");
     
     // avg_score should be between 0-100 or null

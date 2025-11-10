@@ -35,6 +35,9 @@ import {
 } from "@/lib/utils/rate-limit";
 import { createRedisConnection } from "@/lib/queue";
 
+// Bull requires Node.js runtime (not Edge)
+export const runtime = "nodejs";
+
 /**
  * Transform webhook payload to database format
  * 

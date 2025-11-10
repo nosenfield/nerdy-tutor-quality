@@ -18,7 +18,7 @@ import { Switch, Listbox, Transition, RadioGroup } from "@headlessui/react";
 import { RefreshCw, Check, ChevronsUpDown } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format, subDays, subQuarters, startOfToday, endOfToday } from "date-fns";
-import { Fragment } from "react";
+import { Fragment, Suspense } from "react";
 import type { DateRange } from "@/lib/types/dashboard";
 
 /**
@@ -108,12 +108,9 @@ function getCurrentQuickFilter(dateRange: DateRange): QuickFilter {
 }
 
 /**
- * Tutor Assessment Dashboard
- * 
- * Main dashboard page displaying scatter plots and tutor data.
- * This is the primary view after login.
+ * Dashboard Content Component (uses useSearchParams)
  */
-export default function DashboardPage() {
+function DashboardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const {
@@ -729,6 +726,20 @@ export default function DashboardPage() {
       {/* Session History Modal */}
       <SessionHistoryModal />
     </div>
+  );
+}
+
+/**
+ * Tutor Assessment Dashboard
+ * 
+ * Main dashboard page displaying scatter plots and tutor data.
+ * This is the primary view after login.
+ */
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 flex items-center justify-center"><p className="text-gray-500">Loading dashboard...</p></div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
 

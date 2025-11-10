@@ -13,7 +13,7 @@ import {
   ReferenceDot,
   ReferenceLine,
 } from "recharts";
-import { format, parseISO, startOfDay, eachDayOfInterval, eachWeekOfInterval, startOfWeek, endOfWeek, differenceInDays } from "date-fns";
+import { format, parseISO, startOfDay, eachDayOfInterval } from "date-fns";
 import type { TutorDetailResponse } from "@/lib/hooks/useTutorDetailData";
 
 interface PerformanceTimelineProps {
@@ -40,156 +40,84 @@ function transformPerformanceData(
     return sessionDate >= dateRange.start && sessionDate <= dateRange.end;
   });
 
-  // Determine aggregation period based on date range length
+  // Get all days in the date range for the X-axis
   const startDay = startOfDay(dateRange.start);
   const endDay = startOfDay(dateRange.end);
-  const daysInRange = differenceInDays(endDay, startDay) + 1;
-  const useWeeklyAggregation = daysInRange > 30; // Use weekly for ranges > 30 days
+  const allDays = eachDayOfInterval({ start: startDay, end: endDay });
 
-  let chartData: Array<{
+  // Group sessions by day
+  const sessionsByDay = new Map<string, typeof filteredSessions>();
+
+  filteredSessions.forEach((session) => {
+    const sessionDate = parseISO(session.session_start_time);
+    const dayDate = startOfDay(sessionDate);
+    const dayKey = format(dayDate, "yyyy-MM-dd");
+
+    if (!sessionsByDay.has(dayKey)) {
+      sessionsByDay.set(dayKey, []);
+    }
+    sessionsByDay.get(dayKey)!.push(session);
+  });
+
+  // Generate data points for ALL days in the date range
+  // Days with sessions will have values and show dots
+  // Days without sessions will have null values (no dots, but X-axis still shows the day)
+  const chartData: Array<{
     date: string;
     dateFormatted: string;
     attendancePercentage: number | null;
     sessionsKeptPercentage: number | null;
     avgRating: number | null;
-  }>;
+  }> = allDays.map((day) => {
+    const dayKey = format(day, "yyyy-MM-dd");
+    const daySessions = sessionsByDay.get(dayKey) || [];
 
-  if (useWeeklyAggregation) {
-    // Weekly aggregation for longer ranges (e.g., 90 days)
-    const allWeeks = eachWeekOfInterval({ start: startDay, end: endDay }, { weekStartsOn: 1 });
-    
-    // Group sessions by week
-    const sessionsByWeek = new Map<string, typeof filteredSessions>();
-
-    filteredSessions.forEach((session) => {
-      const sessionDate = parseISO(session.session_start_time);
-      const weekStart = startOfWeek(sessionDate, { weekStartsOn: 1 });
-      const weekKey = format(weekStart, "yyyy-MM-dd");
-
-      if (!sessionsByWeek.has(weekKey)) {
-        sessionsByWeek.set(weekKey, []);
-      }
-      sessionsByWeek.get(weekKey)!.push(session);
-    });
-
-    // Calculate metrics for each week in the range
-    chartData = allWeeks.map((weekStart) => {
-      const weekKey = format(weekStart, "yyyy-MM-dd");
-      const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
-      const weekSessions = sessionsByWeek.get(weekKey) || [];
-
-      // If no sessions for this week, return null values
-      if (weekSessions.length === 0) {
-        return {
-          date: weekKey,
-          dateFormatted: format(weekStart, "MMM d"),
-          attendancePercentage: null,
-          sessionsKeptPercentage: null,
-          avgRating: null,
-        };
-      }
-
-      const totalSessions = weekSessions.length;
-
-      // Calculate attendance % (1 - no_show_rate)
-      const noShowCount = weekSessions.filter(
-        (s) => !s.tutor_join_time
-      ).length;
-      const noShowRate = totalSessions > 0 ? noShowCount / totalSessions : 0;
-      const attendancePercentage = (1 - noShowRate) * 100;
-
-      // Calculate sessions kept % (1 - reschedule_rate)
-      const rescheduleCount = weekSessions.filter(
-        (s) => s.was_rescheduled
-      ).length;
-      const rescheduleRate = totalSessions > 0 ? rescheduleCount / totalSessions : 0;
-      const sessionsKeptPercentage = (1 - rescheduleRate) * 100;
-
-      // Calculate average rating (1-5 scale)
-      const ratings = weekSessions
-        .map((s) => s.student_feedback_rating)
-        .filter((r): r is number => r !== null && r !== undefined);
-      const avgRating = ratings.length > 0 
-        ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length 
-        : null;
-
-      return {
-        date: weekKey,
-        dateFormatted: format(weekStart, "MMM d"),
-        attendancePercentage,
-        sessionsKeptPercentage,
-        avgRating: avgRating ?? null,
-      };
-    });
-  } else {
-    // Daily aggregation for shorter ranges (7-30 days)
-    const allDays = eachDayOfInterval({ start: startDay, end: endDay });
-
-    // Group sessions by day
-    const sessionsByDay = new Map<string, typeof filteredSessions>();
-
-    filteredSessions.forEach((session) => {
-      const sessionDate = parseISO(session.session_start_time);
-      const dayDate = startOfDay(sessionDate);
-      const dayKey = format(dayDate, "yyyy-MM-dd");
-
-      if (!sessionsByDay.has(dayKey)) {
-        sessionsByDay.set(dayKey, []);
-      }
-      sessionsByDay.get(dayKey)!.push(session);
-    });
-
-    // Calculate metrics for each day in the range
-    chartData = allDays.map((day) => {
-      const dayKey = format(day, "yyyy-MM-dd");
-      const daySessions = sessionsByDay.get(dayKey) || [];
-
-      // If no sessions for this day, return null values
-      if (daySessions.length === 0) {
-        return {
-          date: dayKey,
-          dateFormatted: format(day, "MMM d"),
-          attendancePercentage: null,
-          sessionsKeptPercentage: null,
-          avgRating: null,
-        };
-      }
-
-      const totalSessions = daySessions.length;
-
-      // Calculate attendance % (1 - no_show_rate)
-      const noShowCount = daySessions.filter(
-        (s) => !s.tutor_join_time
-      ).length;
-      const noShowRate = totalSessions > 0 ? noShowCount / totalSessions : 0;
-      const attendancePercentage = (1 - noShowRate) * 100;
-
-      // Calculate sessions kept % (1 - reschedule_rate)
-      const rescheduleCount = daySessions.filter(
-        (s) => s.was_rescheduled
-      ).length;
-      const rescheduleRate = totalSessions > 0 ? rescheduleCount / totalSessions : 0;
-      const sessionsKeptPercentage = (1 - rescheduleRate) * 100;
-
-      // Calculate average rating (1-5 scale)
-      const ratings = daySessions
-        .map((s) => s.student_feedback_rating)
-        .filter((r): r is number => r !== null && r !== undefined);
-      const avgRating = ratings.length > 0 
-        ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length 
-        : null;
-
+    // If no sessions for this day, return null values (no dot will be shown)
+    if (daySessions.length === 0) {
       return {
         date: dayKey,
         dateFormatted: format(day, "MMM d"),
-        attendancePercentage,
-        sessionsKeptPercentage,
-        avgRating: avgRating ?? null,
+        attendancePercentage: null,
+        sessionsKeptPercentage: null,
+        avgRating: null,
       };
-    });
-  }
+    }
 
-  // Add flag markers
+    // Calculate metrics for days with sessions
+    const totalSessions = daySessions.length;
+
+    // Calculate attendance % (1 - no_show_rate)
+    const noShowCount = daySessions.filter(
+      (s) => !s.tutor_join_time
+    ).length;
+    const noShowRate = totalSessions > 0 ? noShowCount / totalSessions : 0;
+    const attendancePercentage = (1 - noShowRate) * 100;
+
+    // Calculate sessions kept % (1 - reschedule_rate)
+    const rescheduleCount = daySessions.filter(
+      (s) => s.was_rescheduled
+    ).length;
+    const rescheduleRate = totalSessions > 0 ? rescheduleCount / totalSessions : 0;
+    const sessionsKeptPercentage = (1 - rescheduleRate) * 100;
+
+    // Calculate average rating (1-5 scale)
+    const ratings = daySessions
+      .map((s) => s.student_feedback_rating)
+      .filter((r): r is number => r !== null && r !== undefined);
+    const avgRating = ratings.length > 0 
+      ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length 
+      : null;
+
+    return {
+      date: dayKey,
+      dateFormatted: format(day, "MMM d"),
+      attendancePercentage,
+      sessionsKeptPercentage,
+      avgRating: avgRating ?? null,
+    };
+  });
+
+  // Add flag markers - always use daily aggregation
   const flagMarkers = flags
     .filter((flag) => {
       const flagDate = parseISO(flag.created_at);
@@ -198,36 +126,18 @@ function transformPerformanceData(
     .map((flag) => {
       const flagDate = parseISO(flag.created_at);
       
-      // Find the chart data point for this flag
-      let targetPoint: typeof chartData[0];
-      
-      if (useWeeklyAggregation) {
-        // For weekly aggregation, find the week that contains this flag
-        const flagWeekStart = startOfWeek(flagDate, { weekStartsOn: 1 });
-        const flagWeekKey = format(flagWeekStart, "yyyy-MM-dd");
-        const weekPoint = chartData.find((point) => point.date === flagWeekKey);
-        targetPoint = weekPoint || chartData.reduce((closest, point) => {
-          const pointDate = parseISO(point.date);
-          const closestDate = parseISO(closest.date);
-          return Math.abs(pointDate.getTime() - flagDate.getTime()) <
-            Math.abs(closestDate.getTime() - flagDate.getTime())
-            ? point
-            : closest;
-        }, chartData[0]);
-      } else {
-        // For daily aggregation, find the day
-        const flagDay = startOfDay(flagDate);
-        const flagDayKey = format(flagDay, "yyyy-MM-dd");
-        const dayPoint = chartData.find((point) => point.date === flagDayKey);
-        targetPoint = dayPoint || chartData.reduce((closest, point) => {
-          const pointDate = parseISO(point.date);
-          const closestDate = parseISO(closest.date);
-          return Math.abs(pointDate.getTime() - flagDate.getTime()) <
-            Math.abs(closestDate.getTime() - flagDate.getTime())
-            ? point
-            : closest;
-        }, chartData[0]);
-      }
+      // Find the chart data point for this flag (daily aggregation)
+      const flagDay = startOfDay(flagDate);
+      const flagDayKey = format(flagDay, "yyyy-MM-dd");
+      const dayPoint = chartData.find((point) => point.date === flagDayKey);
+      const targetPoint = dayPoint || chartData.reduce((closest, point) => {
+        const pointDate = parseISO(point.date);
+        const closestDate = parseISO(closest.date);
+        return Math.abs(pointDate.getTime() - flagDate.getTime()) <
+          Math.abs(closestDate.getTime() - flagDate.getTime())
+          ? point
+          : closest;
+      }, chartData[0]);
 
       return {
         date: flag.created_at,
@@ -239,7 +149,7 @@ function transformPerformanceData(
       };
     });
 
-  // Add intervention markers
+  // Add intervention markers - always use daily aggregation
   const interventionMarkers = interventions
     .filter((intervention) => {
       const interventionDate = parseISO(intervention.intervention_date);
@@ -248,36 +158,18 @@ function transformPerformanceData(
     .map((intervention) => {
       const interventionDate = parseISO(intervention.intervention_date);
       
-      // Find the chart data point for this intervention
-      let targetPoint: typeof chartData[0];
-      
-      if (useWeeklyAggregation) {
-        // For weekly aggregation, find the week that contains this intervention
-        const interventionWeekStart = startOfWeek(interventionDate, { weekStartsOn: 1 });
-        const interventionWeekKey = format(interventionWeekStart, "yyyy-MM-dd");
-        const weekPoint = chartData.find((point) => point.date === interventionWeekKey);
-        targetPoint = weekPoint || chartData.reduce((closest, point) => {
-          const pointDate = parseISO(point.date);
-          const closestDate = parseISO(closest.date);
-          return Math.abs(pointDate.getTime() - interventionDate.getTime()) <
-            Math.abs(closestDate.getTime() - interventionDate.getTime())
-            ? point
-            : closest;
-        }, chartData[0]);
-      } else {
-        // For daily aggregation, find the day
-        const interventionDay = startOfDay(interventionDate);
-        const interventionDayKey = format(interventionDay, "yyyy-MM-dd");
-        const dayPoint = chartData.find((point) => point.date === interventionDayKey);
-        targetPoint = dayPoint || chartData.reduce((closest, point) => {
-          const pointDate = parseISO(point.date);
-          const closestDate = parseISO(closest.date);
-          return Math.abs(pointDate.getTime() - interventionDate.getTime()) <
-            Math.abs(closestDate.getTime() - interventionDate.getTime())
-            ? point
-            : closest;
-        }, chartData[0]);
-      }
+      // Find the chart data point for this intervention (daily aggregation)
+      const interventionDay = startOfDay(interventionDate);
+      const interventionDayKey = format(interventionDay, "yyyy-MM-dd");
+      const dayPoint = chartData.find((point) => point.date === interventionDayKey);
+      const targetPoint = dayPoint || chartData.reduce((closest, point) => {
+        const pointDate = parseISO(point.date);
+        const closestDate = parseISO(closest.date);
+        return Math.abs(pointDate.getTime() - interventionDate.getTime()) <
+          Math.abs(closestDate.getTime() - interventionDate.getTime())
+          ? point
+          : closest;
+      }, chartData[0]);
 
       return {
         date: intervention.intervention_date,
@@ -362,145 +254,167 @@ export function PerformanceTimeline({
   // Calculate number of days in the date range
   const daysInRange = chartData.length;
   // For 7 days or less, show all ticks (interval = 0 means show all)
-  // For longer ranges, let Recharts auto-calculate
-  const xAxisInterval = daysInRange <= 7 ? 0 : undefined;
+  // For ~30 days (28-31), show every 3rd day (interval = 2 means skip 2 ticks between shown ticks)
+  // For other ranges, let Recharts auto-calculate
+  const xAxisInterval = daysInRange <= 7 ? 0 : daysInRange >= 28 && daysInRange <= 31 ? 2 : undefined;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">
-          Performance Timeline
-        </h2>
-      </div>
-
-      <div className="h-96">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+    <div 
+      className="bg-white rounded-lg shadow-sm p-6 mb-6 [&_*]:outline-none [&_*]:focus:outline-none [&_svg]:outline-none [&_svg:focus]:outline-none select-none"
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={(e) => e.preventDefault()}
+      style={{ outline: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
+    >
+      {hasData ? (
+        <>
+          <div 
+            className="h-96 [&_*]:outline-none [&_*]:focus:outline-none [&_svg]:outline-none [&_svg:focus]:outline-none select-none" 
+            tabIndex={-1}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={(e) => e.preventDefault()}
+            style={{ outline: 'none', userSelect: 'none', WebkitUserSelect: 'none' }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis
-              dataKey="dateFormatted"
-              tick={{ fontSize: 12 }}
-              angle={-45}
-              textAnchor="end"
-              height={60}
-              interval={xAxisInterval}
-            />
-            <YAxis
-              yAxisId="percentage"
-              domain={[0, 100]}
-              tick={{ fontSize: 12 }}
-              label={{
-                value: "Percentage (%)",
-                angle: -90,
-                position: "insideLeft",
-                style: { textAnchor: "middle" },
-              }}
-            />
-            <YAxis
-              yAxisId="rating"
-              orientation="right"
-              domain={[1, 5]}
-              tick={{ fontSize: 12 }}
-              label={{
-                value: "Rating (1-5)",
-                angle: 90,
-                position: "insideRight",
-                style: { textAnchor: "middle" },
-              }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                style={{ outline: 'none' }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis
+                  dataKey="dateFormatted"
+                  tick={{ fontSize: 12 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
+                  interval={xAxisInterval}
+                />
+                <YAxis
+                  yAxisId="percentage"
+                  domain={[0, 100]}
+                  tick={{ fontSize: 12 }}
+                  label={{
+                    value: "Percentage (%)",
+                    angle: -90,
+                    position: "insideLeft",
+                    style: { textAnchor: "middle" },
+                  }}
+                />
+                <YAxis
+                  yAxisId="rating"
+                  orientation="right"
+                  domain={[1, 5]}
+                  tick={{ fontSize: 12 }}
+                  label={{
+                    value: "Rating (1-5)",
+                    angle: 90,
+                    position: "insideRight",
+                    style: { textAnchor: "middle" },
+                  }}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
 
-            {/* Session Attendance Line */}
-            <Line
-              yAxisId="percentage"
-              type="monotone"
-              dataKey="attendancePercentage"
-              name="Attendance %"
-              stroke="#10B981"
-              strokeWidth={2}
-              dot={{ fill: "#10B981", r: 3 }}
-              activeDot={{ r: 5 }}
-              connectNulls={true}
-            />
+                {/* Session Attendance Line */}
+                <Line
+                  yAxisId="percentage"
+                  type="monotone"
+                  dataKey="attendancePercentage"
+                  name="Attendance %"
+                  stroke="#10B981"
+                  strokeWidth={2}
+                  dot={{ fill: "#10B981", r: 3 }}
+                  activeDot={{ r: 5 }}
+                  connectNulls={true}
+                />
 
-            {/* Sessions Kept Line */}
-            <Line
-              yAxisId="percentage"
-              type="monotone"
-              dataKey="sessionsKeptPercentage"
-              name="Sessions Kept %"
-              stroke="#3B82F6"
-              strokeWidth={2}
-              dot={{ fill: "#3B82F6", r: 3 }}
-              activeDot={{ r: 5 }}
-              connectNulls={true}
-            />
+                {/* Sessions Kept Line */}
+                <Line
+                  yAxisId="percentage"
+                  type="monotone"
+                  dataKey="sessionsKeptPercentage"
+                  name="Sessions Kept %"
+                  stroke="#3B82F6"
+                  strokeWidth={2}
+                  dot={{ fill: "#3B82F6", r: 3 }}
+                  activeDot={{ r: 5 }}
+                  connectNulls={true}
+                />
 
-            {/* Average Rating Line */}
-            <Line
-              yAxisId="rating"
-              type="monotone"
-              dataKey="avgRating"
-              name="Avg Rating"
-              stroke="#F59E0B"
-              strokeWidth={2}
-              dot={{ fill: "#F59E0B", r: 3 }}
-              activeDot={{ r: 5 }}
-              connectNulls={true}
-            />
+                {/* Average Rating Line */}
+                <Line
+                  yAxisId="rating"
+                  type="monotone"
+                  dataKey="avgRating"
+                  name="Avg Rating"
+                  stroke="#F59E0B"
+                  strokeWidth={2}
+                  dot={{ fill: "#F59E0B", r: 3 }}
+                  activeDot={{ r: 5 }}
+                  connectNulls={true}
+                />
 
-            {/* Flag Markers */}
-            {flagMarkers.map((flag, index) => (
-              <ReferenceDot
-                key={`flag-${index}`}
-                x={flag.dateFormatted}
-                y={flag.y}
-                r={6}
-                fill={
-                  flag.severity === "critical"
-                    ? "#DC2626"
-                    : flag.severity === "high"
-                    ? "#EA580C"
-                    : flag.severity === "medium"
-                    ? "#F59E0B"
-                    : "#3B82F6"
-                }
-                stroke="#FFF"
-                strokeWidth={2}
-              />
-            ))}
+                {/* Flag Markers */}
+                {flagMarkers.map((flag, index) => (
+                  <ReferenceDot
+                    key={`flag-${index}`}
+                    x={flag.dateFormatted}
+                    y={flag.y}
+                    r={6}
+                    fill={
+                      flag.severity === "critical"
+                        ? "#DC2626"
+                        : flag.severity === "high"
+                        ? "#EA580C"
+                        : flag.severity === "medium"
+                        ? "#F59E0B"
+                        : "#3B82F6"
+                    }
+                    stroke="#FFF"
+                    strokeWidth={2}
+                  />
+                ))}
 
-            {/* Intervention Markers */}
-            {interventionMarkers.map((intervention, index) => (
-              <ReferenceDot
-                key={`intervention-${index}`}
-                x={intervention.dateFormatted}
-                y={intervention.y}
-                r={6}
-                fill="#10B981"
-                stroke="#FFF"
-                strokeWidth={2}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+                {/* Intervention Markers */}
+                {interventionMarkers.map((intervention, index) => (
+                  <ReferenceDot
+                    key={`intervention-${index}`}
+                    x={intervention.dateFormatted}
+                    y={intervention.y}
+                    r={6}
+                    fill="#10B981"
+                    stroke="#FFF"
+                    strokeWidth={2}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
 
-      {/* Legend for markers */}
-      <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-red-600"></div>
-          <span>Flag Raised</span>
+          {/* Legend for markers */}
+          <div className="flex items-center gap-4 mt-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-600"></div>
+              <span>Flag Raised</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+              <span>Intervention</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="h-96 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-gray-500 text-lg">
+              No data available for the selected date range
+            </p>
+            <p className="text-gray-400 text-sm mt-2">
+              Try adjusting the date filter to see performance data
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-          <span>Intervention</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -111,14 +111,14 @@ export function TutorHeader({
       description: "Based on no-shows and lateness",
     },
     {
-      label: "Ratings",
-      value: scoreBreakdown.ratings,
-      description: "Based on average student ratings",
-    },
-    {
       label: "Reliability",
       value: scoreBreakdown.reliability,
       description: "Based on reschedule rate",
+    },
+    {
+      label: "Ratings",
+      value: scoreBreakdown.ratings,
+      description: "Based on average student ratings",
     },
   ] : [];
 
@@ -151,10 +151,84 @@ export function TutorHeader({
           </div>
         </div>
 
-        {/* Score Breakdown Cards - Inline (excluding Ratings) */}
-        {scores.filter((score) => score.label !== "Ratings").map((score) => {
+        {/* Score Breakdown Cards - Inline */}
+        {scores.map((score) => {
           const colors = getScoreColor(score.value);
           const trend = getTrend(score.value, performanceHistory);
+
+          // For ratings, convert 0-100 score back to 1-5 scale
+          if (score.label === "Ratings") {
+            let rating: number;
+            if (currentScore?.avg_student_rating !== null && currentScore?.avg_student_rating !== undefined) {
+              rating = Number(currentScore.avg_student_rating);
+            } else {
+              // Convert 0-100 score back to 1-5 rating
+              rating = (score.value / 100) * 4 + 1;
+            }
+            const displayValue = rating.toFixed(1);
+
+            return (
+              <div
+                key={score.label}
+                className="flex items-center gap-2"
+              >
+                <div>
+                  <div className="flex items-center gap-1">
+                    <p className="text-xs text-gray-500">{score.label}</p>
+                    {trend && (
+                      <div className="flex items-center">
+                        {trend === "improving" && (
+                          <TrendingUp className="h-3 w-3 text-green-600" />
+                        )}
+                        {trend === "declining" && (
+                          <TrendingDown className="h-3 w-3 text-red-600" />
+                        )}
+                        {trend === "stable" && (
+                          <Minus className="h-3 w-3 text-gray-600" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <p className={`${colors.text} text-lg font-bold`}>
+                    {displayValue}/5
+                  </p>
+                </div>
+              </div>
+            );
+          }
+
+          // For attendance and reliability, show as percentage
+          // For other scores, show as /100
+          if (score.label === "Attendance" || score.label === "Reliability") {
+            return (
+              <div
+                key={score.label}
+                className="flex items-center gap-2"
+              >
+                <div>
+                  <div className="flex items-center gap-1">
+                    <p className="text-xs text-gray-500">{score.label}</p>
+                    {trend && (
+                      <div className="flex items-center">
+                        {trend === "improving" && (
+                          <TrendingUp className="h-3 w-3 text-green-600" />
+                        )}
+                        {trend === "declining" && (
+                          <TrendingDown className="h-3 w-3 text-red-600" />
+                        )}
+                        {trend === "stable" && (
+                          <Minus className="h-3 w-3 text-gray-600" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <p className={`${colors.text} text-lg font-bold`}>
+                    {Math.round(score.value)}%
+                  </p>
+                </div>
+              </div>
+            );
+          }
 
           return (
             <div
@@ -185,51 +259,6 @@ export function TutorHeader({
             </div>
           );
         })}
-
-        {/* Ratings Scorecard - Far Right */}
-        {scores.find((score) => score.label === "Ratings") && (() => {
-          const ratingScore = scores.find((score) => score.label === "Ratings")!;
-          const colors = getScoreColor(ratingScore.value);
-          const trend = getTrend(ratingScore.value, performanceHistory);
-
-          // For ratings, convert 0-100 score back to 1-5 scale
-          // Formula: score = ((rating - 1) / 4) * 100
-          // Reverse: rating = (score / 100) * 4 + 1
-          let rating: number;
-          if (currentScore?.avg_student_rating !== null && currentScore?.avg_student_rating !== undefined) {
-            rating = Number(currentScore.avg_student_rating);
-          } else {
-            // Convert 0-100 score back to 1-5 rating
-            rating = (ratingScore.value / 100) * 4 + 1;
-          }
-          const displayValue = rating.toFixed(1);
-
-          return (
-            <div className="flex items-center gap-2 ml-auto">
-              <div>
-                <div className="flex items-center gap-1">
-                  <p className="text-xs text-gray-500">{ratingScore.label}</p>
-                  {trend && (
-                    <div className="flex items-center">
-                      {trend === "improving" && (
-                        <TrendingUp className="h-3 w-3 text-green-600" />
-                      )}
-                      {trend === "declining" && (
-                        <TrendingDown className="h-3 w-3 text-red-600" />
-                      )}
-                      {trend === "stable" && (
-                        <Minus className="h-3 w-3 text-gray-600" />
-                      )}
-                    </div>
-                  )}
-                </div>
-                <p className={`${colors.text} text-lg font-bold`}>
-                  {displayValue}/5
-                </p>
-              </div>
-            </div>
-          );
-        })()}
       </div>
     </div>
   );

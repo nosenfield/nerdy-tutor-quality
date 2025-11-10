@@ -18,7 +18,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db, tutorScores, flags, sessions } from "@/lib/db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 import {
   calculateAttendanceScore,
   calculateRatingsScore,
@@ -26,7 +26,7 @@ import {
   calculateReliabilityScore,
   calculateAllScores,
 } from "@/lib/scoring/aggregator";
-import { getTutorStats } from "@/lib/scoring/rules-engine";
+import { getTutorStats, type TutorStats } from "@/lib/scoring/rules-engine";
 import { subDays } from "date-fns";
 import { randomUUID } from "node:crypto";
 
@@ -221,6 +221,9 @@ export async function GET(
     } else {
       // Convert TutorScore to TutorStats format for score calculation
       const tutorStats: TutorStats = {
+        tutorId: tutorId,
+        windowStart: currentScore.windowStart,
+        windowEnd: currentScore.windowEnd,
         totalSessions: currentScore.totalSessions,
         firstSessions: currentScore.firstSessions,
         noShowCount: currentScore.noShowCount,

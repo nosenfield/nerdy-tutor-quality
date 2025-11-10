@@ -8,6 +8,9 @@
 import { NextResponse } from "next/server";
 import { getQueueStatusSummary } from "@/lib/queue/monitoring";
 
+// Bull requires Node.js runtime (not Edge)
+export const runtime = "nodejs";
+
 /**
  * Handle GET requests - return queue status
  */

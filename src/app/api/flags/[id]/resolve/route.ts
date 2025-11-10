@@ -103,7 +103,7 @@ export async function POST(
     const resolvedFlag = updatedFlag[0];
 
     // Create intervention if intervention_type is provided
-    let intervention = null;
+    let intervention: (typeof interventions.$inferSelect) | null = null;
     if (params_data.intervention_type && params_data.intervention_description) {
       const newIntervention = await db
         .insert(interventions)
@@ -142,7 +142,7 @@ export async function POST(
       updated_at: flag.updatedAt.toISOString(),
     });
 
-    const transformIntervention = (intervention: typeof intervention) => {
+    const transformIntervention = (intervention: (typeof interventions.$inferSelect) | null) => {
       if (!intervention) return null;
       return {
         id: intervention.id,

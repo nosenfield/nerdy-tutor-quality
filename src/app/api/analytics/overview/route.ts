@@ -139,12 +139,22 @@ export async function GET(request: NextRequest) {
       );
 
     // Calculate averages and changes
-    const currentAvgScore = currentWeekScores[0]?.avgScore
-      ? Number(currentWeekScores[0].avgScore)
-      : null;
-    const lastAvgScore = lastWeekScores[0]?.avgScore
-      ? Number(lastWeekScores[0].avgScore)
-      : null;
+    // Handle SQL result which might be string, number, or null
+    const currentAvgScoreValue = currentWeekScores[0]?.avgScore;
+    const currentAvgScore =
+      currentAvgScoreValue !== null && currentAvgScoreValue !== undefined
+        ? typeof currentAvgScoreValue === "number"
+          ? currentAvgScoreValue
+          : Number(currentAvgScoreValue)
+        : null;
+    
+    const lastAvgScoreValue = lastWeekScores[0]?.avgScore;
+    const lastAvgScore =
+      lastAvgScoreValue !== null && lastAvgScoreValue !== undefined
+        ? typeof lastAvgScoreValue === "number"
+          ? lastAvgScoreValue
+          : Number(lastAvgScoreValue)
+        : null;
     const avgScoreChange =
       currentAvgScore !== null && lastAvgScore !== null
         ? currentAvgScore - lastAvgScore

@@ -27,7 +27,9 @@ async function calculateScores() {
     const dbModule = await import("../lib/db");
     const db = dbModule.db;
     const { tutorScores, sessions } = await import("../lib/db/schema");
-    const { getTutorStats } = await import("../lib/scoring/rules-engine");
+    const rulesEngineModule = await import("../lib/scoring/rules-engine");
+    const { getTutorStats } = rulesEngineModule;
+    type TutorStats = Awaited<ReturnType<typeof getTutorStats>>;
     const { calculateAllScores } = await import("../lib/scoring/aggregator");
 
     // Get all unique tutor IDs from sessions
@@ -57,7 +59,7 @@ async function calculateScores() {
     for (const tutorId of tutorIds) {
       try {
         // Get tutor stats with retry logic
-        let stats;
+        let stats: TutorStats | undefined;
         let retries = 3;
         while (retries > 0) {
           try {
@@ -75,8 +77,8 @@ async function calculateScores() {
           }
         }
 
-        // Skip tutors with no sessions
-        if (stats.totalSessions === 0) {
+        // Skip tutors with no sessions or if stats is undefined
+        if (!stats || stats.totalSessions === 0) {
           continue;
         }
 
