@@ -15,6 +15,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Test credentials (can be overridden via environment variables)
+  const testEmail = process.env.NEXT_PUBLIC_TEST_EMAIL || "admin@example.com";
+  const testPassword = process.env.NEXT_PUBLIC_TEST_PASSWORD || "password123";
+  
+  const handleUseTestCredentials = () => {
+    setEmail(testEmail);
+    setPassword(testPassword);
+    setError(null);
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +63,28 @@ export default function LoginPage() {
           <p className="mt-2 text-center text-sm text-gray-600">
             Tutor Quality Scoring System
           </p>
+        </div>
+        
+        {/* Test Credentials Section */}
+        <div className="rounded-md bg-blue-50 border border-blue-200 p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-sm font-medium text-blue-900">Test Credentials</p>
+              <p className="text-xs text-blue-700 mt-1">
+                Email: <span className="font-mono">{testEmail}</span>
+              </p>
+              <p className="text-xs text-blue-700">
+                Password: <span className="font-mono">{testPassword}</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleUseTestCredentials}
+              className="ml-4 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-100 hover:bg-blue-200 rounded-md border border-blue-300 transition-colors"
+            >
+              Use Test Credentials
+            </button>
+          </div>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
