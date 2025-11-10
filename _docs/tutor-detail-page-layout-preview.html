@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor Detail Page Layout Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .breadcrumbs {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 24px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 24px;
+        }
+        
+        .section {
+            margin-bottom: 24px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+        
+        .tutor-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 8px;
+        }
+        
+        .tutor-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .tutor-id {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        
+        .overall-score {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .quick-stats {
+            display: flex;
+            gap: 24px;
+            margin-top: 16px;
+        }
+        
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        
+        .score-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .score-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .score-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .score-trend {
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+        
+        .progress-green { background: #10b981; }
+        .progress-yellow { background: #f59e0b; }
+        .progress-red { background: #ef4444; }
+        
+        .timeline-chart {
+            height: 400px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .flag-item, .intervention-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .flag-severity {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+        
+        .severity-high { background: #fee2e2; color: #991b1b; }
+        .severity-medium { background: #fef3c7; color: #92400e; }
+        
+        .sessions-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .sessions-table th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .sessions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-late { background: #fef3c7; color: #92400e; }
+        .status-no-show { background: #fee2e2; color: #991b1b; }
+        
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #f9fafb;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚂 Tooter</h1>
+            <button class="btn">Logout</button>
+        </div>
+        
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            Dashboard > Tutors > Tutor #12345
+        </div>
+        
+        <!-- Content -->
+        <div class="content">
+            <!-- Tutor Header -->
+            <div class="section tutor-header">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <div class="tutor-name">John Smith</div>
+                        <div class="tutor-id">Tutor ID: #12345</div>
+                        <div class="overall-score">Overall Score: 72/100 🟡</div>
+                        <div style="font-size: 14px; opacity: 0.9; margin-top: 8px;">Confidence: High</div>
+                    </div>
+                    <button class="btn" style="background: rgba(255,255,255,0.2); color: white; border-color: rgba(255,255,255,0.3);">← Back</button>
+                </div>
+                <div class="quick-stats">
+                    <div class="stat">
+                        <span class="stat-label">Total Sessions</span>
+                        <span class="stat-value">45</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Active Flags</span>
+                        <span class="stat-value">2</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Last Session</span>
+                        <span class="stat-value">2 days ago</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Score Breakdown -->
+            <div class="section">
+                <div class="section-title">Score Breakdown</div>
+                <div class="score-breakdown">
+                    <div class="score-card">
+                        <div class="score-label">Attendance</div>
+                        <div class="score-value">85/100</div>
+                        <div class="score-trend">🟢 ↑ Improving</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill progress-green" style="width: 85%;"></div>
+                        </div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-label">Ratings</div>
+                        <div class="score-value">78/100</div>
+                        <div class="score-trend">🟡 → Stable</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill progress-yellow" style="width: 78%;"></div>
+                        </div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-label">Completion</div>
+                        <div class="score-value">65/100</div>
+                        <div class="score-trend">🟡 ↓ Declining</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill progress-yellow" style="width: 65%;"></div>
+                        </div>
+                    </div>
+                    <div class="score-card">
+                        <div class="score-label">Reliability</div>
+                        <div class="score-value">70/100</div>
+                        <div class="score-trend">🟡 → Stable</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill progress-yellow" style="width: 70%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Performance Timeline Chart -->
+            <div class="section">
+                <div class="section-title">Performance Timeline Chart ⭐ KEY</div>
+                <div class="timeline-chart">
+                    <div style="text-align: center;">
+                        <div style="font-size: 16px; margin-bottom: 8px;">📈 Line Chart Visualization</div>
+                        <div style="font-size: 12px; color: #9ca3af;">
+                            Shows score progression over time<br>
+                            With flag markers (🔴) and intervention markers (🟢)
+                        </div>
+                        <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center;">
+                            <button class="btn">Last 30 Days</button>
+                            <button class="btn">Last 60 Days</button>
+                            <button class="btn btn-primary">Last 90 Days</button>
+                            <button class="btn">All Time</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Active Flags & Interventions -->
+            <div class="two-column">
+                <div class="section">
+                    <div class="section-title">Active Flags</div>
+                    <div class="flag-item">
+                        <div style="margin-bottom: 8px;">
+                            <span class="flag-severity severity-high">🔴 High</span>
+                            <strong>Chronic Lateness</strong>
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                            30% of sessions late
+                        </div>
+                        <div style="font-size: 12px; color: #9ca3af;">
+                            Raised: 2 days ago
+                        </div>
+                        <button class="btn" style="margin-top: 8px; font-size: 12px; padding: 4px 8px;">View Details</button>
+                    </div>
+                    <div class="flag-item">
+                        <div style="margin-bottom: 8px;">
+                            <span class="flag-severity severity-medium">🟡 Medium</span>
+                            <strong>Declining Ratings</strong>
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                            7d avg: 3.2, 30d avg: 3.8
+                        </div>
+                        <div style="font-size: 12px; color: #9ca3af;">
+                            Raised: 5 days ago
+                        </div>
+                        <button class="btn" style="margin-top: 8px; font-size: 12px; padding: 4px 8px;">View Details</button>
+                    </div>
+                    <button class="btn" style="width: 100%; margin-top: 8px;">View All Flags</button>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Interventions History</div>
+                    <div class="intervention-item">
+                        <div style="font-weight: 600; margin-bottom: 4px;">2025-11-05</div>
+                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Coaching Call</div>
+                        <div style="font-size: 12px; color: #9ca3af;">Discussed punctuality issues</div>
+                    </div>
+                    <div class="intervention-item">
+                        <div style="font-weight: 600; margin-bottom: 4px;">2025-10-28</div>
+                        <div style="font-size: 14px; color: #6b7280; margin-bottom: 4px;">Written Warning</div>
+                        <div style="font-size: 12px; color: #9ca3af;">Performance review</div>
+                    </div>
+                    <button class="btn" style="width: 100%; margin-top: 8px;">View All Interventions</button>
+                </div>
+            </div>
+            
+            <!-- Recent Sessions Table -->
+            <div class="section">
+                <div class="section-title">Recent Sessions</div>
+                <table class="sessions-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Student</th>
+                            <th>Rating</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2025-11-07</td>
+                            <td>#45678</td>
+                            <td>4.5 ⭐</td>
+                            <td><span class="status-badge status-completed">✅ Completed</span></td>
+                            <td>60 min</td>
+                            <td><button class="btn" style="font-size: 12px; padding: 4px 8px;">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-05</td>
+                            <td>#45679</td>
+                            <td>3.0 ⭐</td>
+                            <td><span class="status-badge status-late">⚠️ Late</span></td>
+                            <td>55 min</td>
+                            <td><button class="btn" style="font-size: 12px; padding: 4px 8px;">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-03</td>
+                            <td>#45680</td>
+                            <td>5.0 ⭐</td>
+                            <td><span class="status-badge status-completed">✅ Completed</span></td>
+                            <td>60 min</td>
+                            <td><button class="btn" style="font-size: 12px; padding: 4px 8px;">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>2025-11-01</td>
+                            <td>#45681</td>
+                            <td>2.5 ⭐</td>
+                            <td><span class="status-badge status-no-show">❌ No-Show</span></td>
+                            <td>0 min</td>
+                            <td><button class="btn" style="font-size: 12px; padding: 4px 8px;">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>2025-10-30</td>
+                            <td>#45682</td>
+                            <td>4.0 ⭐</td>
+                            <td><span class="status-badge status-completed">✅ Completed</span></td>
+                            <td>60 min</td>
+                            <td><button class="btn" style="font-size: 12px; padding: 4px 8px;">View</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pagination">
+                    <div>
+                        <button class="btn">Show All Sessions</button>
+                        <button class="btn">Export</button>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button class="btn">Previous</button>
+                        <button class="btn btn-primary">1</button>
+                        <button class="btn">2</button>
+                        <button class="btn">3</button>
+                        <button class="btn">Next</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

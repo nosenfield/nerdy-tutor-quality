@@ -54,24 +54,44 @@ describe('Async Operations', () => {
   });
 
   describe('Callback-based operations', () => {
-    it('should handle callback success', (done) => {
+    it('should handle callback success', async () => {
       // Arrange
-      const callbackFunction = (callback) => {
+      const callbackFunction = (callback: (error: Error | null, result: string) => void) => {
         setTimeout(() => callback(null, 'result'), 100);
       };
 
-      // Act
-      callbackFunction((error, result) => {
-        // Assert
-        expect(error).toBeNull();
-        expect(result).toBe('result');
-        done();
+      // Act & Assert - Convert callback to Promise
+      const result = await new Promise<string>((resolve, reject) => {
+        callbackFunction((error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        });
       });
+
+      expect(result).toBe('result');
     });
 
-    it('should handle callback errors', (done) => {
-      // Test error handling in callbacks
-      done();
+    it('should handle callback errors', async () => {
+      // Arrange
+      const callbackFunction = (callback: (error: Error | null, result?: string) => void) => {
+        setTimeout(() => callback(new Error('Test error')), 100);
+      };
+
+      // Act & Assert - Convert callback to Promise
+      await expect(
+        new Promise<string>((resolve, reject) => {
+          callbackFunction((error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result!);
+            }
+          });
+        })
+      ).rejects.toThrow('Test error');
     });
   });
 

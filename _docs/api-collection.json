@@ -1,0 +1,357 @@
+{
+  "info": {
+    "name": "Tutor Quality API",
+    "description": "API collection for Tutor Quality Scoring System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "webhookSecret",
+      "value": "your-webhook-secret-here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Session Completed",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Signature",
+                "value": "{{signature}}",
+                "description": "HMAC-SHA256 signature of request body"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": \"session_123\",\n  \"tutor_id\": \"tutor_456\",\n  \"student_id\": \"student_789\",\n  \"session_start_time\": \"2025-01-09T10:00:00Z\",\n  \"session_end_time\": \"2025-01-09T11:00:00Z\",\n  \"tutor_join_time\": \"2025-01-09T10:05:00Z\",\n  \"student_join_time\": \"2025-01-09T10:00:00Z\",\n  \"tutor_leave_time\": \"2025-01-09T11:00:00Z\",\n  \"student_leave_time\": \"2025-01-09T11:00:00Z\",\n  \"subjects_covered\": [\"Math\", \"Algebra\"],\n  \"is_first_session\": false,\n  \"was_rescheduled\": false,\n  \"tutor_feedback\": {\n    \"rating\": 5,\n    \"description\": \"Great session\"\n  },\n  \"student_feedback\": {\n    \"rating\": 4,\n    \"description\": \"Helpful tutor\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/session-completed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "session-completed"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "List Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions?limit=50&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sessions"],
+              "query": [
+                {
+                  "key": "tutor_id",
+                  "value": "",
+                  "description": "Filter by tutor ID",
+                  "disabled": true
+                },
+                {
+                  "key": "student_id",
+                  "value": "",
+                  "description": "Filter by student ID",
+                  "disabled": true
+                },
+                {
+                  "key": "start_date",
+                  "value": "",
+                  "description": "Filter by start date (ISO 8601)",
+                  "disabled": true
+                },
+                {
+                  "key": "end_date",
+                  "value": "",
+                  "description": "Filter by end date (ISO 8601)",
+                  "disabled": true
+                },
+                {
+                  "key": "is_first_session",
+                  "value": "false",
+                  "description": "Filter by first session flag",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Number of results per page (1-100)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number of results to skip"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Session Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sessions/:session_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sessions", ":session_id"],
+              "variable": [
+                {
+                  "key": "session_id",
+                  "value": "session_123"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tutors",
+      "item": [
+        {
+          "name": "List Tutors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tutors?limit=50&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tutors"],
+              "query": [
+                {
+                  "key": "sort_by",
+                  "value": "score",
+                  "description": "Sort by 'score', 'name', or 'session_count'",
+                  "disabled": true
+                },
+                {
+                  "key": "min_score",
+                  "value": "",
+                  "description": "Filter by minimum score (0-100)",
+                  "disabled": true
+                },
+                {
+                  "key": "max_score",
+                  "value": "",
+                  "description": "Filter by maximum score (0-100)",
+                  "disabled": true
+                },
+                {
+                  "key": "has_flags",
+                  "value": "false",
+                  "description": "Filter by tutors with flags",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Number of results per page (1-100)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number of results to skip"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tutor Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tutors/:tutor_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tutors", ":tutor_id"],
+              "variable": [
+                {
+                  "key": "tutor_id",
+                  "value": "tutor_123"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tutor Score",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/tutors/:tutor_id/score",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tutors", ":tutor_id", "score"],
+              "variable": [
+                {
+                  "key": "tutor_id",
+                  "value": "tutor_123"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Flags",
+      "item": [
+        {
+          "name": "List Flags",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flags?limit=50&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flags"],
+              "query": [
+                {
+                  "key": "tutor_id",
+                  "value": "",
+                  "description": "Filter by tutor ID",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "open",
+                  "description": "Filter by status (open, in_progress, resolved, dismissed)",
+                  "disabled": true
+                },
+                {
+                  "key": "severity",
+                  "value": "",
+                  "description": "Filter by severity (low, medium, high, critical)",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Number of results per page (1-100)"
+                },
+                {
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Number of results to skip"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Flag Detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/flags/:flag_id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flags", ":flag_id"],
+              "variable": [
+                {
+                  "key": "flag_id",
+                  "value": "flag_123"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resolve Flag",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolution_notes\": \"Flag resolved after coaching session\",\n  \"coach_agreed\": true,\n  \"intervention_type\": \"coaching_session\",\n  \"intervention_description\": \"Conducted one-on-one coaching session\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/flags/:flag_id/resolve",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "flags", ":flag_id", "resolve"],
+              "variable": [
+                {
+                  "key": "flag_id",
+                  "value": "flag_123"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analytics", "overview"]
+            }
+          }
+        },
+        {
+          "name": "Trends",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/trends?metric=avg_score&period=30d&group_by=day",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "analytics", "trends"],
+              "query": [
+                {
+                  "key": "metric",
+                  "value": "avg_score",
+                  "description": "Metric: avg_score, flag_rate, no_show_rate, reschedule_rate"
+                },
+                {
+                  "key": "period",
+                  "value": "30d",
+                  "description": "Period: 7d, 30d, 90d, 1y"
+                },
+                {
+                  "key": "group_by",
+                  "value": "day",
+                  "description": "Group by: day, week, month"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+

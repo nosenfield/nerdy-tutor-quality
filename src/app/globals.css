@@ -10,6 +10,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* Dashboard color palette */
+  --color-safe: #10B981;
+  --color-warning: #F59E0B;
+  --color-risk: #EF4444;
+  --color-neutral: #6B7280;
+  --color-dashboard-bg: #F9FAFB;
 }
 
 @media (prefers-color-scheme: dark) {

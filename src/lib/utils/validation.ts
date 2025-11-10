@@ -113,3 +113,17 @@ export const tutorsQuerySchema = z.object({
  */
 export type TutorsQuery = z.infer<typeof tutorsQuerySchema>;
 
+/**
+ * Analytics trends query parameters schema
+ */
+export const analyticsTrendsQuerySchema = z.object({
+  metric: z.enum(["avg_score", "flag_rate", "no_show_rate", "reschedule_rate"]),
+  period: z.enum(["7d", "30d", "90d", "1y"]),
+  group_by: z.enum(["day", "week", "month"]).optional().default("day"),
+});
+
+/**
+ * Type inferred from analytics trends query schema
+ */
+export type AnalyticsTrendsQuery = z.infer<typeof analyticsTrendsQuerySchema>;
+

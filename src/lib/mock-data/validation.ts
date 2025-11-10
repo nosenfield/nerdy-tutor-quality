@@ -31,10 +31,10 @@ export async function calculateMockDataStats(
 ): Promise<ValidationStats> {
   const cutoffDate = subDays(new Date(), daysBack);
 
-  const allSessions = await db
+  const allSessions = (await db
     .select()
     .from(sessionsTable)
-    .where(gte(sessionsTable.sessionStartTime, cutoffDate));
+    .where(gte(sessionsTable.sessionStartTime, cutoffDate))) as Session[];
 
   const totalSessions = allSessions.length;
   if (totalSessions === 0) {
@@ -42,16 +42,18 @@ export async function calculateMockDataStats(
   }
 
   // Calculate averages
-  const sessionsWithRatings = allSessions.filter((s: Session) => s.studentFeedbackRating);
+  const sessionsWithRatings = allSessions.filter(
+    (s) => s.studentFeedbackRating != null
+  );
   const avgRating =
     sessionsWithRatings.reduce(
       (sum: number, s: Session) => sum + (s.studentFeedbackRating || 0),
       0
     ) / sessionsWithRatings.length;
 
-  const firstSessions = allSessions.filter((s: Session) => s.isFirstSession);
+  const firstSessions = allSessions.filter((s) => s.isFirstSession);
   const firstSessionsWithRatings = firstSessions.filter(
-    (s: Session) => s.studentFeedbackRating
+    (s) => s.studentFeedbackRating != null
   );
   const avgFirstSessionRating =
     firstSessionsWithRatings.length > 0
@@ -62,14 +64,14 @@ export async function calculateMockDataStats(
       : 0;
 
   // Calculate rates
-  const noShowCount = allSessions.filter((s: Session) => !s.tutorJoinTime).length;
+  const noShowCount = allSessions.filter((s) => !s.tutorJoinTime).length;
   const noShowRate = noShowCount / totalSessions;
 
-  const rescheduledSessions = allSessions.filter((s: Session) => s.wasRescheduled);
+  const rescheduledSessions = allSessions.filter((s) => s.wasRescheduled);
   const rescheduleRate = rescheduledSessions.length / totalSessions;
 
   const tutorInitiatedReschedules = rescheduledSessions.filter(
-    (s: Session) => s.rescheduledBy === "tutor"
+    (s) => s.rescheduledBy === "tutor"
   ).length;
   const tutorInitiatedRescheduleRate =
     rescheduledSessions.length > 0
@@ -77,7 +79,7 @@ export async function calculateMockDataStats(
       : 0;
 
   // Calculate lateness (more than 5 minutes late)
-  const lateSessions = allSessions.filter((s: Session) => {
+  const lateSessions = allSessions.filter((s) => {
     if (!s.tutorJoinTime || !s.sessionStartTime) return false;
     const latenessMinutes =
       (new Date(s.tutorJoinTime).getTime() -
@@ -88,7 +90,7 @@ export async function calculateMockDataStats(
   const lateRate = lateSessions.length / totalSessions;
 
   // Calculate early ends (more than 10 minutes early)
-  const earlyEndSessions = allSessions.filter((s: Session) => {
+  const earlyEndSessions = allSessions.filter((s) => {
     if (!s.tutorLeaveTime || !s.sessionEndTime) return false;
     const earlyEndMinutes =
       (new Date(s.sessionEndTime).getTime() -
@@ -100,7 +102,7 @@ export async function calculateMockDataStats(
 
   // Calculate first session churn (didn't book follow-up)
   const firstSessionsWithoutFollowup = firstSessions.filter(
-    (s: Session) => s.studentBookedFollowup === false
+    (s) => s.studentBookedFollowup === false
   );
   const firstSessionChurnRate =
     firstSessions.length > 0
