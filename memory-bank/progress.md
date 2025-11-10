@@ -174,8 +174,10 @@
 - [x] GET /api/flags/[id] endpoint ✅ (Task 6.20) - Get flag detail with tutor info, related sessions, and interventions, comprehensive integration tests
 - [x] POST /api/flags/[id]/resolve endpoint ✅ (Task 6.21) - Mark flag as resolved with optional intervention creation, comprehensive integration tests
 - [x] Status and severity filtering ✅ (Tasks 6.22-6.23) - Already implemented in Task 6.19
-- [ ] Analytics endpoints (overview, trends) (Tasks 6.24-6.25)
-- [ ] Integration tests for all endpoints (Tasks 6.26-6.30)
+- [x] GET /api/analytics/overview endpoint ✅ (Task 6.24) - Dashboard stats with today's stats, trends, and top issues, comprehensive integration tests
+- [x] GET /api/analytics/trends endpoint ✅ (Task 6.25) - Time-series data with metric, period, and group_by parameters, comprehensive integration tests
+- [x] Integration tests verified comprehensive ✅ (Tasks 6.26-6.29) - All existing integration tests verified comprehensive (webhook, sessions, tutors, flags)
+- [x] Postman/Bruno collection ✅ (Task 6.30) - Complete API collection with all endpoints, example requests, and environment variables
 
 **Target Completion**: Week 5, Day 4-5 + Week 6, Day 1 (3-4 days)
 
