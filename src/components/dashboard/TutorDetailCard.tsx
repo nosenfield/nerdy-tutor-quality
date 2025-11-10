@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { X, Star, Calendar, TrendingUp, AlertTriangle, ChevronLeft, ChevronRight } from "lucide-react";
 import { useTutorDetail } from "@/lib/hooks/useDashboardData";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
@@ -32,6 +33,7 @@ export function TutorDetailCard({
   isInModal = false,
 }: TutorDetailCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const { dateRange, setSessionHistoryModal } = useDashboardStore();
   const { data: tutorDetail, isLoading, error } = useTutorDetail(tutorId, dateRange);
 
@@ -174,6 +176,13 @@ export function TutorDetailCard({
     onClose();
   };
 
+  // Handle tutor ID click to navigate to tutor detail page
+  const handleTutorIdClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    router.push(`/dashboard/tutors/${tutorId}`);
+  };
+
   if (isLoading) {
     return (
       <div
@@ -263,14 +272,24 @@ export function TutorDetailCard({
               <ChevronLeft className="h-4 w-4" />
             </button>
           )}
-          <h3 className="text-sm font-semibold text-gray-900">
-            Tutor {tutorDetail.tutorId}
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-gray-900">
+              Tutor{" "}
+              <button
+                onClick={handleTutorIdClick}
+                onMouseDown={(e) => e.stopPropagation()}
+                className="text-indigo-600 hover:text-indigo-800 hover:underline font-semibold"
+                aria-label={`View details for tutor ${tutorDetail.tutorId}`}
+              >
+                {tutorDetail.tutorId}
+              </button>
+            </h3>
             {hasMultipleTutors && (
-              <span className="text-xs font-normal text-gray-500 ml-1">
+              <span className="text-xs font-normal text-gray-500">
                 ({currentIndex + 1} of {tutorIds.length})
               </span>
             )}
-          </h3>
+          </div>
           {/* Next Button */}
           {hasMultipleTutors && (
             <button
