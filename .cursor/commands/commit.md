@@ -43,9 +43,9 @@ Deleted:
 Total: X files
 ```
 
-### Step 3: Stage Files in Single Command
+### Step 3: Stage Files Individually
 
-Stage all files in a single `git add` command with explicit file paths:
+For each file to be committed, run:
 ```bash
 git add path/to/file1.ts path/to/file2.tsx path/to/file3.ts
 ```
