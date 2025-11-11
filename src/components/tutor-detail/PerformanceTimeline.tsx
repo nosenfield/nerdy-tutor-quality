@@ -89,8 +89,9 @@ function transformPerformanceData(
     const totalSessions = daySessions.length;
 
     // Calculate attended sessions count (sessions where tutor joined)
+    // Exclude rescheduled sessions from no-show count (rescheduled != no-show)
     const noShowCount = daySessions.filter(
-      (s) => !s.tutor_join_time
+      (s) => !s.tutor_join_time && !s.was_rescheduled
     ).length;
     const attendedSessions = totalSessions - noShowCount;
 

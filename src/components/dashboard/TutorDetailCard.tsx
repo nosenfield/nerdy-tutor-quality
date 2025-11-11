@@ -344,15 +344,17 @@ export function TutorDetailCard({
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-gray-600">
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              <span>Student Rating</span>
+          {tutorDetail.avgRating !== undefined && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                <span>Student Rating</span>
+              </div>
+              <span className="text-xs font-medium text-gray-900">
+                {tutorDetail.avgRating.toFixed(1)}/5.0
+              </span>
             </div>
-            <span className="text-xs font-medium text-gray-900">
-              {tutorDetail.avgRating.toFixed(1)}/5.0
-            </span>
-          </div>
+          )}
 
           {tutorDetail.firstSessionAvgRating && (
             <div className="flex items-center justify-between pl-4">

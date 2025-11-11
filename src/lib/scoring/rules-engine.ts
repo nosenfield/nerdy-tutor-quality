@@ -664,8 +664,9 @@ export async function getTutorStats(
   const firstSessions = tutorSessions.filter((s) => s.isFirstSession).length;
 
   // Calculate no-show metrics
+  // Exclude rescheduled sessions from no-show count (rescheduled != no-show)
   const noShowSessions = tutorSessions.filter((s) =>
-    isNoShow(s.tutorJoinTime)
+    isNoShow(s.tutorJoinTime) && !s.wasRescheduled
   );
   const noShowCount = noShowSessions.length;
   const noShowRate = calculateRate(noShowCount, totalSessions);

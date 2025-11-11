@@ -53,8 +53,9 @@ async function calculateFirstSessionMetrics(
 
     // Calculate attendance percentage across all first sessions
     // Attendance = percentage of first sessions where tutor attended (not a no-show)
+    // Exclude rescheduled sessions from no-show count (rescheduled != no-show)
     const noShowCount = firstSessions.filter((s) =>
-      isNoShow(s.tutorJoinTime)
+      isNoShow(s.tutorJoinTime) && !s.wasRescheduled
     ).length;
     const attendancePercentage =
       firstSessions.length > 0
@@ -103,9 +104,10 @@ export async function transformTutorScoreToSummary(
   const keptSessionsPercentage = Math.max(0, (1 - rescheduleRate) * 100);
 
   // Convert rating from 1-5 scale to number
+  // Only set if there are actual ratings (ratings are 1-5, so 0 is invalid)
   const avgRating = score.avgStudentRating
     ? Number(score.avgStudentRating)
-    : 0;
+    : undefined;
   const firstSessionAvgRating = score.avgFirstSessionRating
     ? Number(score.avgFirstSessionRating)
     : undefined;
@@ -317,8 +319,9 @@ export async function getTutorSummariesFromSessions(
       const firstSessions = tutorSessions.filter((s) => s.isFirstSession).length;
 
       // Calculate no-show metrics
+      // Exclude rescheduled sessions from no-show count (rescheduled != no-show)
       const noShowCount = tutorSessions.filter((s) =>
-        isNoShow(s.tutorJoinTime)
+        isNoShow(s.tutorJoinTime) && !s.wasRescheduled
       ).length;
       const noShowRate = calculateRate(noShowCount, totalSessions);
       const attendancePercentage = Math.max(0, (1 - (noShowRate ?? 0)) * 100);
@@ -332,8 +335,9 @@ export async function getTutorSummariesFromSessions(
       const studentRatings = tutorSessions
         .map((s) => s.studentFeedbackRating)
         .filter((r): r is number => r !== null && r !== undefined);
-      const avgRating: number =
-        studentRatings.length > 0 ? (average(studentRatings) ?? 0) : 0;
+      // Only set avgRating if there are actual ratings (ratings are 1-5, so 0 is invalid)
+      const avgRating: number | undefined =
+        studentRatings.length > 0 ? (average(studentRatings) ?? undefined) : undefined;
 
       // Calculate first session rating
       const firstSessionRatings = tutorSessions
@@ -346,7 +350,7 @@ export async function getTutorSummariesFromSessions(
       // Calculate first session metrics
       const firstSessionsList = tutorSessions.filter((s) => s.isFirstSession);
       const firstSessionNoShowCount = firstSessionsList.filter((s) =>
-        isNoShow(s.tutorJoinTime)
+        isNoShow(s.tutorJoinTime) && !s.wasRescheduled
       ).length;
       const firstSessionAttendancePercentage =
         firstSessionsList.length > 0
@@ -429,8 +433,9 @@ export async function getTutorSummaryFromSessions(
     const firstSessions = tutorSessions.filter((s) => s.isFirstSession).length;
 
     // Calculate no-show metrics
+    // Exclude rescheduled sessions from no-show count (rescheduled != no-show)
     const noShowCount = tutorSessions.filter((s) =>
-      isNoShow(s.tutorJoinTime)
+      isNoShow(s.tutorJoinTime) && !s.wasRescheduled
     ).length;
     const noShowRate = calculateRate(noShowCount, totalSessions);
     const attendancePercentage = Math.max(0, (1 - (noShowRate ?? 0)) * 100);
@@ -458,7 +463,7 @@ export async function getTutorSummaryFromSessions(
     // Calculate first session metrics
     const firstSessionsList = tutorSessions.filter((s) => s.isFirstSession);
     const firstSessionNoShowCount = firstSessionsList.filter((s) =>
-      isNoShow(s.tutorJoinTime)
+      isNoShow(s.tutorJoinTime) && !s.wasRescheduled
     ).length;
     const firstSessionAttendancePercentage =
       firstSessionsList.length > 0

@@ -279,12 +279,19 @@ function DashboardContent() {
             ? tutor.firstSessionAvgRating !== undefined
             : true
         )
+        .filter((tutor) => {
+          // Only include tutors with ratings for the quality plot
+          if (qualityView === "first") {
+            return tutor.firstSessionAvgRating !== undefined || tutor.avgRating !== undefined;
+          }
+          return tutor.avgRating !== undefined;
+        })
         .map((tutor) => ({
           x: tutor.totalSessions,
           y:
             qualityView === "first"
-              ? tutor.firstSessionAvgRating || tutor.avgRating
-              : tutor.avgRating, // Use 1-5 rating scale directly
+              ? tutor.firstSessionAvgRating ?? tutor.avgRating!
+              : tutor.avgRating!, // Use 1-5 rating scale directly
           tutorId: tutor.tutorId,
         })),
     [filteredTutors, qualityView]

@@ -127,24 +127,30 @@ export function FlaggedTutorsTable() {
         sortable: true,
         renderCell: (tutor: TutorSummary) => (
           <div className="flex items-center gap-1">
-            <div className="flex items-center">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <span
-                  key={star}
-                  className={`text-sm ${
-                    star <= Math.round(tutor.avgRating)
-                      ? "text-yellow-400"
-                      : "text-gray-300"
-                  }`}
-                  aria-hidden="true"
-                >
-                  ★
+            {tutor.avgRating !== undefined ? (
+              <>
+                <div className="flex items-center">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span
+                      key={star}
+                      className={`text-sm ${
+                        star <= Math.round(tutor.avgRating!)
+                          ? "text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <span className="text-sm text-gray-700 ml-1">
+                  {tutor.avgRating.toFixed(1)}
                 </span>
-              ))}
-            </div>
-            <span className="text-sm text-gray-700 ml-1">
-              {tutor.avgRating.toFixed(1)}
-            </span>
+              </>
+            ) : (
+              <span className="text-sm text-gray-400">N/A</span>
+            )}
           </div>
         ),
       },

@@ -21,7 +21,7 @@ export interface TutorSummary {
   totalSessions: number;
   attendancePercentage: number;
   keptSessionsPercentage: number;
-  avgRating: number;
+  avgRating?: number; // Optional - undefined when no ratings exist (ratings are 1-5, so 0 is invalid)
   firstSessionAvgRating?: number;
   firstSessionAttendancePercentage?: number;
   firstSessionKeptSessionsPercentage?: number;
@@ -45,7 +45,7 @@ export interface TutorDetail {
   tutorId: string;
   totalSessions: number;
   daysOnPlatform: number;
-  avgRating: number;
+  avgRating?: number; // Optional - undefined when no ratings exist (ratings are 1-5, so 0 is invalid)
   firstSessionAvgRating?: number;
   attendancePercentage: number;
   keptSessionsPercentage: number;

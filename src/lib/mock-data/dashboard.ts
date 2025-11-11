@@ -256,8 +256,13 @@ export function generateMockTutorDetail(
       severity = summary.attendancePercentage < 50 ? "critical" : "high";
       message = `Attendance rate is ${summary.attendancePercentage.toFixed(1)}%`;
     } else if (flag === "low-rating") {
-      severity = summary.avgRating < 2.5 ? "critical" : "medium";
-      message = `Average rating is ${summary.avgRating.toFixed(1)}/5.0`;
+      if (summary.avgRating === undefined) {
+        severity = "critical";
+        message = "No ratings available";
+      } else {
+        severity = summary.avgRating < 2.5 ? "critical" : "medium";
+        message = `Average rating is ${summary.avgRating.toFixed(1)}/5.0`;
+      }
     }
 
     return {
