@@ -4,6 +4,7 @@ import { Fragment, useState, useMemo } from "react";
 import { Dialog, Transition, Listbox } from "@headlessui/react";
 import { X, Download, ChevronDown, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 import { useTutorSessionHistory, useTutorDetail } from "@/lib/hooks/useDashboardData";
 import { useDashboardStore } from "@/lib/stores/dashboardStore";
 import type { DateRange } from "@/lib/types/dashboard";
@@ -29,6 +30,7 @@ interface SessionData {
  * Includes filters, sorting, pagination, and export functionality.
  */
 export function SessionHistoryModal() {
+  const router = useRouter();
   const { sessionHistoryTutorId, setSessionHistoryModal, dateRange } = useDashboardStore();
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(50);
@@ -252,7 +254,20 @@ export function SessionHistoryModal() {
                       Session History
                     </Dialog.Title>
                     <p className="mt-1 text-sm text-gray-500">
-                      Tutor ID: {sessionHistoryTutorId}
+                      Tutor ID:{" "}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (sessionHistoryTutorId) {
+                            router.push(`/dashboard/tutors/${sessionHistoryTutorId}`);
+                            handleClose();
+                          }
+                        }}
+                        className="text-indigo-600 hover:text-indigo-800 hover:underline font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded"
+                        aria-label={`View details for tutor ${sessionHistoryTutorId}`}
+                      >
+                        {sessionHistoryTutorId}
+                      </button>
                       {tutorDetail && (
                         <span className="ml-2">
                           • {tutorDetail.totalSessions} total sessions
